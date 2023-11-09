@@ -15,7 +15,9 @@ src/Render/Texture2D.cpp
 src/Render/Sprite.cpp
 src/Render/Sprite.h
 src/Render/AnimatedSprite.h
-src/Render/AnimatedSprite.cpp)
+src/Render/AnimatedSprite.cpp
+src/Game/Game.h
+src/Game/Game.cpp)
 
 add_subdirectory(dependencies/glfw)
 
@@ -43,6 +45,13 @@ file(GLOB_RECURSE SRC_RESOURCES
     "src/Resources/*.h"
 )
 
+file(GLOB_RECURSE SRC_GAME
+    "src/Game/*.cpp"
+    "src/Game/*.h"
+)
+
 source_group("Render" FILES ${SRC_RENDER})
 
 source_group("Resources" FILES ${SRC_RESOURCES})
+
+source_group("Game" FILES ${SRC_GAME})

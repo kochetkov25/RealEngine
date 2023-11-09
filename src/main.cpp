@@ -15,17 +15,17 @@
 #include "Render\Sprite.h"
 #include "Render\AnimatedSprite.h"
 
-GLfloat point[] = {
-	-50.f, -50.f, 0.f,
-	-50.f, 50.f, 0.f,
-	50.f, 50.f, 0.f
-};
-
-GLfloat texCoords[] = {
-	0.0f, 0.0f,
-	0.0f, 1.0f,
-	1.0f, 1.0f
-};
+//GLfloat point[] = {
+//	-50.f, -50.f, 0.f,
+//	-50.f, 50.f, 0.f,
+//	50.f, 50.f, 0.f
+//};
+//
+//GLfloat texCoords[] = {
+//	0.0f, 0.0f,
+//	0.0f, 1.0f,
+//	1.0f, 1.0f
+//};
 
 // установка размеров окна в глобальной области
 int g_windowSizeX = 640;
