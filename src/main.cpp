@@ -46,11 +46,13 @@ void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int
 	}
 }
 
-int main(int argc, char** argv){
+
+GLFWwindow* GL_Init()
+{
 	// инициализация GLFW
-	if (!glfwInit()){
+	if (!glfwInit()) {
 		std::cout << "Error load GLFW!" << std::endl;
-		return -1;
+		return nullptr;
 	}
 
 	// установка настроек OpenGL
@@ -63,10 +65,10 @@ int main(int argc, char** argv){
 	pWindow = glfwCreateWindow(g_windowSizeX, g_windowSizeY, "MainWindow", NULL, NULL);
 
 	// проверка создано окно или нет
-	if (!pWindow){
+	if (!pWindow) {
 		std::cout << "Error create window!" << std::endl;
 		glfwTerminate();
-		return -1;
+		return nullptr;
 	}
 
 	// передача в GLFW созданных колбек функций
@@ -77,17 +79,32 @@ int main(int argc, char** argv){
 	glfwMakeContextCurrent(pWindow);
 
 	// проверка инициализации GLAD
-	if (!gladLoadGL()){
+	if (!gladLoadGL()) {
 		std::cout << "Error load GLAD!" << std::endl;
-		return -1;
+		return nullptr;
 	}
-	else{
+	else {
 		std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
 		std::cout << "OpenGL: " << GLVersion.major << "." << GLVersion.minor << std::endl;
 	}
 
 	// задание цвета буффера
 	glClearColor(0.6f, 0.69f, 0.929f, 1.f);
+
+	return pWindow;
+}
+
+
+int main(int argc, char** argv)
+{
+	/*вся основная инициализация GL библиотек и контекста*/
+	auto pMainWindow = GL_Init();
+	if (!pMainWindow)
+		return -1;
+
+
+	/*===============================================================================================================================================================================*/
+
 
 	// создание объекта ресурсного менеджера
 	ResourceManager resourceManager(argv[0]);
@@ -100,42 +117,73 @@ int main(int argc, char** argv){
 	}
 
 
-	// создание вектора, который содержит имена всех саб текстур
-	std::vector<std::string> subTextureNames = { "KnightAnim_0", "KnightAnim_1", "KnightAnim_2", "KnightAnim_3", "KnightAnim_4", "KnightAnim_5"};
+	/*===============================================================================================================================================================================*/
 
-	// загрузка в ресурсный менеджер текстурного атласа (загружается текстура в ресурсный менеджер, а также загружаются все координаты саб текстур)
-	auto pTextureAtlas = resourceManager.loadTextureAthlas2D("defaultTextureAtlas", "res/textures/KnightAnim.png", 
-															  std::move(subTextureNames), 142, 94);
 
-	// загрузка анимированного спрайта
-	auto pAnimatedSprite = resourceManager.loadAnimatedSprite("KnightAnim", "defaultTextureAtlas", "SpriteShader", 150, 150, "KnightAnim_0");
-	pAnimatedSprite->setSpritePosition(glm::vec2(g_windowSizeX / 2, g_windowSizeY / 2));
+	/*загрузка в ресурсный менеджер текстурного атласа*/
+	std::string athlName = "defaultTextureAtlas"; // имя под которым сохраянется текстурный атлас
+	std::string athlPath = "res/textures/attack.png"; // расположение текстурного атласа
+	unsigned int subTexWidth = 126; // ширина одной сабтекстуры из атласа
+	unsigned int subTexHeight = 39; // высота одной сабтекстуры из атласа
+	std::vector<std::string> subTextureNames = {               // имена каждой из сабтекстур
+		                                         "attack_0", 
+												 "attack_1", 
+												 "attack_2", 
+												 "attack_3", 
+												 "attack_4", 
+												 "attack_5",
+												 "attack_6",
+												 "attack_7" 
+	                                           }; 
+	auto pTextureAtlas = resourceManager.loadTextureAthlas2D(std::move(athlName), std::move(athlPath), std::move(subTextureNames), subTexWidth, subTexHeight);
 
-	std::vector<std::pair<std::string, size_t>> knightStates;
 
+	/*===============================================================================================================================================================================*/
+
+
+	/*загрузка анимированного спрайта*/
+	std::string spriteName = "attack"; // имя под которым будет сохранен анимированный спрайт
+	athlName = "defaultTextureAtlas"; // используемый текстурный атлас
+	std::string shaderName = "SpriteShader"; // используемый шейдер 
+	unsigned int spriteWidth = 4 * subTexWidth; // ширина (в пикселях) спрайта на экране
+	unsigned int spriteHeight = 4 * subTexHeight; // высоа (в пикселях) спрайта на экране
+	std::string defaultState = "attack_0"; // сабтекстура устанавливаемая первой в анимации по умолчанию
+	auto pAnimatedSprite = resourceManager.loadAnimatedSprite(std::move(spriteName), std::move(athlName), std::move(shaderName), spriteWidth, spriteHeight, std::move(defaultState));
+	pAnimatedSprite->setSpritePosition(glm::vec2(g_windowSizeX / 6, g_windowSizeY / 2)); // установка позиции спрайта на экране
+	
+	/*установка длительности каждого кадра при анимации*/
+	std::vector<std::pair<std::string, size_t>> attackStates;
 	size_t time = 100000000;
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_0", time));
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_1", time*2));
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_2", time));
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_3", time*2));
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_4", time));
-	knightStates.emplace_back(std::pair<std::string, size_t>("KnightAnim_5", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_0", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_1", 2 * time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_2", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_3", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_4", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_5", 2 * time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_6", time));
+	attackStates.emplace_back(std::pair<std::string, size_t>("attack_7", time));
 
-	pAnimatedSprite->insertState("knightState", std::move(knightStates));
-	pAnimatedSprite->setState("knightState");
+	pAnimatedSprite->insertState("attackState", std::move(attackStates));
+	pAnimatedSprite->setState("attackState");
+
+
+	/*===============================================================================================================================================================================*/
+
 
 	//задание проекционной матрицы
 	glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(g_windowSizeX), 0.f, static_cast<float>(g_windowSizeY), -100.f, 100.f);
-
 	// установка отрисовываемой текстуры для sprite шейдерной программы
 	pSpriteShaderProgram->use();
 	pSpriteShaderProgram->setTexUniform("tex", 0);
 	pSpriteShaderProgram->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 
 
+	/*===============================================================================================================================================================================*/
+
+
 	auto lastTime = std::chrono::high_resolution_clock::now();
 	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
-	while (!glfwWindowShouldClose(pWindow))
+	while (!glfwWindowShouldClose(pMainWindow))
 	{
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
@@ -146,7 +194,7 @@ int main(int argc, char** argv){
 
 		pAnimatedSprite->renderSprite();
 
-		glfwSwapBuffers(pWindow);
+		glfwSwapBuffers(pMainWindow);
 
 		glfwPollEvents();
 	}

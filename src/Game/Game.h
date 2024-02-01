@@ -4,4 +4,4 @@ class Game
 {
 	Game();
 	~Game();
-};
+}; 

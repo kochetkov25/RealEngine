@@ -169,7 +169,7 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(const st
 	{
 		// получаем длинну и высоту текстуры
 		const unsigned int textureWidth = pTexture->getWidth();
-		const unsigned int texturHeight = pTexture->getWidth();
+		const unsigned int texturHeight = pTexture->getHeight();
 		// устанавливаем начальное положение (левый верхний угол)
 		unsigned int currentTextureOffsetX = 0;
 		unsigned int currentTextureOffsetY = texturHeight;
