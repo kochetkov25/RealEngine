@@ -1,105 +1,30 @@
-#include <glad/glad.h>
 #include <iostream>
 #include <string>
 #include <cmath>
-#include <GLFW/glfw3.h>
-#include <glm\vec2.hpp>
-#include <glm\mat4x4.hpp>
-#include <glm\gtc\matrix_transform.hpp>
 #include <vector>
 #include <chrono>
 
-#include "Render\ShaderProgram.h"
+#include <glm\vec2.hpp>
+#include <glm\mat4x4.hpp>
+#include <glm\gtc\matrix_transform.hpp>
+
 #include "Resources\ResourceManager.h"
+
+#include "Render\ShaderProgram.h"
 #include "Render\Texture2D.h"
 #include "Render\Sprite.h"
 #include "Render\AnimatedSprite.h"
+#include "Render\Window.h"
 
-//GLfloat point[] = {
-//	-50.f, -50.f, 0.f,
-//	-50.f, 50.f, 0.f,
-//	50.f, 50.f, 0.f
-//};
-//
-//GLfloat texCoords[] = {
-//	0.0f, 0.0f,
-//	0.0f, 1.0f,
-//	1.0f, 1.0f
-//};
-
-// установка размеров окна в глобальной области
-int g_windowSizeX = 640;
-int g_windowSizeY = 480;
-
-// определение колбек функции, которая будет вызываться при изменении
-// размеров окна
-void glfwWindowSizeCallback(GLFWwindow* pWindow, int width, int height){
-	g_windowSizeX = width;
-	g_windowSizeY = height;
-	glViewport(0, 0, g_windowSizeX, g_windowSizeY);
-}
-
-// определение колбек функции, которая будет вызываться при нажатии клавиш
-void glfwKeyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mode){
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
-		glfwSetWindowShouldClose(pWindow, GL_TRUE);
-	}
-}
-
-
-GLFWwindow* GL_Init()
-{
-	// инициализация GLFW
-	if (!glfwInit()) {
-		std::cout << "Error load GLFW!" << std::endl;
-		return nullptr;
-	}
-
-	// установка настроек OpenGL
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// создание окна отрисовки
-	GLFWwindow* pWindow;
-	pWindow = glfwCreateWindow(g_windowSizeX, g_windowSizeY, "MainWindow", NULL, NULL);
-
-	// проверка создано окно или нет
-	if (!pWindow) {
-		std::cout << "Error create window!" << std::endl;
-		glfwTerminate();
-		return nullptr;
-	}
-
-	// передача в GLFW созданных колбек функций
-	glfwSetWindowSizeCallback(pWindow, glfwWindowSizeCallback);
-	glfwSetKeyCallback(pWindow, glfwKeyCallback);
-
-	// установка текущего окна как контекст отрисовки
-	glfwMakeContextCurrent(pWindow);
-
-	// проверка инициализации GLAD
-	if (!gladLoadGL()) {
-		std::cout << "Error load GLAD!" << std::endl;
-		return nullptr;
-	}
-	else {
-		std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
-		std::cout << "OpenGL: " << GLVersion.major << "." << GLVersion.minor << std::endl;
-	}
-
-	// задание цвета буффера
-	glClearColor(0.6f, 0.69f, 0.929f, 1.f);
-
-	return pWindow;
-}
+#include "imgui.h"
+#include "backends/imgui_impl_opengl3.h"
 
 
 int main(int argc, char** argv)
 {
-	/*вся основная инициализация GL библиотек и контекста*/
-	auto pMainWindow = GL_Init();
-	if (!pMainWindow)
+	/*создание главного окна отрисовки*/
+	Render::Window MainWindow;
+	if (!MainWindow.init())
 		return -1;
 
 
@@ -149,7 +74,7 @@ int main(int argc, char** argv)
 	unsigned int spriteHeight = 4 * subTexHeight; // высоа (в пикселях) спрайта на экране
 	std::string defaultState = "attack_0"; // сабтекстура устанавливаемая первой в анимации по умолчанию
 	auto pAnimatedSprite = resourceManager.loadAnimatedSprite(std::move(spriteName), std::move(athlName), std::move(shaderName), spriteWidth, spriteHeight, std::move(defaultState));
-	pAnimatedSprite->setSpritePosition(glm::vec2(g_windowSizeX / 6, g_windowSizeY / 2)); // установка позиции спрайта на экране
+	pAnimatedSprite->setSpritePosition(glm::vec2(MainWindow.getWidth() / 6, MainWindow.getHeight() / 2)); // установка позиции спрайта на экране
 	
 	/*установка длительности каждого кадра при анимации*/
 	std::vector<std::pair<std::string, size_t>> attackStates;
@@ -171,7 +96,7 @@ int main(int argc, char** argv)
 
 
 	//задание проекционной матрицы
-	glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(g_windowSizeX), 0.f, static_cast<float>(g_windowSizeY), -100.f, 100.f);
+	glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(MainWindow.getWidth()), 0.f, static_cast<float>(MainWindow.getHeight()), -100.f, 100.f);
 	// установка отрисовываемой текстуры для sprite шейдерной программы
 	pSpriteShaderProgram->use();
 	pSpriteShaderProgram->setTexUniform("tex", 0);
@@ -183,22 +108,18 @@ int main(int argc, char** argv)
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
-	while (!glfwWindowShouldClose(pMainWindow))
+	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
+		glClear(GL_COLOR_BUFFER_BIT); // очищаю передний буфер
+
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
 		lastTime = currentTime;
-		pAnimatedSprite->update(duration);
-		// очистка буффера цвета
-		glClear(GL_COLOR_BUFFER_BIT);
+		pAnimatedSprite->update(duration); // обновляю состояние спрайта
 
-		pAnimatedSprite->renderSprite();
+		pAnimatedSprite->renderSprite(); // отрисовываю спрайт
 
-		glfwSwapBuffers(pMainWindow);
-
-		glfwPollEvents();
+		MainWindow.update(); // меняю буферы местами
 	}
-	// освободить все ресурсы GLFW
-	glfwTerminate();
 	return 0;
 }

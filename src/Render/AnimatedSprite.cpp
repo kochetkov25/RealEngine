@@ -50,8 +50,6 @@ namespace Render{
 		}
 		// вызываем метод базового класса (отрисовка спрайта)
 		Sprite::renderSprite();
-
-
 	}
 	// перещелкивание кадров анимации
 	void AnimatedSprite::update(uint64_t deltaTime)

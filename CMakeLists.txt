@@ -16,6 +16,10 @@ src/Render/Sprite.cpp
 src/Render/Sprite.h
 src/Render/AnimatedSprite.h
 src/Render/AnimatedSprite.cpp
+src/Render/Renderer.h
+src/Render/Renderer.cpp
+src/Render/Window.h
+src/Render/Window.cpp
 src/Game/Game.h
 src/Game/Game.cpp)
 
@@ -55,3 +59,41 @@ source_group("Render" FILES ${SRC_RENDER})
 source_group("Resources" FILES ${SRC_RESOURCES})
 
 source_group("Game" FILES ${SRC_GAME})
+
+
+
+
+
+
+
+
+
+
+
+
+include_directories(dependencies/imgui)
+
+set(IMGUI_INCLUDES
+	dependencies/imgui/imgui.h
+	dependencies/imgui/backends/imgui_impl_glfw.h
+	dependencies/imgui/backends/imgui_impl_opengl3.h
+)
+
+set(IMGUI_SOURCES
+	dependencies/imgui/imgui.cpp
+	dependencies/imgui/backends/imgui_impl_glfw.cpp
+	dependencies/imgui/backends/imgui_impl_opengl3.cpp
+	dependencies/imgui/imgui_demo.cpp
+	dependencies/imgui/imgui_tables.cpp
+	dependencies/imgui/imgui_widgets.cpp
+	dependencies/imgui/imgui_draw.cpp
+)
+
+add_library(ImGui STATIC
+	${IMGUI_INCLUDES}
+	${IMGUI_SOURCES}
+)
+
+target_link_libraries(ImGui glad glfw)
+
+target_link_libraries(RealEngine ImGui)
