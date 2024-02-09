@@ -15,6 +15,8 @@
 #include "Render\Sprite.h"
 #include "Render\AnimatedSprite.h"
 #include "Render\Window.h"
+#include "Render\VertexBuffer.h"
+#include "Render\VertexArray.h"
 
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -96,99 +98,112 @@ int main(int argc, char** argv)
 
 	/*===============================================================================================================================================================================*/
 
-	GLfloat firstTriangle[] = {
-		 100.5f, 50.0f, 0.0f,
-		 200.5f, 50.0f, 0.0f,
-		 200.5f, 200.5f, 0.0f,
-		 400.5f, 400.5f, 0.0f
-	};
-
-	GLfloat secondTriangle[] = {
-	     200.5f, 100.0f,  0.0f,
-	     400.5f, 100.0f,  0.0f,
-	     450.5f, 450.5f,  0.0f,
-		 800.5f, 600.5f,  0.0f
-	};
-
-	GLfloat colors[] = {
-		1.0f, 0.0f, 0.0f, 1.0f,
-		1.0f, 0.0f, 0.0f, 0.5f,
-		0.0f, 1.0f, 0.0f, 1.0f,
-		0.0f, 1.0f, 0.0f, 0.5f
-	};
-
-	GLfloat lines_colors[] = {
-	     200.5f, 200.0f,  0.0f,    1.0f, 0.0f, 0.0f, 1.0f,
-		 400.5f, 200.0f,  0.0f,    1.0f, 0.0f, 0.0f, 0.2f,
-		 300.5f, 400.5f,  0.0f,    0.0f, 1.0f, 0.0f, 1.0f,
-		 300.5f, 100.5f,  0.0f,    0.0f, 1.0f, 0.0f, 0.2f
-	};
-
-	GLuint VBO[3], VAO[2];
-	glGenVertexArrays(2, VAO);
-	glGenBuffers(3, VBO);
 
 
-	/* один ВАО под первые 2 линии (не обращать внимание, что называется triangle) */
-	//glBindVertexArray(VAO[0]);
+	/*
+	* Пример 1:
+	* Использую один ВБО под координаты и цвет вершин.
+	* Отрисовываю две линии в форме креста
+	*/
+	/*координаты и цвет*/
+	std::vector<GLfloat> cordCol(
+									{
+										200.5f, 200.0f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,
+										400.5f, 200.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.2f,
+										300.5f, 400.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,
+										300.5f, 100.5f, 0.0f,   0.0f, 1.0f, 0.0f, 0.2f
+									}
+	                          );
 
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO[0]);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangle), firstTriangle, GL_STATIC_DRAW);
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	//	glEnableVertexAttribArray(0);
 
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-	//	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-	//	glEnableVertexAttribArray(1);
+	std::vector<Render::VertexBuffer::BufferElement> elements{ Render::VertexBuffer::_e_DataType::Float3, Render::VertexBuffer::_e_DataType::Float4 };
 
-	//glBindVertexArray(0);
+	Render::VertexBuffer VBO_Test(cordCol, elements, Render::VertexBuffer::_e_Usage::Static);
+	Render::VertexArray VAO_Test;
+
+	/*ВАО*/
+	VAO_Test.addBuffer(VBO_Test);
 
 
-	/* второй ВАО под вторые  2 линии (не обращать внимание, что называется triangle) */
-	//glBindVertexArray(VAO[1]);
+	/*=================================================================================================================================================*/
 
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO[2]);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangle), secondTriangle, GL_STATIC_DRAW);
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	//	glEnableVertexAttribArray(0);
 
-	//	glBindBuffer(GL_ARRAY_BUFFER, VBO[1]);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-	//	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-	//	glEnableVertexAttribArray(1);
+	/*
+	* Пример 2:
+	* Использую два ВБО: один под координаты, другой под цвет.
+	* Отрисовываю треугольник
+	*/
+	/*координаты*/
+	std::vector<GLfloat> coordsT(
+									{
+										500.f, 400.f,   0.f,
+										600.f, 600.f,   0.f,
+										700.f, 400.f,   0.f
+									}
+	                            );
+	std::vector<Render::VertexBuffer::BufferElement> elementCoords{ Render::VertexBuffer::_e_DataType::Float3 };
+	Render::VertexBuffer VBO_Coords(coordsT, elementCoords, Render::VertexBuffer::_e_Usage::Static);
 
-	//glBindVertexArray(0);
+	/*цвет*/
+	std::vector<GLfloat> colorsT(
+									{
+			                           1.0f, 0.0f, 0.0f, 0.5f,
+									   1.0f, 1.0f, 0.0f, 0.3f,
+									   1.0f, 0.0f, 1.0f, 0.1f
+		                            }
+	                            );
+	std::vector<Render::VertexBuffer::BufferElement> elementColors{ Render::VertexBuffer::_e_DataType::Float4 };
+	Render::VertexBuffer VBO_Colors(colorsT, elementColors, Render::VertexBuffer::_e_Usage::Static);
+
+	/*ВАО*/
+	Render::VertexArray VAO_Test2;
+	VAO_Test2.addBuffer(VBO_Coords);
+	VAO_Test2.addBuffer(VBO_Colors);
 
 
 
-	/* один ВБО, содержащий положения точек и цвет */
-	glBindVertexArray(VAO[0]);
+	/*=================================================================================================================================================*/
 
-		glBindBuffer(GL_ARRAY_BUFFER, VBO[0]); // делаю буффер ВБО активным
-		glBufferData(GL_ARRAY_BUFFER, sizeof(lines_colors), lines_colors, GL_STATIC_DRAW); // перемещаю данные из оперативной память в память видеокарты
 
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)0); // сообщаю OpenGL как нужно воспринимать полученные данные
-		                                                                                  // одна вершина содержит 7 параметров (x,y,z,r,g,b,a);
-		                                                                                  // в location с номером 0 пойдут x y z поэтому для них смещение 0 (offset)
-		glEnableVertexAttribArray(0); // настройки задаются для location с номером 0
 
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat))); // в location с номером 1 пойдет r g b a, для них смещение (offset) 3 ,
-		                                                                                                      // потому что первые 3 это x y z
-		glEnableVertexAttribArray(1); // настройки задаются для location с номером 0
+	/*ФИЛЬТР*/
+	std::vector<GLfloat> coordsColorsFilter(
+									{
+										0.0f,                                        0.0f,                                         0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
+										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
+										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 1.0f, 0.0f, 0.4f,
 
-	glBindVertexArray(0);
+
+
+										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
+										static_cast<GLfloat>(MainWindow.getWidth()), static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 1.0f, 0.4f,
+										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 1.0f, 0.0f, 0.4f
+									}
+								);
+
+	std::vector<Render::VertexBuffer::BufferElement> elementsFilter{ Render::VertexBuffer::_e_DataType::Float3, Render::VertexBuffer::_e_DataType::Float4 };
+	Render::VertexBuffer VBO_Filter(coordsColorsFilter, elementsFilter, Render::VertexBuffer::_e_Usage::Static);
+
+	Render::VertexArray VAO_Filter;
+
+	VAO_Filter.addBuffer(VBO_Filter);
+
+
+
+	/*=================================================================================================================================================*/
 
 
 
 	//задание проекционной матрицы
 	glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(MainWindow.getWidth()), 0.f, static_cast<float>(MainWindow.getHeight()), -100.f, 100.f);
 	glm::mat4 modelMatrix(1.f);
+
 	// установка отрисовываемой текстуры для sprite шейдерной программы
 	//pSpriteShaderProgram->use();
 	//pSpriteShaderProgram->setTexUniform("tex", 0);
 	//pSpriteShaderProgram->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 
+	/*шейдерная программа для отрисовки GL примитивов*/
 	pDefaultSharedProgram->use();
 	pDefaultSharedProgram->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 	pDefaultSharedProgram->setMatrix4Uniform("modelMatrix", modelMatrix);
@@ -197,7 +212,7 @@ int main(int argc, char** argv)
 	/*===============================================================================================================================================================================*/
 
 
-	auto lastTime = std::chrono::high_resolution_clock::now();
+	//auto lastTime = std::chrono::high_resolution_clock::now();
 	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
@@ -216,20 +231,29 @@ int main(int argc, char** argv)
 		//pAnimatedSprite->update(duration); // обновляю состояние спрайта
 		//pAnimatedSprite->renderSprite(); // отрисовываю спрайт
 
-		/*рисую 4 линии из из двух разных ВАО*/
-		//glBindVertexArray(VAO[0]);
-		//glDrawArrays(GL_LINES, 0, 4);
 
-		//glBindVertexArray(VAO[1]);
-		//glDrawArrays(GL_LINES, 0, 4);
+		/*рисую две линии из одного ВБО*/
+		VAO_Test.bind();
 
-
-
-		/*рисую две линии из одного ВАО*/
-		glBindVertexArray(VAO[0]);
 		glDrawArrays(GL_LINES, 0, 4);
 
-		glBindVertexArray(0); // отвязываем ВАО
+		VAO_Test.unbind();
+
+
+		/*рисую треугольник из двух ВБО (один под координаты, другой под цвет)*/
+		VAO_Test2.bind();
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		VAO_Test2.unbind();
+
+
+		/*рисую фильтр поверх всего*/
+		VAO_Filter.bind();
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		VAO_Filter.unbind();
 
 		MainWindow.update(); // меняю буферы местами
 	}

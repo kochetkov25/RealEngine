@@ -20,6 +20,10 @@ src/Render/Renderer.h
 src/Render/Renderer.cpp
 src/Render/Window.h
 src/Render/Window.cpp
+src/Render/VertexBuffer.h
+src/Render/VertexBuffer.cpp
+src/Render/VertexArray.h
+src/Render/VertexArray.cpp
 src/Game/Game.h
 src/Game/Game.cpp)
 
