@@ -134,13 +134,24 @@ int main(int argc, char** argv)
 	* Отрисовываю треугольник
 	*/
 	/*координаты*/
+	//std::vector<GLfloat> coordsT(
+	//								{
+	//									500.f, 400.f,   10.f,
+	//									600.f, 600.f,   10.f,
+	//									700.f, 400.f,   10.f
+	//								}
+	//                            );
+
+	const float z_coord = -300.f;
+
 	std::vector<GLfloat> coordsT(
-									{
-										500.f, 400.f,   0.f,
-										600.f, 600.f,   0.f,
-										700.f, 400.f,   0.f
-									}
-	                            );
+		{
+			  0.f,   0.f, z_coord,
+			200.f,   0.f, z_coord,
+			100.f, 200.f, z_coord
+		}
+	);
+
 	std::vector<Render::VertexBuffer::BufferElement> elementCoords{ Render::VertexBuffer::_e_DataType::Float3 };
 	Render::VertexBuffer VBO_Coords(coordsT, elementCoords, Render::VertexBuffer::_e_Usage::Static);
 
@@ -169,15 +180,15 @@ int main(int argc, char** argv)
 	/*ФИЛЬТР*/
 	std::vector<GLfloat> coordsColorsFilter(
 									{
-										0.0f,                                        0.0f,                                         0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
-										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
-										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 1.0f, 0.0f, 0.4f,
+										0.0f,                                        0.0f,                                         0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
+										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
+										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
 
 
 
-										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 0.0f, 0.4f,
-										static_cast<GLfloat>(MainWindow.getWidth()), static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 1.0f, 1.0f, 0.4f,
-										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 1.0f, 0.0f, 0.4f
+										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 0.0f, 1.0f, 0.3f,
+										static_cast<GLfloat>(MainWindow.getWidth()), static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 0.0f, 1.0f, 0.3f,
+										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     0.0f, 0.0f, 1.0f, 0.3f
 									}
 								);
 
@@ -194,9 +205,39 @@ int main(int argc, char** argv)
 
 
 
-	//задание проекционной матрицы
-	glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(MainWindow.getWidth()), 0.f, static_cast<float>(MainWindow.getHeight()), -100.f, 100.f);
+	/*матрица проекции*/
+	glm::mat4 projectionMatrix = glm::perspective(glm::radians(45.f), 1024.f / 768.f, 0.1f, 500.f);
+	//glm::mat4 projectionMatrix = glm::ortho(0.f, static_cast<float>(MainWindow.getWidth()), 0.f, static_cast<float>(MainWindow.getHeight()), -100.f, 100.f);
+	//glm::mat4 projectionMatrix = glm::ortho(
+	//	                                     -static_cast<float>(MainWindow.getWidth()) / 2.f,  static_cast<float>(MainWindow.getWidth()) / 2.f,
+	//	                                     -static_cast<float>(MainWindow.getHeight()) / 2.f, static_cast<float>(MainWindow.getHeight()) / 2.f,
+	//	                                     -100.f, 100.f
+	//                                       );
+
+
+	//float r = 0.1f /*1024.f / 2.f*/;
+	//float t = 0.1f /*768.f / 2.f*/;
+
+	//float n = 0.1f;
+	//float f = 10.f;
+	//glm::mat4 projectionMatrix = glm::mat4(
+	//										n / r,   0,                     0,  0,
+	//											0, n / t,                     0,  0,
+	//											0,   0,    (-f - n) / (f - n), -1,
+	//											0,   0,  -2 * f * n / (f - n),  1
+	//									  );
+
+
+	/*матрица модели*/
 	glm::mat4 modelMatrix(1.f);
+	/*??? поворот*/
+	const float ang_rad = glm::radians(0.f);
+	modelMatrix = glm::rotate(modelMatrix, ang_rad, glm::vec3(1.0f, 0.0f, 0.0f));
+
+	/*матрица вида*/
+	glm::mat4 viewMatrix(1.f);
+	/*смещение камеры по Х*/
+	viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
 
 	// установка отрисовываемой текстуры для sprite шейдерной программы
 	//pSpriteShaderProgram->use();
@@ -207,6 +248,7 @@ int main(int argc, char** argv)
 	pDefaultSharedProgram->use();
 	pDefaultSharedProgram->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 	pDefaultSharedProgram->setMatrix4Uniform("modelMatrix", modelMatrix);
+	pDefaultSharedProgram->setMatrix4Uniform("viewMatrix", viewMatrix);
 
 
 	/*===============================================================================================================================================================================*/
@@ -216,7 +258,9 @@ int main(int argc, char** argv)
 	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
-		glClear(GL_COLOR_BUFFER_BIT); // очищаю передний буфер
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // очищаю передний буфер
+
+		glEnable(GL_DEPTH_TEST);
 
 		glEnable(GL_BLEND); // включаю режим смешивания
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // задаю дефолтные настройки смешивания
@@ -249,11 +293,11 @@ int main(int argc, char** argv)
 
 
 		/*рисую фильтр поверх всего*/
-		VAO_Filter.bind();
+		//VAO_Filter.bind();
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
 
-		VAO_Filter.unbind();
+		//VAO_Filter.unbind();
 
 		MainWindow.update(); // меняю буферы местами
 	}
