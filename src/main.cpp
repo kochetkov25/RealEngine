@@ -21,6 +21,8 @@
 #include "imgui.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include "Render\Renderer.h"
+
 
 int main(int argc, char** argv)
 {
@@ -142,7 +144,7 @@ int main(int argc, char** argv)
 	//								}
 	//                            );
 
-	const float z_coord = -300.f;
+	static float z_coord = -100.f;
 
 	std::vector<GLfloat> coordsT(
 		{
@@ -171,8 +173,6 @@ int main(int argc, char** argv)
 	VAO_Test2.addBuffer(VBO_Coords);
 	VAO_Test2.addBuffer(VBO_Colors);
 
-
-
 	/*=================================================================================================================================================*/
 
 
@@ -198,8 +198,6 @@ int main(int argc, char** argv)
 	Render::VertexArray VAO_Filter;
 
 	VAO_Filter.addBuffer(VBO_Filter);
-
-
 
 	/*=================================================================================================================================================*/
 
@@ -253,6 +251,21 @@ int main(int argc, char** argv)
 
 	/*===============================================================================================================================================================================*/
 
+	Render::Renderer mainRenderer;
+
+	mainRenderer.begin(GL_TRIANGLES);
+
+	mainRenderer.verex3(0.f, 0.f,  -200.f);
+	mainRenderer.color4(255.f, 0.f, 0.f, 0.5f);
+
+	mainRenderer.verex3(200.f, 0.f,   -200.f);
+	mainRenderer.color4(255, 0, 0);
+
+	mainRenderer.verex3(100.f, 200.f, -200.f);
+	mainRenderer.color4(255, 0, 0);
+
+	mainRenderer.end();
+
 
 	//auto lastTime = std::chrono::high_resolution_clock::now();
 	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
@@ -277,20 +290,26 @@ int main(int argc, char** argv)
 
 
 		/*рисую две линии из одного ВБО*/
-		VAO_Test.bind();
+		//VAO_Test.bind();
 
-		glDrawArrays(GL_LINES, 0, 4);
+		//glDrawArrays(GL_LINES, 0, 4);
 
-		VAO_Test.unbind();
+		//VAO_Test.unbind();
 
 
 		/*рисую треугольник из двух ВБО (один под координаты, другой под цвет)*/
-		VAO_Test2.bind();
+		//VAO_Test2.bind();
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 
-		VAO_Test2.unbind();
+		//VAO_Test2.unbind();
 
+		/*===============DEBUG==============*/
+		/*треугольник из двух ВБО*/
+
+
+
+		/*===============DEBUG==============*/
 
 		/*рисую фильтр поверх всего*/
 		//VAO_Filter.bind();
@@ -298,6 +317,8 @@ int main(int argc, char** argv)
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		//VAO_Filter.unbind();
+
+		mainRenderer.drawArrays();
 
 		MainWindow.update(); // меняю буферы местами
 	}
