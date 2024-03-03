@@ -31,176 +31,20 @@ int main(int argc, char** argv)
 	if (!MainWindow.init())
 		return -1;
 
-
-	/*===============================================================================================================================================================================*/
-
-
 	// создание объекта ресурсного менеджера
 	ResourceManager resourceManager(argv[0]);
 
 	// создание шейдерной программы для отрисовки спрайтов
-	//auto pSpriteShaderProgram = resourceManager.loadShederProgram("SpriteShader", "res/shaders/spriteVertexShader.txt", "res/shaders/spriteFragmentShader.txt");
-	auto pDefaultSharedProgram = resourceManager.loadShederProgram("DefaultShader", "res/shaders/vertexShader.txt", "res/shaders/fragmentShader.txt");
-	if (/*(!pSpriteShaderProgram) ||*/ (!pDefaultSharedProgram))
+	auto pDefaultSharedProgram = resourceManager.loadShederProgram(
+																	"DefaultShader",
+																	"res/shaders/vertexShader.txt",
+																	"res/shaders/fragmentShader.txt"
+																  );
+	if ((!pDefaultSharedProgram))
 	{
 		std::cerr << "Can not create Shader Programm!" << std::endl;
 		return -1;
 	}
-
-
-	/*===============================================================================================================================================================================*/
-
-
-	///*загрузка в ресурсный менеджер текстурного атласа*/
-	//std::string athlName = "defaultTextureAtlas"; // имя под которым сохраянется текстурный атлас
-	//std::string athlPath = "res/textures/attack.png"; // расположение текстурного атласа
-	//unsigned int subTexWidth = 126; // ширина одной сабтекстуры из атласа
-	//unsigned int subTexHeight = 39; // высота одной сабтекстуры из атласа
-	//std::vector<std::string> subTextureNames = {               // имена каждой из сабтекстур
-	//	                                         "attack_0", 
-	//											 "attack_1", 
-	//											 "attack_2", 
-	//											 "attack_3", 
-	//											 "attack_4", 
-	//											 "attack_5",
-	//											 "attack_6",
-	//											 "attack_7" 
-	//                                           }; 
-	//auto pTextureAtlas = resourceManager.loadTextureAthlas2D(std::move(athlName), std::move(athlPath), std::move(subTextureNames), subTexWidth, subTexHeight);
-
-
-	/*===============================================================================================================================================================================*/
-
-
-	///*загрузка анимированного спрайта*/
-	//std::string spriteName = "attack"; // имя под которым будет сохранен анимированный спрайт
-	//athlName = "defaultTextureAtlas"; // используемый текстурный атлас
-	//std::string shaderName = "SpriteShader"; // используемый шейдер 
-	//unsigned int spriteWidth = 4 * subTexWidth; // ширина (в пикселях) спрайта на экране
-	//unsigned int spriteHeight = 4 * subTexHeight; // высоа (в пикселях) спрайта на экране
-	//std::string defaultState = "attack_0"; // сабтекстура устанавливаемая первой в анимации по умолчанию
-	//auto pAnimatedSprite = resourceManager.loadAnimatedSprite(std::move(spriteName), std::move(athlName), std::move(shaderName), spriteWidth, spriteHeight, std::move(defaultState));
-	//pAnimatedSprite->setSpritePosition(glm::vec2(MainWindow.getWidth() / 6, MainWindow.getHeight() / 2)); // установка позиции спрайта на экране
-	//
-	///*установка длительности каждого кадра при анимации*/
-	//std::vector<std::pair<std::string, size_t>> attackStates;
-	//size_t time = 100000000;
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_0", time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_1", 2 * time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_2", time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_3", time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_4", time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_5", 2 * time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_6", time));
-	//attackStates.emplace_back(std::pair<std::string, size_t>("attack_7", time));
-
-	//pAnimatedSprite->insertState("attackState", std::move(attackStates));
-	//pAnimatedSprite->setState("attackState");
-
-
-	/*===============================================================================================================================================================================*/
-
-
-
-	/*
-	* Пример 1:
-	* Использую один ВБО под координаты и цвет вершин.
-	* Отрисовываю две линии в форме креста
-	*/
-	/*координаты и цвет*/
-	std::vector<GLfloat> cordCol(
-									{
-										200.5f, 200.0f, 0.0f,   1.0f, 0.0f, 0.0f, 1.0f,
-										400.5f, 200.0f, 0.0f,   1.0f, 0.0f, 0.0f, 0.2f,
-										300.5f, 400.5f, 0.0f,   0.0f, 1.0f, 0.0f, 1.0f,
-										300.5f, 100.5f, 0.0f,   0.0f, 1.0f, 0.0f, 0.2f
-									}
-	                          );
-
-
-	std::vector<Render::VertexBuffer::BufferElement> elements{ Render::VertexBuffer::_e_DataType::Float3, Render::VertexBuffer::_e_DataType::Float4 };
-
-	Render::VertexBuffer VBO_Test(cordCol, elements, Render::VertexBuffer::_e_Usage::Static);
-	Render::VertexArray VAO_Test;
-
-	/*ВАО*/
-	VAO_Test.addBuffer(VBO_Test);
-
-
-	/*=================================================================================================================================================*/
-
-
-	/*
-	* Пример 2:
-	* Использую два ВБО: один под координаты, другой под цвет.
-	* Отрисовываю треугольник
-	*/
-	/*координаты*/
-	//std::vector<GLfloat> coordsT(
-	//								{
-	//									500.f, 400.f,   10.f,
-	//									600.f, 600.f,   10.f,
-	//									700.f, 400.f,   10.f
-	//								}
-	//                            );
-
-	static float z_coord = -100.f;
-
-	std::vector<GLfloat> coordsT(
-		{
-			  0.f,   0.f, z_coord,
-			200.f,   0.f, z_coord,
-			100.f, 200.f, z_coord
-		}
-	);
-
-	std::vector<Render::VertexBuffer::BufferElement> elementCoords{ Render::VertexBuffer::_e_DataType::Float3 };
-	Render::VertexBuffer VBO_Coords(coordsT, elementCoords, Render::VertexBuffer::_e_Usage::Static);
-
-	/*цвет*/
-	std::vector<GLfloat> colorsT(
-									{
-			                           1.0f, 0.0f, 0.0f, 0.5f,
-									   1.0f, 1.0f, 0.0f, 0.3f,
-									   1.0f, 0.0f, 1.0f, 0.1f
-		                            }
-	                            );
-	std::vector<Render::VertexBuffer::BufferElement> elementColors{ Render::VertexBuffer::_e_DataType::Float4 };
-	Render::VertexBuffer VBO_Colors(colorsT, elementColors, Render::VertexBuffer::_e_Usage::Static);
-
-	/*ВАО*/
-	Render::VertexArray VAO_Test2;
-	VAO_Test2.addBuffer(VBO_Coords);
-	VAO_Test2.addBuffer(VBO_Colors);
-
-	/*=================================================================================================================================================*/
-
-
-
-	/*ФИЛЬТР*/
-	std::vector<GLfloat> coordsColorsFilter(
-									{
-										0.0f,                                        0.0f,                                         0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
-										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
-										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     1.0f, 0.0f, 0.0f, 0.3f,
-
-
-
-										0.0f,                                        static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 0.0f, 1.0f, 0.3f,
-										static_cast<GLfloat>(MainWindow.getWidth()), static_cast<GLfloat>(MainWindow.getHeight()), 0.0f,     0.0f, 0.0f, 1.0f, 0.3f,
-										static_cast<GLfloat>(MainWindow.getWidth()), 0.0f,                                         0.0f,     0.0f, 0.0f, 1.0f, 0.3f
-									}
-								);
-
-	std::vector<Render::VertexBuffer::BufferElement> elementsFilter{ Render::VertexBuffer::_e_DataType::Float3, Render::VertexBuffer::_e_DataType::Float4 };
-	Render::VertexBuffer VBO_Filter(coordsColorsFilter, elementsFilter, Render::VertexBuffer::_e_Usage::Static);
-
-	Render::VertexArray VAO_Filter;
-
-	VAO_Filter.addBuffer(VBO_Filter);
-
-	/*=================================================================================================================================================*/
-
 
 
 	/*матрица проекции*/
@@ -213,23 +57,11 @@ int main(int argc, char** argv)
 	//                                       );
 
 
-	//float r = 0.1f /*1024.f / 2.f*/;
-	//float t = 0.1f /*768.f / 2.f*/;
-
-	//float n = 0.1f;
-	//float f = 10.f;
-	//glm::mat4 projectionMatrix = glm::mat4(
-	//										n / r,   0,                     0,  0,
-	//											0, n / t,                     0,  0,
-	//											0,   0,    (-f - n) / (f - n), -1,
-	//											0,   0,  -2 * f * n / (f - n),  1
-	//									  );
-
 
 	/*матрица модели*/
 	glm::mat4 modelMatrix(1.f);
 	/*??? поворот*/
-	const float ang_rad = glm::radians(0.f);
+	auto ang_rad = glm::radians(0.f);
 	modelMatrix = glm::rotate(modelMatrix, ang_rad, glm::vec3(1.0f, 0.0f, 0.0f));
 
 	/*матрица вида*/
@@ -237,10 +69,6 @@ int main(int argc, char** argv)
 	/*смещение камеры по Х*/
 	viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -3.0f));
 
-	// установка отрисовываемой текстуры для sprite шейдерной программы
-	//pSpriteShaderProgram->use();
-	//pSpriteShaderProgram->setTexUniform("tex", 0);
-	//pSpriteShaderProgram->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 
 	/*шейдерная программа для отрисовки GL примитивов*/
 	pDefaultSharedProgram->use();
@@ -249,78 +77,47 @@ int main(int argc, char** argv)
 	pDefaultSharedProgram->setMatrix4Uniform("viewMatrix", viewMatrix);
 
 
-	/*===============================================================================================================================================================================*/
-
+	/*задание координа с помощбю рендера*/
 	Render::Renderer mainRenderer;
+
+	const float zCoord = -400.f;
 
 	mainRenderer.begin(GL_TRIANGLES);
 
-	mainRenderer.verex3(0.f, 0.f,  -200.f);
+	mainRenderer.verex3(0.f, 0.f, zCoord);
 	mainRenderer.color4(255.f, 0.f, 0.f, 0.5f);
 
-	mainRenderer.verex3(200.f, 0.f,   -200.f);
+	mainRenderer.verex3(200.f, 0.f, zCoord);
 	mainRenderer.color4(255, 0, 0);
 
-	mainRenderer.verex3(100.f, 200.f, -200.f);
+	mainRenderer.verex3(100.f, 200.f, zCoord);
 	mainRenderer.color4(255, 0, 0);
 
 	mainRenderer.end();
 
-
-	//auto lastTime = std::chrono::high_resolution_clock::now();
-	// главный цикл отрисовки (рисуем пока главное окно не закрыто)
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // очищаю передний буфер
-
+		/*очищаю передний буфер*/
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glEnable(GL_DEPTH_TEST);
 
-		glEnable(GL_BLEND); // включаю режим смешивания
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // задаю дефолтные настройки смешивания
+		/*включаю режим смешивания*/
+		glEnable(GL_BLEND);
+		/*задаю дефолтные настройки смешивания*/
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		glLineWidth(10); // толщина линии отрисовки
-		glEnable(GL_LINE_SMOOTH); // линейное размытие пикселей
-
-		//pSpriteShaderProgram->use();
-		//auto currentTime = std::chrono::high_resolution_clock::now();
-		//uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
-		//lastTime = currentTime;
-		//pAnimatedSprite->update(duration); // обновляю состояние спрайта
-		//pAnimatedSprite->renderSprite(); // отрисовываю спрайт
+		/*толщина линии отрисовки*/
+		glLineWidth(10);
+		/*линейное размытие пикселей*/
+		glEnable(GL_LINE_SMOOTH);
 
 
-		/*рисую две линии из одного ВБО*/
-		//VAO_Test.bind();
-
-		//glDrawArrays(GL_LINES, 0, 4);
-
-		//VAO_Test.unbind();
-
-
-		/*рисую треугольник из двух ВБО (один под координаты, другой под цвет)*/
-		//VAO_Test2.bind();
-
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		//VAO_Test2.unbind();
-
-		/*===============DEBUG==============*/
-		/*треугольник из двух ВБО*/
-
-
-
-		/*===============DEBUG==============*/
-
-		/*рисую фильтр поверх всего*/
-		//VAO_Filter.bind();
-
-		//glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		//VAO_Filter.unbind();
-
+		/*отрисовка элементов*/
 		mainRenderer.drawArrays();
 
-		MainWindow.update(); // меняю буферы местами
+
+		/*меняю буферы местами (обновление окна)*/
+		MainWindow.update();
 	}
 	return 0;
 }
