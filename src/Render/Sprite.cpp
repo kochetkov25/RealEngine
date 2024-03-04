@@ -131,6 +131,9 @@ namespace Render{
 		
 		// деактивируем смешивание
 		glDisable(GL_BLEND);
+
+
+		/*DEBUG*/
 	}
 	void Sprite::setSpritePosition(const glm::vec2 &spritePosition)
 	{

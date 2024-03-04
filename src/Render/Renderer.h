@@ -13,6 +13,7 @@ namespace Render {
 	class Renderer
 	{
 	public:
+		/*конструктор*/
 		Renderer()
 		{
 			_elementsBuff.reserve(MAX_ELEMENTS);
@@ -40,10 +41,13 @@ namespace Render {
 			_elementsBuff.emplace_back(static_cast<float>(a));
 		}
 
+		/*начать задание примитивов*/
 		void begin(GLenum mode);
 
+		/*закончить задание примитивов*/
 		void end();
 
+		/*отрисовать все вершины*/
 		void drawArrays();
 	private:
 		/*буффер под вершины и цвета*/
@@ -54,9 +58,10 @@ namespace Render {
 															   VertexBuffer::_e_DataType::Float3,
 															   VertexBuffer::_e_DataType::Float4
 		                                                     };
-
+		/*текущий режим отрисовки*/
 		GLenum _currMode;
 
+		/*ВАО*/
 		VertexArray _VAO;
 	};
 }

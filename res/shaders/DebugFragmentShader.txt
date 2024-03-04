@@ -1,0 +1,26 @@
+#version 440
+out vec4 vertexColor;
+in vec2 texCoords;
+
+uniform sampler2D tex;
+
+void main() 
+{
+
+   vec2 uv = texCoords;
+
+   float borderWidth = 0.005;
+
+   if (
+       	uv.x < borderWidth || 
+       	uv.x > 1.0 - borderWidth 
+      ) 
+    {
+        vertexColor = vec4(1.0, 0.0, 0.0, 1.0);
+    } 
+   else 
+    {
+        vertexColor = texture(tex, texCoords) * vec4(1.0f, 1.0f, 1.0f, 0.3f);
+    }
+
+}

@@ -70,6 +70,7 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShederProgram(const 
 	auto isShaderProgramAdd = _shaderPrograms.emplace(shaderName, pNewShaderProgram);
 	return isShaderProgramAdd.first->second;
 }
+
 // функция возвращает указатель на шейдерную программу из map по имени программы
 std::shared_ptr<Render::ShaderProgram> ResourceManager::getShaderProgram(const std::string &shaderName)
 {
@@ -157,11 +158,13 @@ std::shared_ptr<Render::Sprite> ResourceManager::getSprite(const std::string &sp
 
 // данная функция загружает в мап текстуру, и в соответствии с вектором названий сабтекстур загружает 
 // в мап объекта Texture2D координаты сабтекстур
-std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(const std::string &texture2DName,
-	const std::string &texturePath,
-	std::vector<std::string> subTextureNames,
-	const unsigned int subTextureWidth,
-	const unsigned int subTextureHeight)
+std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(
+																			const std::string &texture2DName,
+																			const std::string &texturePath,
+																			std::vector<std::string> subTextureNames,
+																			const unsigned int subTextureWidth,
+																			const unsigned int subTextureHeight
+																	   )
 {
 	// загружаем текстуру в объект класса
 	auto pTexture = loadTexture2D(texture2DName, texturePath);
@@ -174,15 +177,18 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(const st
 		unsigned int currentTextureOffsetX = 0;
 		unsigned int currentTextureOffsetY = texturHeight;
 
+		/*отступ, чтобы избежать артефактов при отрисовке текстуры*/
+		const float margin = 0.01f;
+
 		// проходимся по всему массиву имен саб текстур и вычисляем координаты  
 		// нижнего левого угла и верхнего правого угла сабтекстуры
 		for (auto &currentSubtextureName : subTextureNames)
 		{
-			glm::vec2 leftBottomUV(static_cast<float>(currentTextureOffsetX) / textureWidth,
-								   static_cast<float>(currentTextureOffsetY - subTextureHeight) / texturHeight);
+			glm::vec2 leftBottomUV(static_cast<float>(currentTextureOffsetX + margin) / textureWidth,
+								   static_cast<float>(currentTextureOffsetY - subTextureHeight + margin) / texturHeight);
 
-			glm::vec2 rightTopUV(static_cast<float>(currentTextureOffsetX + subTextureWidth) / textureWidth,
-								 static_cast<float>(currentTextureOffsetY) / texturHeight);
+			glm::vec2 rightTopUV(static_cast<float>(currentTextureOffsetX + subTextureWidth - margin) / textureWidth,
+								 static_cast<float>(currentTextureOffsetY - margin) / texturHeight);
 
 			// после вычисления, добавляем в объект класса Texture2D имя сабтекстуры и координаты углов
 			pTexture->addSubTexture2D(currentSubtextureName, leftBottomUV, rightTopUV);
