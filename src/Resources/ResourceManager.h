@@ -27,11 +27,11 @@ public:
 	std::shared_ptr<Render::Texture2D> getTexture2D(const std::string &texture2DName);
 	// функция создает и загружает в ресурсный менеджер спрайт
 	std::shared_ptr<Render::Sprite> loadSprite(const std::string &spriteName,
-		const std::string &textureName,
-		const std::string &shaderProgramName,
-		const unsigned int spriteWidth,
-		const unsigned int spriteHeight,
-		const std::string& subTextureName = "default");
+											   const std::string &textureName,
+											   const std::string &shaderProgramName,
+											   const unsigned int spriteWidth,
+											   const unsigned int spriteHeight,
+											   const std::string& subTextureName = "default");
 	// функция возвращает указатель на загруженный спрайт по имени спрайта
 	std::shared_ptr<Render::Sprite> getSprite(const std::string &spriteName);
 	// данная функция загружает в мап текстуру, и в соответствии с вектором названий сабтекстур загружает 
@@ -44,15 +44,15 @@ public:
 
 
 
-	// загрузка анимированного спрайта (аналогична загрузке обычного спрайта)
-	std::shared_ptr<Render::AnimatedSprite> loadAnimatedSprite(const std::string &AnimatedSpriteName,
-		const std::string &textureName,
-		const std::string &shaderProgramName,
-		const unsigned int spriteWidth,
-		const unsigned int spriteHeight,
-		const std::string& subTextureName = "default");
-	// получить указатель на нужный анимированный спрайт.
-	std::shared_ptr<Render::AnimatedSprite> getAnimatedSprite(const std::string &AnimatedSpriteName);
+	//// загрузка анимированного спрайта (аналогична загрузке обычного спрайта)
+	//std::shared_ptr<Render::AnimatedSprite> loadAnimatedSprite(const std::string &AnimatedSpriteName,
+	//	const std::string &textureName,
+	//	const std::string &shaderProgramName,
+	//	const unsigned int spriteWidth,
+	//	const unsigned int spriteHeight,
+	//	const std::string& subTextureName = "default");
+	//// получить указатель на нужный анимированный спрайт.
+	//std::shared_ptr<Render::AnimatedSprite> getAnimatedSprite(const std::string &AnimatedSpriteName);
 
 private:
 	// функция возвращает все содержимое txt файла по пути относительно exe
@@ -71,9 +71,9 @@ private:
 	typedef std::map<const std::string, std::shared_ptr<Render::Sprite>> SpriteMap;
 	SpriteMap _spriteMaps;
 
-	// создаем псевдоним для мапа анимированных спрайтов
-	typedef std::map<const std::string, std::shared_ptr<Render::AnimatedSprite>> AnimatedSpriteMap;
-	AnimatedSpriteMap _AnimatedSpriteMaps;
+	//// создаем псевдоним для мапа анимированных спрайтов
+	//typedef std::map<const std::string, std::shared_ptr<Render::AnimatedSprite>> AnimatedSpriteMap;
+	//AnimatedSpriteMap _AnimatedSpriteMaps;
 
 
 	// путь до папки с ресурсами

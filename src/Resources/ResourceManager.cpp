@@ -209,35 +209,35 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(
 
 
 
-std::shared_ptr<Render::AnimatedSprite> ResourceManager::loadAnimatedSprite(const std::string &AnimatedSpriteName,
-	const std::string &textureName,
-	const std::string &shaderProgramName,
-	const unsigned int spriteWidth,
-	const unsigned int spriteHeight,
-	const std::string& subTextureName)
-{
-	auto pTexture = getTexture2D(textureName);
-	if (!pTexture){
-		std::cerr << "Texture with this name can not be found (source: ResourceManager): " << textureName << std::endl;
-		return nullptr;
-	}
-
-	auto pShaderProgram = getShaderProgram(shaderProgramName);
-	if (!pShaderProgram){
-		std::cerr << "Shader program with this name can not be found (source: ResourceManager): " << shaderProgramName << std::endl;
-	}
-
-	std::shared_ptr<Render::AnimatedSprite> pNewAnimatedSprite = std::make_shared<Render::AnimatedSprite>(pTexture, subTextureName, pShaderProgram, glm::vec2(0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
-	auto isNewSpriteAdd = _AnimatedSpriteMaps.emplace(AnimatedSpriteName, pNewAnimatedSprite);
-	return isNewSpriteAdd.first->second;
-}
-
-std::shared_ptr<Render::AnimatedSprite> ResourceManager::getAnimatedSprite(const std::string &AnimatedSpriteName)
-{
-	AnimatedSpriteMap::const_iterator it = _AnimatedSpriteMaps.find(AnimatedSpriteName);
-	if (it != _AnimatedSpriteMaps.end()){
-		return it->second;
-	}
-	std::cerr << "Can not find animated sprite (source: ResourceManager): " << AnimatedSpriteName << std::endl;
-	return nullptr;
-}
+//std::shared_ptr<Render::AnimatedSprite> ResourceManager::loadAnimatedSprite(const std::string &AnimatedSpriteName,
+//	const std::string &textureName,
+//	const std::string &shaderProgramName,
+//	const unsigned int spriteWidth,
+//	const unsigned int spriteHeight,
+//	const std::string& subTextureName)
+//{
+//	auto pTexture = getTexture2D(textureName);
+//	if (!pTexture){
+//		std::cerr << "Texture with this name can not be found (source: ResourceManager): " << textureName << std::endl;
+//		return nullptr;
+//	}
+//
+//	auto pShaderProgram = getShaderProgram(shaderProgramName);
+//	if (!pShaderProgram){
+//		std::cerr << "Shader program with this name can not be found (source: ResourceManager): " << shaderProgramName << std::endl;
+//	}
+//
+//	std::shared_ptr<Render::AnimatedSprite> pNewAnimatedSprite = std::make_shared<Render::AnimatedSprite>(pTexture, subTextureName, pShaderProgram, glm::vec2(0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
+//	auto isNewSpriteAdd = _AnimatedSpriteMaps.emplace(AnimatedSpriteName, pNewAnimatedSprite);
+//	return isNewSpriteAdd.first->second;
+//}
+//
+//std::shared_ptr<Render::AnimatedSprite> ResourceManager::getAnimatedSprite(const std::string &AnimatedSpriteName)
+//{
+//	AnimatedSpriteMap::const_iterator it = _AnimatedSpriteMaps.find(AnimatedSpriteName);
+//	if (it != _AnimatedSpriteMaps.end()){
+//		return it->second;
+//	}
+//	std::cerr << "Can not find animated sprite (source: ResourceManager): " << AnimatedSpriteName << std::endl;
+//	return nullptr;
+//}

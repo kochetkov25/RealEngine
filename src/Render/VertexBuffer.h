@@ -50,7 +50,8 @@ namespace Render
 		/*конструктор и инициализация*/
 		template <typename _T>
 		VertexBuffer(const std::vector<_T>& data, std::vector<BufferElement>& elements, _e_Usage usage = _e_Usage::Static) :
-			_elements(std::move(elements))
+			_elements(std::move(elements)),
+			_usage(usage)
 		{
 			size_t offset = 0;
 			/*вычисление параметров элементов*/
@@ -67,6 +68,14 @@ namespace Render
 			glBindBuffer(GL_ARRAY_BUFFER, _id); // делаю буффер активным
 			/*размер данных передается в битах*/
 			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(_T), data.data(), getGLenum(usage)); // перемещаю в него данные о вершинах
+		}
+
+		/*обновление данных в буффере*/
+		template <typename _T>
+		void updateData(const std::vector<_T>& data)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, _id);
+			glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(_T), data.data(), getGLenum(_usage));
 		}
 
 		/*деструктор*/
@@ -93,6 +102,7 @@ namespace Render
 		std::vector<BufferElement> _elements;
 		/*смещение: длина в битах всех атрибутов ОДНОЙ вершины (Например: x, y, z, r, g, b, a)*/
 		size_t _stride = 0;
+		_e_Usage _usage;
 
 		GLenum getGLenum(const _e_Usage usage);
 

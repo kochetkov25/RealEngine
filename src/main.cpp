@@ -54,63 +54,15 @@ int main(int argc, char** argv)
 										"res/shaders/DebugFragmentShader.txt"
 									 );
 
-	/*загрузка текстурного атласа*/
-	std::string athlName = "defaultTextureAtlas";
-	std::string athlPath = "res/textures/attack.png";
-	unsigned int subTexWidth = 126;
-	unsigned int subTexHeight = 39;
-	std::vector<std::string> subTextureNames = {     
-													"attack_0",
-													"attack_1",
-													"attack_2",
-													"attack_3",
-													"attack_4",
-													"attack_5",
-													"attack_6",
-													"attack_7"
-											   };
-	resourceManager.loadTextureAthlas2D(                     
-											std::move(athlName),
-											std::move(athlPath),
-											std::move(subTextureNames),
-											subTexWidth,
-											subTexHeight
-									   );
+	std::string shaderName = "SpriteShader";
 
-	/*загрузка анимированного спрайта*/
-	std::string spriteName = "attack";
-	/* !!! */
-	std::string shaderName = "DebugShader";
-	/* !!! */
-	unsigned int spriteWidth = 4 * subTexWidth;
-	unsigned int spriteHeight = 4 * subTexHeight;
-	std::string defaultState = "attack_0";
-	resourceManager.loadAnimatedSprite(
-										std::move(spriteName),
-										std::move(athlName),
-										std::move(shaderName),
-										spriteWidth,
-										spriteHeight,
-										std::move(defaultState)
-									  );
 
-	/*задание длительности каждой текстуры*/
-	std::vector<std::pair<std::string, size_t>> attackStates;
-	size_t time = 100000000;
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_0", time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_1", 2 * time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_2", time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_3", time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_4", time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_5", 2 * time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_6", time));
-	attackStates.emplace_back(std::pair<std::string, size_t>("attack_7", time));
 
-	auto pAnimSprite = resourceManager.getAnimatedSprite("attack");
-	pAnimSprite->insertState("attackState", std::move(attackStates));
-	pAnimSprite->setState("attackState");
+	resourceManager.loadTexture2D("TestTex", "res/textures/firstTex.png");
+	resourceManager.loadSprite("TestSprite", "TestTex", "SpriteShader", 500, 500);
+	auto TestSprite = resourceManager.getSprite("TestSprite");
+	TestSprite->setSpritePosition(glm::vec2(0, 0));
 
-	pAnimSprite->setSpritePosition(glm::vec2(0.f, 0.f));
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -171,21 +123,12 @@ int main(int argc, char** argv)
 	/*линейное размытие пикселей*/
 	glEnable(GL_LINE_SMOOTH);
 
-	/*таймер*/
-	auto lastTime = std::chrono::high_resolution_clock::now();
-
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		pShaderProg->use();
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
-		lastTime = currentTime;
-		pAnimSprite->update(duration);
-		pAnimSprite->renderSprite();
-
+		TestSprite->renderSprite();
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();

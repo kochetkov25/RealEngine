@@ -9,6 +9,8 @@
 #include "Sprite.h"
 
 namespace Render{
+
+
 	/*
 	* создание спрайта.
 	* Текстура - просто загрузка изображения в видеопамять
@@ -22,77 +24,65 @@ namespace Render{
 				   const glm::vec2 &spriteSize,
 				   const float rotation)
 	{
-		// установка входных параметров
+		/* установка входных параметров*/
 		_pShaderProgram = std::move(pShaderProgram);
 		_pTexture2D = std::move(pTexture2D);
 		_position = spritePosition;
 		_size = spriteSize;
 		_rotation = rotation;
 
-		// координаты спрайта от 0 до 1
-		const GLfloat spriteVertexCoords[] = {
-			//  2--3    1
-			//  | /   / |
-			//  1    3--2
+		/*координаты спрайта от 0 до 1*/
+		std::vector<GLfloat> spriteVertexCoords(
+													{
+														//  2--3    1
+														//  | /   / |
+														//  1    3--2
 
-			// первый треугольник
-			0.f, 0.f,
-			0.f, 1.f,
-			1.f,1.f,
-			// второй треугольник
-			1.f,1.f,
-			1.f,0.f,
-			0.f,0.f
-		};
+														// первый треугольник
+														0.f, 0.f,
+														0.f, 1.f,
+														1.f,1.f,
+														// второй треугольник
+														1.f,1.f,
+														1.f,0.f,
+														0.f,0.f
+													}
+											  );
 
-		// !!! ТОНКИЙ МОМЕНТ !!! функция ниже, вернет сабтекстуру по имени, если таковая есть.
-		// если такой сабтекстуры нет, будет возвращена вся текстура, что позовляет создавать как спрайты целых текстур, так и спрайты сабтекстур
+		/*получение текстуры*/
 		auto subTexture = _pTexture2D->getSubTexture2D(subTextureName);
 
-		// координаты текстуры от 0 до 1
-		const GLfloat textureVertexCoords[] = {
-			// первый треугольник
-			subTexture._leftBottomUV.x, subTexture._leftBottomUV.y,
-			subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
-			subTexture._rightTopUV.x, subTexture._rightTopUV.y,
-			// второй треугольник
-			subTexture._rightTopUV.x, subTexture._rightTopUV.y,
-			subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
-			subTexture._leftBottomUV.x, subTexture._leftBottomUV.y
-		};
-		// создаем объект вершинного массива
-		glGenVertexArrays(1, &_VAO);
-		glBindVertexArray(_VAO);
+		/*координаты текстуры от 0 до 1*/
+		std::vector<GLfloat> textureVertexCoords(
+													{
+														// первый треугольник
+														subTexture._leftBottomUV.x, subTexture._leftBottomUV.y,
+														subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
+														subTexture._rightTopUV.x, subTexture._rightTopUV.y,
+														// второй треугольник
+														subTexture._rightTopUV.x, subTexture._rightTopUV.y,
+														subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
+														subTexture._leftBottomUV.x, subTexture._leftBottomUV.y
+													}
+											    );
 
-		// процесс создания буффера для координат вершин спрайта
-		glGenBuffers(1, &_spriteVertexCoordsVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, _spriteVertexCoordsVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(spriteVertexCoords), &spriteVertexCoords, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+		std::vector<VertexBuffer::BufferElement> elementsSprite{ Render::VertexBuffer::_e_DataType::Float2 };
+		VertexBuffer spriteCoordsVBO(spriteVertexCoords, elementsSprite, VertexBuffer::_e_Usage::Static);
+		_VAO.addBuffer(spriteCoordsVBO);
 
-		// процесс создания буффера для координат вершин текстуры
-		glGenBuffers(1, &_textureVertexCoordsVBO);
-		glBindBuffer(GL_ARRAY_BUFFER, _textureVertexCoordsVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(textureVertexCoords), &textureVertexCoords, GL_STATIC_DRAW);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-
-		// отвязываем буфферы и оставляем контекст OpenGl в нулевом положении
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
+		std::vector<VertexBuffer::BufferElement> elementsTex{ Render::VertexBuffer::_e_DataType::Float2 };
+		_pTexVertexVBO = std::make_shared<VertexBuffer>(textureVertexCoords, elementsTex, VertexBuffer::_e_Usage::Static);
+		_VAO.addBuffer(*_pTexVertexVBO.get());
 	}
 
 	/*============================================================*/
+	/*деструктор*/
 	Sprite::~Sprite()
 	{
-		// осовобождаем память видеокарты
-		glDeleteBuffers(1, &_spriteVertexCoordsVBO);
-		glDeleteBuffers(1, &_textureVertexCoordsVBO);
-		glDeleteVertexArrays(1, &_VAO);
 	}
 
 	/*============================================================*/
+	/*отрисовка спрайта*/
 	void Sprite::renderSprite()
 	{
 		_pShaderProgram->use();
@@ -100,8 +90,11 @@ namespace Render{
 		// модельная матрица
 		glm::mat4 modelMatrix(1.f);
 
-		// поскольку результат перемножения матриц выполняется в обратном порядке
-		// следующие комментариис следует читать снизу вверх
+		/*
+		* поскольку результат перемножения матриц 
+		* выполняется в обратном порядке (лин. ал.)
+		* следующие комментарии следует читать снизу вверх
+		*/
 
 		// перемещаем спрайт в нужную нам точку мировой ск
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(_position, 0.f));
@@ -116,7 +109,7 @@ namespace Render{
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(_size, 1.f));
 
 
-		glBindVertexArray(_VAO);
+		_VAO.bind();
 		// устанавливаем модельную матрицу
 		_pShaderProgram->setMatrix4Uniform("modelMatrix", modelMatrix);
 		// активируем нулевой слот для текстур
@@ -133,7 +126,7 @@ namespace Render{
 		// отрисовываем спрайт
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		// отвязываем объект вершинного массива
-		glBindVertexArray(0);
+		_VAO.unbind();
 		
 		// деактивируем смешивание
 		glDisable(GL_BLEND);
@@ -156,4 +149,21 @@ namespace Render{
 	{
 		_rotation = rotation;
 	}
+
+	///*============================================================*/
+	//uint64_t Sprite::getFrameDuration(const size_t frameID) const
+	//{
+	//	if (frameID < _frameParams.size())
+	//		return _frameParams[frameID]._duration;
+
+	//	std::cerr << "sprite with this ID does not exist." << std::endl;
+	//	return 0;
+	//}
+
+	///*============================================================*/
+	//size_t Sprite::getFramesCount() const
+	//{
+	//	return _frameParams.size();
+	//}
+
 }
