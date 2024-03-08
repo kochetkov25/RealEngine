@@ -1,14 +1,26 @@
+/*
+**  File        :	Texture2D.cpp
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
+
 #include "Texture2D.h"
 
-namespace Render{
-	// загрузка текстуры в видеопамять для работы с ней в OpenGl.
-	// !!! в данный конструктор передается массив байтов, который был загружен в программу в ресурс менеджере,
-	// с помощью данного конструктора задаются все необходимые параметры контекста OpenGL для работы с текстурой,
-	// а также массив байтов текстуры загружается в видеопамять
-	Texture2D::Texture2D(const GLuint width, const GLuint height, const unsigned char *textureData,
-		const unsigned int channels,
-		const GLenum filter,
-		const GLenum wrapMode)
+namespace Render
+{
+	/*
+	* загрузка текстуры в видеопамять для работы с ней в OpenGl.
+	* В данный конструктор передается массив байт изображения,
+	* для создания и отрисовки текстуры
+	*/
+	/*============================================================*/
+	Texture2D::Texture2D(const GLuint width, const GLuint height, 
+		                 const unsigned char *textureData,
+					     const unsigned int channels,
+		                 const GLenum filter,
+						 const GLenum wrapMode)
 	{
 		_height = height;
 		_width = width;
@@ -45,26 +57,35 @@ namespace Render{
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+	/*============================================================*/
 	Texture2D::~Texture2D()
 	{
 		// освобождение ресурсов видеопамяти
 		glDeleteTextures(1, &_ID);
 	}
 
+	/*============================================================*/
 	// делаем текущую текстуру активной
 	void Texture2D::bindTexture2D()
 	{
 		glBindTexture(GL_TEXTURE_2D, _ID);
 	}
 	
+	/*============================================================*/
 	// добавление текстуры из текстурного атласа
-	void Texture2D::addSubTexture2D(std::string textureName, const glm::vec2 &leftBottomUV, const glm::vec2 &rightTopUV)
+	void Texture2D::addSubTexture2D(std::string textureName, 
+									const glm::vec2 &leftBottomUV, 
+									const glm::vec2 &rightTopUV)
 	{
 		_subTextures2Dmap.emplace(textureName, subTexture2D(leftBottomUV, rightTopUV));
 	}
 
-	// функция возвращает текстуру из текстурного атласа. Если текстура не найдена
-	// возвращается вся текстура текстурного атласа целиком
+	/*============================================================*/
+	/*
+	* функция возвращает текстуру из текстурного атласа. 
+	* Если текстура не найдена возвращается вся 
+	* текстура текстурного атласа целиком
+	*/
 	Texture2D::subTexture2D& Texture2D::getSubTexture2D(const std::string &textureName)
 	{
 		auto it = _subTextures2Dmap.find(textureName);

@@ -1,22 +1,26 @@
-#include "Sprite.h"
-#include "ShaderProgram.h"
-#include "Texture2D.h"
-#include "glm\mat4x4.hpp"
-#include "glm\gtc\matrix_transform.hpp"
+/*
+**  File        :	Sprite.cpp
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
 
-#include <string>
+#include "Sprite.h"
 
 namespace Render{
-
-	// создание спрайта.
-	// “екстура - просто загрузка изображени€ в видеопам€ть
-	// —прайт - настройка и отрисовка уже готового изображени€
+	/*
+	* создание спрайта.
+	* “екстура - просто загрузка изображени€ в видеопам€ть
+	* —прайт - настройка и отрисовка уже готового изображени€
+	*/
+	/*============================================================*/
 	Sprite::Sprite(const std::shared_ptr<Texture2D> pTexture2D,
-		const std::string subTextureName,
-		const std::shared_ptr<ShaderProgram> pShaderProgram,
-		const glm::vec2 &spritePosition,
-		const glm::vec2 &spriteSize,
-		const float rotation)
+				   const std::string subTextureName,
+				   const std::shared_ptr<ShaderProgram> pShaderProgram,
+				   const glm::vec2 &spritePosition,
+				   const glm::vec2 &spriteSize,
+				   const float rotation)
 	{
 		// установка входных параметров
 		_pShaderProgram = std::move(pShaderProgram);
@@ -79,6 +83,7 @@ namespace Render{
 		glBindVertexArray(0);
 	}
 
+	/*============================================================*/
 	Sprite::~Sprite()
 	{
 		// осовобождаем пам€ть видеокарты
@@ -87,6 +92,7 @@ namespace Render{
 		glDeleteVertexArrays(1, &_VAO);
 	}
 
+	/*============================================================*/
 	void Sprite::renderSprite()
 	{
 		_pShaderProgram->use();
@@ -131,18 +137,21 @@ namespace Render{
 		
 		// деактивируем смешивание
 		glDisable(GL_BLEND);
-
-
-		/*DEBUG*/
 	}
+
+	/*============================================================*/
 	void Sprite::setSpritePosition(const glm::vec2 &spritePosition)
 	{
 		_position = spritePosition;
 	}
+
+	/*============================================================*/
 	void Sprite::setSpriteSize(const glm::vec2 &spriteSize)
 	{
 		_size = spriteSize;
 	}
+
+	/*============================================================*/
 	void Sprite::setSpriteRotation(const float rotation)
 	{
 		_rotation = rotation;

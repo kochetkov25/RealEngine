@@ -1,3 +1,11 @@
+/*
+**  File        :	Window.h
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
+
 #pragma once
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

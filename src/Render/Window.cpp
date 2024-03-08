@@ -1,3 +1,11 @@
+/*
+**  File        :	Window.cpp
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
+
 #include "Window.h"
 
 namespace Render

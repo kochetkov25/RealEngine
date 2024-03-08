@@ -1,9 +1,18 @@
+/*
+**  File        :	ShaderProgram.cpp
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
+
 #include "ShaderProgram.h"
-#include <glm\gtc\type_ptr.hpp>
 
 namespace Render{
+	/*============================================================*/
 	// конструктор класса
-	ShaderProgram::ShaderProgram(const std::string &vertexShader, const std::string &fragmentShader)
+	ShaderProgram::ShaderProgram(const std::string &vertexShader, 
+							     const std::string &fragmentShader)
 	{
 		// создаем вершинный шейдер
 		GLuint vertexShaderID;
@@ -46,13 +55,16 @@ namespace Render{
 		glDeleteShader(fragmentShaderID);
 	}
 
+	/*============================================================*/
 	ShaderProgram::~ShaderProgram(){
 		// в деструкторе удаляем ресурсы шейдерной программы
 		glDeleteProgram(_ID);
 	}
 	
+	/*============================================================*/
 	// создание нужного шейдера
-	bool ShaderProgram::createShader(const std::string &shaderSource, const GLenum shaderType, GLuint &shaderID)
+	bool ShaderProgram::createShader(const std::string &shaderSource, 
+									 const GLenum shaderType, GLuint &shaderID)
 	{
 		// создание шейдера по переданному имени шейдера
 		shaderID = glCreateShader(shaderType);
@@ -72,18 +84,23 @@ namespace Render{
 		return true;
 	}
 
+	/*============================================================*/
 	// задание использования шейдерной программы
 	void ShaderProgram::use()const
 	{
 		glUseProgram(_ID);
 	}
+
+	/*============================================================*/
 	// устанавливаем униформ значение для текстуры. value это слот в который записана текстура
 	void ShaderProgram::setTexUniform(const std::string &textureName, const GLint value)
 	{
 		glUniform1i(glGetUniformLocation(_ID, textureName.c_str()), value);
 	}
 
-	void ShaderProgram::setMatrix4Uniform(const std::string &matrixName, const glm::mat4 &matrix)
+	/*============================================================*/
+	void ShaderProgram::setMatrix4Uniform(const std::string &matrixName, 
+									      const glm::mat4 &matrix)
 	{
 		glUniformMatrix4fv(glGetUniformLocation(_ID, matrixName.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}

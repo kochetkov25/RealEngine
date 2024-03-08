@@ -1,7 +1,17 @@
+/*
+**  File        :	ShaderProgram.h
+**  Authors     :   Kochetkov K.I.
+**  Created on  :   08.03.2024
+**  Modified on :   08.03.2024
+**  Description :
+*/
+
 #pragma once
 #include <glad\glad.h>
-#include <iostream>
 #include <glm\mat4x4.hpp>
+#include <glm\gtc\type_ptr.hpp>
+
+#include <iostream>
 
 namespace Render{
 	class ShaderProgram{
