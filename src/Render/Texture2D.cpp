@@ -10,22 +10,27 @@
 
 namespace Render
 {
+
+
+	/*============================================================*/
 	/*
 	* загрузка текстуры в видеопамять для работы с ней в OpenGl.
 	* В данный конструктор передается массив байт изображения,
 	* для создания и отрисовки текстуры
 	*/
-	/*============================================================*/
-	Texture2D::Texture2D(const GLuint width, const GLuint height, 
-		                 const unsigned char *textureData,
-					     const unsigned int channels,
-		                 const GLenum filter,
-						 const GLenum wrapMode)
+	Texture2D::Texture2D(
+							 const GLuint width, 
+		                     const GLuint height, 
+							 const unsigned char *textureData,
+							 const unsigned int channels,
+							 const GLenum filter,
+							 const GLenum wrapMode
+						)
 	{
 		_height = height;
 		_width = width;
 
-		// установка кол-ва каналов текстуры
+		/*установка кол-ва каналов текстуры*/
 		switch (channels){
 		case 4:
 			_mode = GL_RGBA;
@@ -37,45 +42,53 @@ namespace Render
 			_mode = GL_RGBA;
 			break;
 		}
-		// создание id текстуры
+		/*создание id текстуры*/
 		glGenTextures(1, &_ID);
-		// в OpenGL поддерживается до 16 слотов под текстуры. Для загрузки текстуры делаем активным нулевой слот
+		/*
+		* в OpenGL поддерживается до 16 слотов под текстуры.
+		* Для загрузки текстуры делаем активным нулевой слот
+		*/
 		glActiveTexture(GL_TEXTURE0);
-		// привязка текстуры к слоту (2д текстура) (явно указываем, что мы будем работать с 2д текстурой)
+		/*
+		* привязка текстуры к слоту (2д текстура)
+		* (явно указываем, что мы будем работать с 2д текстурой)
+		*/
 		glBindTexture(GL_TEXTURE_2D, _ID);
-		// задание параметров текстуры
+		/*задание параметров текстуры*/
 		glTexImage2D(GL_TEXTURE_2D, 0, _mode, _width, _height, 0, _mode, GL_UNSIGNED_BYTE, textureData);
-		// установка параметров для фильтрации текстуры 
+		/*установка параметров для фильтрации текстуры */
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
-		// установка параметров для мипмапов
+		/*установка параметров для мипмапов*/
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
-		// генерация мипмап текстуры
+		/*генерация мипмап текстуры*/
 		glGenerateMipmap(GL_TEXTURE_2D);
-		// отвязка текстуры от слота (чтобы не создавать путаницу) 
+		/*отвязка текстуры от слота (чтобы не создавать путаницу)*/
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	/*============================================================*/
+	/*освобождение ресурсов видеопамяти*/
 	Texture2D::~Texture2D()
 	{
-		// освобождение ресурсов видеопамяти
 		glDeleteTextures(1, &_ID);
 	}
 
 	/*============================================================*/
-	// делаем текущую текстуру активной
+	/*делаем текущую текстуру активной*/
 	void Texture2D::bindTexture2D()
 	{
 		glBindTexture(GL_TEXTURE_2D, _ID);
 	}
 	
 	/*============================================================*/
-	// добавление текстуры из текстурного атласа
-	void Texture2D::addSubTexture2D(std::string textureName, 
-									const glm::vec2 &leftBottomUV, 
-									const glm::vec2 &rightTopUV)
+	/*добавление текстуры из текстурного атласа*/
+	void Texture2D::addSubTexture2D(
+										std::string textureName, 
+										const glm::vec2 &leftBottomUV, 
+										const glm::vec2 &rightTopUV
+								   )
 	{
 		_subTextures2Dmap.emplace(textureName, subTexture2D(leftBottomUV, rightTopUV));
 	}
@@ -96,4 +109,6 @@ namespace Render
 		static subTexture2D defTexture2D;
 		return defTexture2D;
 	}
+
+
 }

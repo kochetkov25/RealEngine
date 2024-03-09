@@ -13,29 +13,43 @@
 
 #include <iostream>
 
-namespace Render{
+namespace Render
+{
+
+
 	class ShaderProgram{
 	public:
-		// конструктор принимает на вход две си строки с кодом шейдеров и компилирует
-		// шейдерную программу.
+		/*конструктор. компилирует шейдерную программу*/
 		ShaderProgram(const std::string &vertexShader, const std::string &fragmentShader);
+
+		/*деструктор*/
 		~ShaderProgram();
-		// возвращает результат компил€ции шейдерной программы
+
+		/*результат компил€ции шейдерной программы*/
 		bool isCompiled() const { return _isCompiled; }
-		// устанавливает контексту OpenGL использование шейдерной программы
+
+		/*устанавливает контексту OpenGL использование шейдерной программы*/
 		void use() const;
-		// устанавливаем униформ значение дл€ текстуры.
+
+		/*установить uniform значение дл€ текстуры*/
 		void setTexUniform(const std::string &textureName, const GLint value);
+
+		/*утсановить значение uniform mat4*/
 		void setMatrix4Uniform(const std::string &matrixName, const glm::mat4 &matrix);
-		// возвращает идентификатор шейдерной программы
+
+		/*идентификатор шейдерной программы*/
 		GLuint getShaderProgramID() { return _ID; }
 
 	private:
-		// создает шейдер
+		/*создание шейдера*/
 		bool createShader(const std::string &shaderSource, const GLenum shaderType, GLuint &shaderID);
-		// статус компил€ции шейдерной программы
+
+		/*статус компил€ции шейдерной программы*/
 		bool _isCompiled = false;
-		// идентификатор шейдерной программы
+
+		/* идентификатор шейдерной программы*/
 		GLuint _ID = 0;
 	};
+
+
 }

@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	unsigned int subTexWidth = 126; 				  // width of subtex
 	unsigned int subTexHeight = 39; 				  // height of subtex
 
-	std::vector<std::string> subTextureNames = {      // names of every subtex
+	std::vector<std::string> subTextNames = {      // names of every subtex
 												 "attack_0",
 												 "attack_1",
 												 "attack_2",
@@ -73,19 +73,43 @@ int main(int argc, char** argv)
 												 "attack_5",
 												 "attack_6",
 												 "attack_7"
-											   };
-	resourceManager.loadTextureAthlas2D( // load tex athlas into resourceManager
+										   };
+	/*duration of every frame is 100000000 msec*/
+	std::vector<std::pair<std::string, uint64_t>> FramesDurations;
+	for (auto& name : subTextNames)
+		FramesDurations.emplace_back(std::pair<std::string, uint64_t>(name, 100000000));
+	/*load tex athlas into resourceManager*/
+	resourceManager.loadTextureAthlas2D(
 										std::move(athlName),
 										std::move(athlPath),
-										std::move(subTextureNames),
+										std::move(subTextNames),
 										subTexWidth,
 										subTexHeight
 									   );
-
-	//resourceManager.loadTexture2D("TestTex", "res/textures/firstTex.png");
-	resourceManager.loadSprite("TestSprite", "defaultTextureAtlas", "SpriteShader", 500, 500);
+	/*load sprite into res manager*/
+	resourceManager.loadSprite(
+								"TestSprite", 
+								"defaultTextureAtlas", 
+								shaderName,
+								250, 100
+							  );
 	auto TestSprite = resourceManager.getSprite("TestSprite");
-	TestSprite->setSpritePosition(glm::vec2(0, 0));
+	TestSprite->setAnimParams(FramesDurations);
+	TestSprite->setSpritePosition(glm::vec2(0, -300));
+
+	/*anim sprite*/
+	Render::AnimatedSprite TestAnim(TestSprite);
+
+	/*static tex*/
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/firstTex.png");
+	resourceManager.loadSprite(
+								"SqrSprite",
+								"ColoredSqr",
+								shaderName,
+								100, 100
+							);
+	auto SqrSprite = resourceManager.getSprite("SqrSprite");
+	SqrSprite->setSpritePosition(glm::vec2(0.f, 0.f));
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -146,12 +170,20 @@ int main(int argc, char** argv)
 	/*линейное размытие пикселей*/
 	glEnable(GL_LINE_SMOOTH);
 
+	auto lastTime = std::chrono::high_resolution_clock::now();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		TestSprite->renderSprite();
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
+		lastTime = currentTime;
+
+		TestAnim.update(duration);
+		TestAnim.render();
+
+		SqrSprite->renderSprite();
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();

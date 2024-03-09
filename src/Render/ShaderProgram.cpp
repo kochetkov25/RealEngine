@@ -8,20 +8,25 @@
 
 #include "ShaderProgram.h"
 
-namespace Render{
+namespace Render
+{
+
+
 	/*============================================================*/
-	// конструктор класса
-	ShaderProgram::ShaderProgram(const std::string &vertexShader, 
-							     const std::string &fragmentShader)
+	/*конструктор. компилирует шейдерную программу*/
+	ShaderProgram::ShaderProgram(
+									 const std::string &vertexShader, 
+									 const std::string &fragmentShader
+								)
 	{
-		// создаем вершинный шейдер
+		/*создаем вершинный шейдер*/
 		GLuint vertexShaderID;
 		if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)){
 			std::cerr << "Error compile VERTEX SHADER. (source: ShaderProgram)" << std::endl;
 			return;
 		}
 
-		// создаем фрагментный шейдер
+		/*создаем фрагментный шейдер*/
 		GLuint fragmentShaderID;
 		if (!createShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderID)){
 			std::cerr << "Error compile FRAGMENT SHADER. (source: ShaderProgram)" << std::endl;
@@ -30,13 +35,13 @@ namespace Render{
 			return;
 		}
 
-		// соединяем шейдеры в шейдерную программу
+		/*соединяем шейдеры в шейдерную программу*/
 		_ID = glCreateProgram();
 		glAttachShader(_ID, vertexShaderID);
 		glAttachShader(_ID, fragmentShaderID);
 		glLinkProgram(_ID);
 
-		// проверка ошибок линковки шейдерной программы
+		/*проверка ошибок линковки шейдерной программы*/
 		GLint isSuccessLink;
 		glGetProgramiv(_ID,GL_LINK_STATUS,&isSuccessLink);
 		if (!isSuccessLink){
@@ -46,33 +51,37 @@ namespace Render{
 		}
 		else
 		{
-			// при успешной линковке устанавливаем флаг true
+			/*компиляция прошла успешно*/
 			_isCompiled = true;
 		}
 
-		// освобождение ресурсов под шейдеры
+		/*освобождение ресурсов под шейдеры*/
 		glDeleteShader(vertexShaderID);
 		glDeleteShader(fragmentShaderID);
 	}
 
 	/*============================================================*/
-	ShaderProgram::~ShaderProgram(){
-		// в деструкторе удаляем ресурсы шейдерной программы
+	/*в деструкторе удаляем ресурсы шейдерной программы*/
+	ShaderProgram::~ShaderProgram()
+	{
 		glDeleteProgram(_ID);
 	}
 	
 	/*============================================================*/
-	// создание нужного шейдера
-	bool ShaderProgram::createShader(const std::string &shaderSource, 
-									 const GLenum shaderType, GLuint &shaderID)
+	/*создание шейдера*/
+	bool ShaderProgram::createShader(
+										 const std::string &shaderSource, 
+										 const GLenum shaderType, 
+										 GLuint &shaderID
+									)
 	{
-		// создание шейдера по переданному имени шейдера
+		/*создание шейдера по переданному имени шейдера*/
 		shaderID = glCreateShader(shaderType);
 		const char* code = shaderSource.c_str();
 		glShaderSource(shaderID, 1, &code, nullptr);
 		glCompileShader(shaderID);
 
-		// проверка ошибок компиляции шейдера
+		/*проверка ошибок компиляции шейдера*/
 		GLint isSuccessCompile;
 		glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isSuccessCompile);
 		if (!isSuccessCompile){
@@ -85,23 +94,32 @@ namespace Render{
 	}
 
 	/*============================================================*/
-	// задание использования шейдерной программы
+	/*устанавливает контексту OpenGL использование 
+	  данной шейдерной программы*/
 	void ShaderProgram::use()const
 	{
 		glUseProgram(_ID);
 	}
 
 	/*============================================================*/
-	// устанавливаем униформ значение для текстуры. value это слот в который записана текстура
-	void ShaderProgram::setTexUniform(const std::string &textureName, const GLint value)
+	/*установить uniform значение для текстуры*/
+	void ShaderProgram::setTexUniform(
+										const std::string &textureName, 
+										const GLint value
+									 )
 	{
 		glUniform1i(glGetUniformLocation(_ID, textureName.c_str()), value);
 	}
 
 	/*============================================================*/
-	void ShaderProgram::setMatrix4Uniform(const std::string &matrixName, 
-									      const glm::mat4 &matrix)
+	/*утсановить значение uniform mat4*/
+	void ShaderProgram::setMatrix4Uniform(
+											  const std::string &matrixName, 
+											  const glm::mat4 &matrix
+										 )
 	{
 		glUniformMatrix4fv(glGetUniformLocation(_ID, matrixName.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
+
+
 }

@@ -21,45 +21,64 @@
 #include <string>
 #include <memory>
 
-namespace Render{
+namespace Render
+{
+
 
 	class Sprite{
 	public:
+		/*
+		* ƒл€ анимации спрайта.
+		* —труктура описывает им€ и длительность
+		* каждого кадра
+		*/
 		struct FramePars
 		{
 			FramePars(
-						const glm::vec2 leftBotUV, 
-						const glm::vec2 rightTopUV,
+						const std::string name,
 						const uint64_t duration
-					 ) : _leftBotUV(leftBotUV),
-						 _rightTopUV(rightTopUV),
-						 _duration(duration)
+					 ) : _name(name),
+				         _duration(duration)
 			{}
-			glm::vec2 _leftBotUV;
-			glm::vec2 _rightTopUV;
+			std::string _name;
 			uint64_t _duration;
 		};
 
-		/*конструктор класса. —оздаетс€ спрайт (создаютс€ необходимые дл€ отрисовки буфферы)*/
+		/*конструктор класса*/
 		Sprite(std::shared_ptr<Texture2D> pTexture2D, 
 			   const std::string subTextureName,
 			   std::shared_ptr<ShaderProgram> pShaderProgram,
 			   const glm::vec2 &spritePosition,
 			   const glm::vec2 &spriteSize,
 			   const float rotation);
-		/*освобождение пам€ти*/
+
+		/*деструктор*/
 		~Sprite();
-		/*функци€ отрисовывает спрайт с учетом всех параметров*/
-		void renderSprite(size_t frameId = 0);
+
+		/*
+		* функци€ отрисовки спрайта.
+		* frameId дл€ анимации. ѕо умолчанию задан невалидным
+		*/
+		void renderSprite(short frameId = -1);
+
 		/*установка позицииц спрайта*/
 		void setSpritePosition(const glm::vec2 &spritePosition);
+
 		/*установка рзамера спрайта*/
 		void setSpriteSize(const glm::vec2 &spriteSize);
+
 		/*установка поворота спрайта*/
 		void setSpriteRotation(const float rotation);
 
+		/*получить длительность текущего кадра*/
 		uint64_t getFrameDuration(const size_t frameID) const;
+
+		/*получить кол-во кадров в анимации*/
 		size_t getFramesCount() const;
+
+		/*установка параметров каждого кадра анимации*/
+		void setAnimParams(std::vector<std::pair<std::string, uint64_t>>& framesDurations);
+
 	protected:
 		std::shared_ptr<Texture2D> _pTexture2D;
 		std::shared_ptr<ShaderProgram> _pShaderProgram;
@@ -67,11 +86,15 @@ namespace Render{
 		glm::vec2  _size;
 		float _rotation;
 
+		/*VAO и VBO*/
 		std::shared_ptr<VertexBuffer> _pTexVertexVBO;
 		VertexArray _VAO;
 
 		std::vector<FramePars> _frameParams;
 
-		size_t _lastFrameID;
+		/*параметр дл€ кэшировани€ кадра*/
+		 short _lastFrameID;
 	};
+
+
 }
