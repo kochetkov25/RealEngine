@@ -11,28 +11,29 @@
 namespace Render
 {
 
-	///*============================================================*/
-	//AnimatedSprite::AnimatedSprite(std::shared_ptr<Sprite> pSprite) : 
-	//		_pSprite(std::move(pSprite)),
-	//		_currFrame(0),
-	//		_currFrameDuration(pSprite->getFrameDuration()),
-	//		_currAnimTine(0)
-	//{ }
+	/*============================================================*/
+	/*конструктор*/
+	AnimatedSprite::AnimatedSprite(std::shared_ptr<Sprite> pSprite) : 
+			_pSprite(std::move(pSprite)),
+			_currFrame(0),
+			_currFrameDuration(pSprite->getFrameDuration(0)),
+			_currAnimTine(0)
+	{ }
 
-	///*============================================================*/
-	//void AnimatedSprite::update(const uint64_t del)
-	//{
-	//	_currAnimTine += del;
-	//	while (_currAnimTine >= _currFrameDuration)
-	//	{
-	//		_currAnimTine -= _currFrameDuration;
-	//		++_currFrame;
+	/*============================================================*/
+	void AnimatedSprite::update(const uint64_t del)
+	{
+		_currAnimTine += del;
+		while (_currAnimTine >= _currFrameDuration)
+		{
+			_currAnimTine -= _currFrameDuration;
+			++_currFrame;
 
-	//		if (_currFrame == _pSprite->getFramesCount())
-	//			_currFrame = 0;
+			if (_currFrame == _pSprite->getFramesCount())
+				_currFrame = 0;
 
-	//		_currFrameDuration = _pSprite->getFrameDuration(_currFrame);
-	//	}
-	//}
+			_currFrameDuration = _pSprite->getFrameDuration(_currFrame);
+		}
+	}
 
 }

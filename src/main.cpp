@@ -55,14 +55,37 @@ int main(int argc, char** argv)
 									 );
 
 	std::string shaderName = "SpriteShader";
+	
 
 
+	std::string athlName = "defaultTextureAtlas";     // name for tex athlas
+	std::string athlPath = "res/textures/attack.png"; // path of tex athlas
 
-	resourceManager.loadTexture2D("TestTex", "res/textures/firstTex.png");
-	resourceManager.loadSprite("TestSprite", "TestTex", "SpriteShader", 500, 500);
+	unsigned int subTexWidth = 126; 				  // width of subtex
+	unsigned int subTexHeight = 39; 				  // height of subtex
+
+	std::vector<std::string> subTextureNames = {      // names of every subtex
+												 "attack_0",
+												 "attack_1",
+												 "attack_2",
+												 "attack_3",
+												 "attack_4",
+												 "attack_5",
+												 "attack_6",
+												 "attack_7"
+											   };
+	resourceManager.loadTextureAthlas2D( // load tex athlas into resourceManager
+										std::move(athlName),
+										std::move(athlPath),
+										std::move(subTextureNames),
+										subTexWidth,
+										subTexHeight
+									   );
+
+	//resourceManager.loadTexture2D("TestTex", "res/textures/firstTex.png");
+	resourceManager.loadSprite("TestSprite", "defaultTextureAtlas", "SpriteShader", 500, 500);
 	auto TestSprite = resourceManager.getSprite("TestSprite");
 	TestSprite->setSpritePosition(glm::vec2(0, 0));
-
 
 	/*матрица проекции*/
 	/*перспективная*/

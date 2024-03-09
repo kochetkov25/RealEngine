@@ -41,16 +41,16 @@ namespace Render{
 		};
 
 		/*конструктор класса. Создается спрайт (создаются необходимые для отрисовки буфферы)*/
-		Sprite(const std::shared_ptr<Texture2D> pTexture2D, 
+		Sprite(std::shared_ptr<Texture2D> pTexture2D, 
 			   const std::string subTextureName,
-			   const std::shared_ptr<ShaderProgram> pShaderProgram,
+			   std::shared_ptr<ShaderProgram> pShaderProgram,
 			   const glm::vec2 &spritePosition,
 			   const glm::vec2 &spriteSize,
 			   const float rotation);
 		/*освобождение памяти*/
 		~Sprite();
 		/*функция отрисовывает спрайт с учетом всех параметров*/
-		void renderSprite();
+		void renderSprite(size_t frameId = 0);
 		/*установка позицииц спрайта*/
 		void setSpritePosition(const glm::vec2 &spritePosition);
 		/*установка рзамера спрайта*/
@@ -58,21 +58,20 @@ namespace Render{
 		/*установка поворота спрайта*/
 		void setSpriteRotation(const float rotation);
 
-		//uint64_t getFrameDuration(const size_t frameID) const;
-		//size_t getFramesCount() const;
+		uint64_t getFrameDuration(const size_t frameID) const;
+		size_t getFramesCount() const;
 	protected:
 		std::shared_ptr<Texture2D> _pTexture2D;
 		std::shared_ptr<ShaderProgram> _pShaderProgram;
 		glm::vec2 _position;
 		glm::vec2  _size;
 		float _rotation;
-		//GLuint _VAO;
-		//GLuint _spriteVertexCoordsVBO;
-		//GLuint _textureVertexCoordsVBO;
 
 		std::shared_ptr<VertexBuffer> _pTexVertexVBO;
 		VertexArray _VAO;
 
 		std::vector<FramePars> _frameParams;
+
+		size_t _lastFrameID;
 	};
 }

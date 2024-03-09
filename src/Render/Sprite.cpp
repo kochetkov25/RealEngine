@@ -17,19 +17,21 @@ namespace Render{
 	* Спрайт - настройка и отрисовка уже готового изображения
 	*/
 	/*============================================================*/
-	Sprite::Sprite(const std::shared_ptr<Texture2D> pTexture2D,
+	Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D,
 				   const std::string subTextureName,
-				   const std::shared_ptr<ShaderProgram> pShaderProgram,
+				   std::shared_ptr<ShaderProgram> pShaderProgram,
 				   const glm::vec2 &spritePosition,
 				   const glm::vec2 &spriteSize,
 				   const float rotation)
 	{
-		/* установка входных параметров*/
+		/*установка входных параметров*/
 		_pShaderProgram = std::move(pShaderProgram);
 		_pTexture2D = std::move(pTexture2D);
 		_position = spritePosition;
 		_size = spriteSize;
 		_rotation = rotation;
+		/*значение по умолчанию*/
+		_lastFrameID = 0;
 
 		/*координаты спрайта от 0 до 1*/
 		std::vector<GLfloat> spriteVertexCoords(
@@ -83,8 +85,29 @@ namespace Render{
 
 	/*============================================================*/
 	/*отрисовка спрайта*/
-	void Sprite::renderSprite()
+	void Sprite::renderSprite(size_t frameId)
 	{
+		if (_lastFrameID != frameId)
+		{
+			_lastFrameID = frameId;
+			const auto& currFramePars = _frameParams[0];
+
+			/*координаты текстуры от 0 до 1*/
+			std::vector<GLfloat> textureVertexCoords(
+				{
+					// первый треугольник
+					currFramePars._leftBotUV.x,  currFramePars._leftBotUV.y,
+					currFramePars._leftBotUV.x,  currFramePars._rightTopUV.y,
+					currFramePars._rightTopUV.x, currFramePars._rightTopUV.y,
+					// второй треугольник
+					currFramePars._rightTopUV.x, currFramePars._rightTopUV.y,
+					currFramePars._rightTopUV.x, currFramePars._leftBotUV.y,
+					currFramePars._leftBotUV.x,  currFramePars._leftBotUV.y
+				}
+			);
+			_pTexVertexVBO->updateData(textureVertexCoords);
+		}
+
 		_pShaderProgram->use();
 
 		// модельная матрица
@@ -104,7 +127,7 @@ namespace Render{
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(_rotation), glm::vec3(0.f, 0.f, 1.f));
 		// как известно координаты спрайта задаются относительно нижнего левого угла, поэтому
 		// чтобы повернуть спрайт вокруг своей оси, перемещеаем центр квадратного спрайта в точку 0 0
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f*_size.x, -0.5*_size.y, 0.f));
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f * _size.x, -0.5 * _size.y, 0.f));
 		// скалирование матрицы по трем осям. Берется спрайт 1 на 1 и скалируется до нужного размера
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(_size, 1.f));
 
@@ -133,37 +156,40 @@ namespace Render{
 	}
 
 	/*============================================================*/
+	/*позиция спрайта*/
 	void Sprite::setSpritePosition(const glm::vec2 &spritePosition)
 	{
 		_position = spritePosition;
 	}
 
 	/*============================================================*/
+	/*размер спрайта*/
 	void Sprite::setSpriteSize(const glm::vec2 &spriteSize)
 	{
 		_size = spriteSize;
 	}
 
 	/*============================================================*/
+	/*поворот спрайта*/
 	void Sprite::setSpriteRotation(const float rotation)
 	{
 		_rotation = rotation;
 	}
 
-	///*============================================================*/
-	//uint64_t Sprite::getFrameDuration(const size_t frameID) const
-	//{
-	//	if (frameID < _frameParams.size())
-	//		return _frameParams[frameID]._duration;
+	/*============================================================*/
+	uint64_t Sprite::getFrameDuration(const size_t frameID) const
+	{
+		if (frameID < _frameParams.size())
+			return _frameParams[frameID]._duration;
 
-	//	std::cerr << "sprite with this ID does not exist." << std::endl;
-	//	return 0;
-	//}
+		std::cerr << "sprite with this ID does not exist." << std::endl;
+		return 0;
+	}
 
-	///*============================================================*/
-	//size_t Sprite::getFramesCount() const
-	//{
-	//	return _frameParams.size();
-	//}
+	/*============================================================*/
+	size_t Sprite::getFramesCount() const
+	{
+		return _frameParams.size();
+	}
 
 }
