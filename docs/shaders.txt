@@ -1,0 +1,23 @@
+1. DefaultShader
+/*using for draw GL primitives*/
+
+vertex shader: res/shaders/vertexShader.txt
+fragment shader: res/shaders/fragmentShader.txt
+
+mat: modelMatrix, projectionMatrix, viewMatrix.
+
+2. SpriteShader
+/*using for draw  sprites and anim sprites*/
+
+vertex shader: res/shaders/spriteVertexShader.txt
+fragment shader: res/shaders/spriteFragmentShader.txt
+
+mat: modelMatrix, projectionMatrix.
+
+3. DebugShader
+/*using for draw sprites and ani, sprites with red line*/
+
+vertex shader: res/shaders/spriteVertexShader.txt
+fragment shader: res/shaders/DebugFragmentShader.txt
+
+mat: modelMatrix, projectionMatrix.

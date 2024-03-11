@@ -96,20 +96,27 @@ int main(int argc, char** argv)
 	auto TestSprite = resourceManager.getSprite("TestSprite");
 	TestSprite->setAnimParams(FramesDurations);
 	TestSprite->setSpritePosition(glm::vec2(0, -300));
-
 	/*anim sprite*/
 	Render::AnimatedSprite TestAnim(TestSprite);
 
 	/*static tex*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/firstTex.png");
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
+
+	unsigned int spriteSize = 150;
+
 	resourceManager.loadSprite(
 								"SqrSprite",
 								"ColoredSqr",
 								shaderName,
-								100, 100
+								spriteSize, spriteSize
 							);
 	auto SqrSprite = resourceManager.getSprite("SqrSprite");
-	SqrSprite->setSpritePosition(glm::vec2(0.f, 0.f));
+	SqrSprite->setSpritePosition(
+									glm::vec2(
+												-static_cast<float>(spriteSize) / 2.f, 
+												-static_cast<float>(spriteSize) / 2.f
+											 )
+								);
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -180,9 +187,9 @@ int main(int argc, char** argv)
 		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
 		lastTime = currentTime;
 
-		TestAnim.update(duration);
-		TestAnim.render();
-
+		/*static sprite*/
+		pShaderProg->use();
+		/*static sprite*/
 		SqrSprite->renderSprite();
 
 		/*меняю буферы местами (обновление окна)*/

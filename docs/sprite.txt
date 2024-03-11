@@ -1,0 +1,42 @@
+/*how to draw sprite*/
+
+1. load shader programm
+
+resourceManager.loadShederProgram(
+					"SpriteShader",
+					"res/shaders/spriteVertexShader.txt",
+					"res/shaders/spriteFragmentShader.txt"
+				  );
+
+2. load tex
+
+resourceManager.loadTexture2D("ColoredSqr", "res/textures/firstTex.png");
+
+3. create sprite
+
+resourceManager.loadSprite(
+				"SqrSprite",
+				"ColoredSqr",
+				shaderName,
+				100, 100
+			  );
+
+4. set sprite params
+
+auto SqrSprite = resourceManager.getSprite("SqrSprite");
+SqrSprite->setSpritePosition(glm::vec2(0.f, 0.f));
+
+5. render sprite
+
+SqrSprite->renderSprite();
+
+
+
+WARNING: shader prog:
+
+	auto pShaderProg = resourceManager.getShaderProgram(shaderName);
+	pShaderProg->use();
+
+	pShaderProg->setTexUniform("tex", 0);
+
+	pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);

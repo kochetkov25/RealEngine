@@ -1,0 +1,96 @@
+/*how to draw animated sprite*/
+
+1. load SpriteShader or DebugShader:
+
+
+resourceManager.loadShederProgram(
+					"SpriteShader",
+					"res/shaders/spriteVertexShader.txt",
+					"res/shaders/spriteFragmentShader.txt"
+				 );
+
+resourceManager.loadShederProgram(
+					"DebugShader",
+					"res/shaders/spriteVertexShader.txt",
+					"res/shaders/DebugFragmentShader.txt"
+				 );
+
+2. load tex athlas:
+
+std::string athlName = "defaultTextureAtlas";	  // name for tex athlas
+std::string athlPath = "res/textures/attack.png"; // path of tex athlas
+
+unsigned int subTexWidth = 126;		// width of subtex
+unsigned int subTexHeight = 39; 	// height of subtex
+
+std::vector<std::string> subTextNames = {	// names for every subtex
+						"attack_0",
+						"attack_1",
+						"attack_2",
+						"attack_3",
+						"attack_4",
+						"attack_5",
+						"attack_6",
+						"attack_7"
+				        };
+
+
+/*load tex athlas into resourceManager*/
+resourceManager.loadTextureAthlas2D(
+					std::move(athlName),
+					std::move(athlPath),
+					std::move(subTextNames),
+					subTexWidth,
+					subTexHeight
+				   );
+
+3. load sprite into resource manager
+
+resourceManager.loadSprite(
+			 	"TestSprite", 
+				"defaultTextureAtlas", // name of tex athlas
+				shaderName,
+				250, 100 // width and height of sprite for rendering
+			  );
+
+4. set sprite params
+
+/*create vector which contains durations for EVERY frames (subtex) of anim*/
+std::vector<std::pair<std::string, uint64_t>> FramesDurations;
+for (auto& name : subTextNames)
+	FramesDurations.emplace_back(std::pair<std::string, uint64_t>(name, 100000000));
+
+auto TestSprite = resourceManager.getSprite("TestSprite");
+
+/*frame name - duration pairs*/
+TestSprite->setAnimParams(FramesDurations);
+
+TestSprite->setSpritePosition(glm::vec2(0, -300));
+
+5. create AnimatedSprite
+
+Render::AnimatedSprite TestAnim(TestSprite);
+
+6. create simple Timer and render sprite
+
+auto lastTime = std::chrono::high_resolution_clock::now();
+
+while(true)
+{
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
+	lastTime = currentTime;
+
+	TestAnim.update(duration);
+	TestAnim.render();
+}
+
+
+WARNING: FOR SHADER PROGRAMM:
+
+	auto pShaderProg = resourceManager.getShaderProgram(shaderName);
+	pShaderProg->use();
+
+	pShaderProg->setTexUniform("tex", 0);
+
+	pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
