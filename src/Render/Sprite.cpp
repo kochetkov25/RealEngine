@@ -21,7 +21,7 @@ namespace Render
 	Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D,
 				   const std::string subTextureName,
 				   std::shared_ptr<ShaderProgram> pShaderProgram,
-				   const glm::vec2 &spritePosition,
+				   const glm::vec3 &spritePosition,
 				   const glm::vec2 &spriteSize,
 				   const float rotation)
 	{
@@ -128,7 +128,7 @@ namespace Render
 		*/
 		glm::mat4 modelMatrix(1.f);
 		/*перемещаем спрайт в нужную нам точку мировой ск*/
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(_position, 0.f));
+		modelMatrix = glm::translate(modelMatrix, _position);
 		/*перемещаем спрайт в первоночальное положение*/
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f*_size.x, 0.5*_size.y, 0.f));
 		/*поворачиваем спрайт на нужный угол*/
@@ -173,7 +173,7 @@ namespace Render
 
 	/*============================================================*/
 	/*позиция спрайта*/
-	void Sprite::setSpritePosition(const glm::vec2 &spritePosition)
+	void Sprite::setSpritePosition(const glm::vec3 &spritePosition)
 	{
 		_position = spritePosition;
 	}

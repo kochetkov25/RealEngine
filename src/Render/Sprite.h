@@ -48,7 +48,7 @@ namespace Render
 		Sprite(std::shared_ptr<Texture2D> pTexture2D, 
 			   const std::string subTextureName,
 			   std::shared_ptr<ShaderProgram> pShaderProgram,
-			   const glm::vec2 &spritePosition,
+			   const glm::vec3 &spritePosition,
 			   const glm::vec2 &spriteSize,
 			   const float rotation);
 
@@ -62,7 +62,7 @@ namespace Render
 		void renderSprite(short frameId = -1);
 
 		/*установка позицииц спрайта*/
-		void setSpritePosition(const glm::vec2 &spritePosition);
+		void setSpritePosition(const glm::vec3 &spritePosition);
 
 		/*установка рзамера спрайта*/
 		void setSpriteSize(const glm::vec2 &spriteSize);
@@ -82,7 +82,7 @@ namespace Render
 	protected:
 		std::shared_ptr<Texture2D> _pTexture2D;
 		std::shared_ptr<ShaderProgram> _pShaderProgram;
-		glm::vec2 _position;
+		glm::vec3 _position;
 		glm::vec2  _size;
 		float _rotation;
 

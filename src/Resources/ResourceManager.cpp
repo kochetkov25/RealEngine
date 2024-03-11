@@ -167,7 +167,7 @@ std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
 		std::cerr << "Shader program with this name can not be found (source: ResourceManager): " << shaderProgramName << std::endl;
 	}
 
-	std::shared_ptr<Render::Sprite> pNewSprite = std::make_shared<Render::Sprite>(pTexture, subTextureName, pShaderProgram, glm::vec2(0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
+	std::shared_ptr<Render::Sprite> pNewSprite = std::make_shared<Render::Sprite>(pTexture, subTextureName, pShaderProgram, glm::vec3(0.f, 0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
 	auto isNewSpriteAdd = _spriteMaps.emplace(spriteName, pNewSprite);
 	return isNewSpriteAdd.first->second;
 }

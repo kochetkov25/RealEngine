@@ -95,14 +95,14 @@ int main(int argc, char** argv)
 							  );
 	auto TestSprite = resourceManager.getSprite("TestSprite");
 	TestSprite->setAnimParams(FramesDurations);
-	TestSprite->setSpritePosition(glm::vec2(0, -300));
+	TestSprite->setSpritePosition(glm::vec3(-200.f, 0.f, -199.f));
 	/*anim sprite*/
 	Render::AnimatedSprite TestAnim(TestSprite);
 
 	/*static tex*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/firstTex.png");
 
-	unsigned int spriteSize = 150;
+	unsigned int spriteSize = 128;
 
 	resourceManager.loadSprite(
 								"SqrSprite",
@@ -112,21 +112,23 @@ int main(int argc, char** argv)
 							);
 	auto SqrSprite = resourceManager.getSprite("SqrSprite");
 	SqrSprite->setSpritePosition(
-									glm::vec2(
+									glm::vec3(
 												-static_cast<float>(spriteSize) / 2.f, 
-												-static_cast<float>(spriteSize) / 2.f
+												-static_cast<float>(spriteSize) / 2.f,
+												-490.f
 											 )
 								);
 
 	/*матрица проекции*/
 	/*перспективная*/
-	const float aspect = static_cast<float>(MainWindow.getWidth() / MainWindow.getHeight());
-	//glm::mat4 projectionMatrix = glm::perspective(
-	//												glm::radians(45.f), 
-	//												aspect, 
-	//												0.1f, 
-	//												500.f
-	//											 );
+	//const float aspect = static_cast<float>(MainWindow.getWidth() / MainWindow.getHeight());
+	const float aspect = 1024.f / 768.f;
+	glm::mat4 projectionMatrix = glm::perspective(
+													glm::radians(45.f), 
+													aspect, 
+													0.1f, 
+													500.f
+												 );
 	
 	/*ортогональная, центр - левый нижний угол*/
 	//glm::mat4 projectionMatrix = glm::ortho(
@@ -139,11 +141,11 @@ int main(int argc, char** argv)
 	//									   );
 
 	/*ортогональная, центр - центральная точка окна отрисовки*/
-	glm::mat4 projectionMatrix = glm::ortho(
-												-static_cast<float>(MainWindow.getWidth()) / 2.f, static_cast<float>(MainWindow.getWidth()) / 2.f,
-												-static_cast<float>(MainWindow.getHeight()) / 2.f, static_cast<float>(MainWindow.getHeight()) / 2.f,
-												-100.f, 100.f
-										   );
+	//glm::mat4 projectionMatrix = glm::ortho(
+	//											-static_cast<float>(MainWindow.getWidth()) / 2.f, static_cast<float>(MainWindow.getWidth()) / 2.f,
+	//											-static_cast<float>(MainWindow.getHeight()) / 2.f, static_cast<float>(MainWindow.getHeight()) / 2.f,
+	//											-500.f, 500.f
+	//									   );
 
 	/*матрица модели*/
 	glm::mat4 modelMatrix(1.f);
@@ -167,7 +169,6 @@ int main(int argc, char** argv)
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
-
 	/*буффер глубины*/
 	glEnable(GL_DEPTH_TEST);
 	/*включаю режим смешивания*/
@@ -186,6 +187,10 @@ int main(int argc, char** argv)
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
 		lastTime = currentTime;
+
+		//pShaderProg->use();
+		//TestAnim.update(duration);
+		//TestAnim.render();
 
 		/*static sprite*/
 		pShaderProg->use();
