@@ -100,7 +100,7 @@ int main(int argc, char** argv)
 	Render::AnimatedSprite TestAnim(TestSprite);
 
 	/*static tex*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/firstTex.png");
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
 
 	unsigned int spriteSize = 128;
 
@@ -121,8 +121,8 @@ int main(int argc, char** argv)
 
 	/*матрица проекции*/
 	/*перспективная*/
-	//const float aspect = static_cast<float>(MainWindow.getWidth() / MainWindow.getHeight());
-	const float aspect = 1024.f / 768.f;
+	const float aspect = static_cast<float>(MainWindow.getWidth()) /
+						 static_cast<float>(MainWindow.getHeight());
 	glm::mat4 projectionMatrix = glm::perspective(
 													glm::radians(45.f), 
 													aspect, 
