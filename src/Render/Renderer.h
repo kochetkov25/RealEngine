@@ -13,6 +13,12 @@ namespace Render {
 	class Renderer
 	{
 	public:
+		enum class Shader
+		{
+			_e_SPRITE_SHADER,
+			_e_PRIMITIVE_SHADER
+		};
+
 		/*конструктор*/
 		Renderer()
 		{
