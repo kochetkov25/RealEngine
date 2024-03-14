@@ -8,6 +8,8 @@
 
 #include "Window.h"
 
+#include "../Modules/GUIModule.h"
+
 namespace Render
 {
 	/*============================================================*/
@@ -82,6 +84,7 @@ namespace Render
 	/*в деструкторе освобождаю ресурсы OpenGL*/
 	Render::Window::~Window()
 	{
+		Modules::GUIModule::onWindowClose();
 		glfwDestroyWindow(_pWindow);
 		glfwTerminate();
 	}

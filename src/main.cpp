@@ -18,8 +18,9 @@
 #include "Render\VertexBuffer.h"
 #include "Render\VertexArray.h"
 
-#include "imgui.h"
-#include "backends/imgui_impl_opengl3.h"
+#include "Modules/GUIModule.h"
+
+#include <imgui.h>
 
 #include "Render\Renderer.h"
 
@@ -30,7 +31,8 @@ int main(int argc, char** argv)
 	Render::Window MainWindow;
 	if (!MainWindow.init())
 		return -1;
-
+	/*создание контекста ImGui*/
+	Modules::GUIModule::onWindowCreate(MainWindow.getWindow());
 	/*создание объекта ресурсного менеджера*/
 	ResourceManager resourceManager(argv[0]);
 	/*загрузка шейдеров*/
@@ -57,7 +59,7 @@ int main(int argc, char** argv)
 												-390.f
 											 )
 								);
-	SqrSprite->setSpriteRotation(-55.f, glm::vec3(1.0f,0.f,0.f));
+	//SqrSprite->setSpriteRotation(-55.f, glm::vec3(1.0f,0.f,0.f));
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -117,6 +119,11 @@ int main(int argc, char** argv)
 	/*линейное размытие пикселей*/
 	glEnable(GL_LINE_SMOOTH);
 
+	float SRotation = 0.f;
+	bool axisX = false;
+	bool axisY = false;
+	bool axisZ = true;
+	float coordZ = -100.f;
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
@@ -126,7 +133,35 @@ int main(int argc, char** argv)
 		/*static sprite*/
 		pShaderProg->use();
 		/*static sprite*/
+		SqrSprite->setSpriteRotation(
+										SRotation, 
+										glm::vec3(
+													static_cast<float>(axisX), 
+													static_cast<float>(axisY),
+													static_cast<float>(axisZ)
+												 )
+		                           );
+		SqrSprite->setSpritePosition(
+										glm::vec3(
+											-static_cast<float>(spriteSize) / 2.f,
+											-static_cast<float>(spriteSize) / 2.f,
+											coordZ
+										)
+		                            );
 		SqrSprite->renderSprite();
+
+
+		Modules::GUIModule::GUIupdate();
+
+		ImGui::Begin("Scene Editor");
+		ImGui::SliderFloat("Sprite rotation", &SRotation, 0.f, 360.f);
+		ImGui::Checkbox("axis of rotation X", &axisX);
+		ImGui::Checkbox("axis of rotation Y", &axisY);
+		ImGui::Checkbox("axis of rotation Z", &axisZ);
+		ImGui::SliderFloat("Sprite Z coord", &coordZ, -500.f, 0.f);
+		ImGui::End();
+
+		Modules::GUIModule::GUIdraw();
 
 
 		/*меняю буферы местами (обновление окна)*/

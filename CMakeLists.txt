@@ -24,8 +24,8 @@ src/Render/VertexBuffer.h
 src/Render/VertexBuffer.cpp
 src/Render/VertexArray.h
 src/Render/VertexArray.cpp
-src/Game/Game.h
-src/Game/Game.cpp)
+src/Modules/GUIModule.h
+src/Modules/GUIModule.cpp)
 
 add_subdirectory(dependencies/glfw)
 
@@ -53,16 +53,16 @@ file(GLOB_RECURSE SRC_RESOURCES
     "src/Resources/*.h"
 )
 
-file(GLOB_RECURSE SRC_GAME
-    "src/Game/*.cpp"
-    "src/Game/*.h"
+file(GLOB_RECURSE SRC_MODULES
+    "src/Modules/*.cpp"
+    "src/Modules/*.h"
 )
 
 source_group("Render" FILES ${SRC_RENDER})
 
 source_group("Resources" FILES ${SRC_RESOURCES})
 
-source_group("Game" FILES ${SRC_GAME})
+source_group("Modules" FILES ${SRC_MODULES})
 
 
 
