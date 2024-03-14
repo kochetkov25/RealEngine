@@ -117,16 +117,11 @@ int main(int argc, char** argv)
 	/*линейное размытие пикселей*/
 	glEnable(GL_LINE_SMOOTH);
 
-	auto lastTime = std::chrono::high_resolution_clock::now();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
-		lastTime = currentTime;
 
 		/*static sprite*/
 		pShaderProg->use();
