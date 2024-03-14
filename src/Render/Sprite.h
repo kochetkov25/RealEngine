@@ -68,7 +68,7 @@ namespace Render
 		void setSpriteSize(const glm::vec2 &spriteSize);
 
 		/*установка поворота спрайта*/
-		void setSpriteRotation(const float rotation);
+		void setSpriteRotation(const float rotationAng, const glm::vec3& axis = glm::vec3(0.f,0.f,1.f));
 
 		/*получить длительность текущего кадра*/
 		uint64_t getFrameDuration(const size_t frameID) const;
@@ -84,6 +84,7 @@ namespace Render
 		std::shared_ptr<ShaderProgram> _pShaderProgram;
 		glm::vec3 _position;
 		glm::vec2  _size;
+		glm::vec3 _axis;
 		float _rotation;
 
 		/*VAO и VBO*/

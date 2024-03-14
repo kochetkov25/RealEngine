@@ -25,7 +25,8 @@ namespace Render{
 }
 
 
-class ResourceManager{
+class ResourceManager
+{
 public:
 	/*конструктор, передаем директорию .exe файла приложения*/
 	ResourceManager(const std::string &executablePath);
@@ -70,6 +71,10 @@ public:
 															   const unsigned int subTextureWidth,
 															   const unsigned int subTextureHeight
 														  );
+
+	/*ВРЕМЕННЫЙ метод*/
+	/*загрузка всех шейдерных программ*/
+	void loadShaders();
 
 private:
 	/*чтение файла из исполнительной директории (где .exe файл)*/

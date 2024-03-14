@@ -33,6 +33,7 @@ namespace Render
 		_rotation = rotation;
 		/*значение по умолчанию (-1)*/
 		_lastFrameID = -1;
+		_axis = glm::vec3(0.f, 0.f, 1.f);
 
 		/*координаты спрайта от 0 до 1*/
 		std::vector<GLfloat> spriteVertexCoords(
@@ -132,7 +133,7 @@ namespace Render
 		/*перемещаем спрайт в первоночальное положение*/
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f*_size.x, 0.5*_size.y, 0.f));
 		/*поворачиваем спрайт на нужный угол*/
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(_rotation), glm::vec3(0.f, 0.f, 1.f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(_rotation), _axis);
 		/*
 		* координаты спрайта задаются относительно нижнего левого угла,
 		* поэтому, чтобы повернуть спрайт вокруг своей оси,
@@ -187,9 +188,10 @@ namespace Render
 
 	/*============================================================*/
 	/*поворот спрайта*/
-	void Sprite::setSpriteRotation(const float rotation)
+	void Sprite::setSpriteRotation(const float rotationAng, const glm::vec3& axis)
 	{
-		_rotation = rotation;
+		_rotation = rotationAng;
+		_axis = axis;
 	}
 
 	/*============================================================*/

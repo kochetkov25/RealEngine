@@ -90,7 +90,7 @@ namespace Render
 	/*обновление окна*/
 	void Render::Window::update()
 	{
-		glClearColor(0.6f, 0.69f, 0.929f, 1.f); // заливаю все окно цветом
+		
 		glfwSwapBuffers(_pWindow); // меняю передний и задний буфер
 		glfwPollEvents(); // произвожу обработку событий
 	}

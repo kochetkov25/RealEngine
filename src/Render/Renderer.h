@@ -5,6 +5,7 @@
 #include "VertexArray.h"
 
 #include <vector>
+#include <string>
 
 static const size_t MAX_ELEMENTS = 1024 * 2;
 

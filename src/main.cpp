@@ -33,72 +33,11 @@ int main(int argc, char** argv)
 
 	/*создание объекта ресурсного менеджера*/
 	ResourceManager resourceManager(argv[0]);
-
-	/*создание шейдерных программ*/
-	/*для обычной отрисовки примитивов*/
-	resourceManager.loadShederProgram(
-										"DefaultShader",
-										"res/shaders/vertexShader.txt",
-										"res/shaders/fragmentShader.txt"
-									 );
-	/*для отрисовки спрайтов*/
-	resourceManager.loadShederProgram(
-										"SpriteShader",
-										"res/shaders/spriteVertexShader.txt",
-										"res/shaders/spriteFragmentShader.txt"
-									 );
-	/*для отладки*/
-	resourceManager.loadShederProgram(
-										"DebugShader",
-										"res/shaders/spriteVertexShader.txt",
-										"res/shaders/DebugFragmentShader.txt"
-									 );
+	/*загрузка шейдеров*/
+	resourceManager.loadShaders();
 
 	std::string shaderName = "SpriteShader";
 	
-
-
-	std::string athlName = "defaultTextureAtlas";     // name for tex athlas
-	std::string athlPath = "res/textures/attack.png"; // path of tex athlas
-
-	unsigned int subTexWidth = 126; 				  // width of subtex
-	unsigned int subTexHeight = 39; 				  // height of subtex
-
-	std::vector<std::string> subTextNames = {      // names of every subtex
-												 "attack_0",
-												 "attack_1",
-												 "attack_2",
-												 "attack_3",
-												 "attack_4",
-												 "attack_5",
-												 "attack_6",
-												 "attack_7"
-										   };
-	/*duration of every frame is 100000000 msec*/
-	std::vector<std::pair<std::string, uint64_t>> FramesDurations;
-	for (auto& name : subTextNames)
-		FramesDurations.emplace_back(std::pair<std::string, uint64_t>(name, 100000000));
-	/*load tex athlas into resourceManager*/
-	resourceManager.loadTextureAthlas2D(
-										std::move(athlName),
-										std::move(athlPath),
-										std::move(subTextNames),
-										subTexWidth,
-										subTexHeight
-									   );
-	/*load sprite into res manager*/
-	resourceManager.loadSprite(
-								"TestSprite", 
-								"defaultTextureAtlas", 
-								shaderName,
-								250, 100
-							  );
-	auto TestSprite = resourceManager.getSprite("TestSprite");
-	TestSprite->setAnimParams(FramesDurations);
-	TestSprite->setSpritePosition(glm::vec3(-200.f, 0.f, -199.f));
-	/*anim sprite*/
-	Render::AnimatedSprite TestAnim(TestSprite);
-
 	/*static tex*/
 	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
 
@@ -115,9 +54,10 @@ int main(int argc, char** argv)
 									glm::vec3(
 												-static_cast<float>(spriteSize) / 2.f, 
 												-static_cast<float>(spriteSize) / 2.f,
-												-490.f
+												-390.f
 											 )
 								);
+	SqrSprite->setSpriteRotation(-55.f, glm::vec3(1.0f,0.f,0.f));
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -164,8 +104,7 @@ int main(int argc, char** argv)
 
 	pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 	//pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
-	//pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
-
+	pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
@@ -183,19 +122,17 @@ int main(int argc, char** argv)
 	{
 		/*очищаю передний буфер*/
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
 
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
 		lastTime = currentTime;
 
-		//pShaderProg->use();
-		//TestAnim.update(duration);
-		//TestAnim.render();
-
 		/*static sprite*/
 		pShaderProg->use();
 		/*static sprite*/
 		SqrSprite->renderSprite();
+
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();

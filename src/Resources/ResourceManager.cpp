@@ -238,3 +238,27 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(
 	}
 	return pTexture;
 }
+
+/*============================================================*/
+/*¬–≈ћ≈ЌЌјя функци€ дл€ загрузки шейдеров*/
+void ResourceManager::loadShaders()
+{
+	/*шейдер дл€ отрисовки GL примитивов*/
+	loadShederProgram(
+						"DefaultShader",
+						"res/shaders/vertexShader.txt",
+						"res/shaders/fragmentShader.txt"
+					 );
+	/*шейдер дл€ отрисовки спрайтов*/
+	loadShederProgram(
+						"SpriteShader",
+						"res/shaders/spriteVertexShader.txt",
+						"res/shaders/spriteFragmentShader.txt"
+					 );
+	/*шейдер дл€ отладки отрисовки спрайтов*/
+	loadShederProgram(
+						"DebugShader",
+						"res/shaders/spriteVertexShader.txt",
+						"res/shaders/DebugFragmentShader.txt"
+					 );
+}
