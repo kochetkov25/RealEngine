@@ -10,6 +10,8 @@
 
 #include "../Modules/GUIModule.h"
 
+#include <iostream>
+
 namespace Render
 {
 	/*============================================================*/

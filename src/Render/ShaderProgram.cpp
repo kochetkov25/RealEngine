@@ -8,6 +8,10 @@
 
 #include "ShaderProgram.h"
 
+#include <iostream>
+
+#include <glm\gtc\type_ptr.hpp>
+
 namespace Render
 {
 

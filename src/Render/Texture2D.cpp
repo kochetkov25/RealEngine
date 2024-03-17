@@ -8,6 +8,8 @@
 
 #include "Texture2D.h"
 
+#include <memory>
+
 namespace Render
 {
 

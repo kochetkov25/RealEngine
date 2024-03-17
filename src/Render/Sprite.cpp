@@ -8,6 +8,14 @@
 
 #include "Sprite.h"
 
+#include "glm\gtc\matrix_transform.hpp"
+
+#include "ShaderProgram.h"
+#include "VertexArray.h"
+#include "Texture2D.h"
+
+#include <iostream>
+
 namespace Render
 {
 

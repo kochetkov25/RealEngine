@@ -7,15 +7,10 @@
 */
 
 #pragma once
-#include "../Render/ShaderProgram.h"
-#include "../Render/Sprite.h"
-
-#include <iostream>
+#include <string>
 #include <memory>
-#include <map>
 #include <vector>
-#include <sstream>
-#include <fstream>
+#include <map>
 
 namespace Render{
 	class ShaderProgram;

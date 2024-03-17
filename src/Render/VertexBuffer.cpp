@@ -1,5 +1,7 @@
 #include "VertexBuffer.h"
 
+#include <iostream>
+
 namespace Render
 {
 

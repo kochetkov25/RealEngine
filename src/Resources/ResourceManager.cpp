@@ -8,6 +8,14 @@
 
 #include "ResourceManager.h"
 
+#include "../Render/ShaderProgram.h"
+#include "../Render/Sprite.h"
+#include "../Render/Texture2D.h"
+
+#include <sstream>
+#include <fstream>
+#include <iostream>
+
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb_image.h"
