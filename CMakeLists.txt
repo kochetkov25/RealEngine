@@ -25,7 +25,8 @@ src/Render/VertexBuffer.cpp
 src/Render/VertexArray.h
 src/Render/VertexArray.cpp
 src/Modules/GUIModule.h
-src/Modules/GUIModule.cpp)
+src/Modules/GUIModule.cpp
+src/Render/Primitives.cpp)
 
 add_subdirectory(dependencies/glfw)
 

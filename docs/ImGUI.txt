@@ -1,0 +1,11 @@
+		Modules::GUIModule::GUIupdate();
+
+		ImGui::Begin("Scene Editor");
+		ImGui::SliderFloat("Sprite rotation", &SRotation, 0.f, 360.f);
+		ImGui::Checkbox("axis of rotation X", &axisX);
+		ImGui::Checkbox("axis of rotation Y", &axisY);
+		ImGui::Checkbox("axis of rotation Z", &axisZ);
+		ImGui::SliderFloat("Sprite Z coord", &coordZ, -500.f, 0.f);
+		ImGui::End();
+
+		Modules::GUIModule::GUIdraw();

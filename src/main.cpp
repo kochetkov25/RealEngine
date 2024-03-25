@@ -25,6 +25,11 @@
 #include "Render\Renderer.h"
 
 
+namespace Render
+{
+	extern void createRawCube(Renderer& render);
+}
+
 int main(int argc, char** argv)
 {
 	/*создание главного окна отрисовки*/
@@ -112,131 +117,22 @@ int main(int argc, char** argv)
 
 
 	Render::Renderer MainRender;
-
-	MainRender.begin(GL_TRIANGLES);
-
-	/*front*/
-	MainRender.verex3(-50.f, -50.f, 50.f);
-	MainRender.color4(255, 0, 0);
-
-	MainRender.verex3(-50.f, 50.f, 50.f);
-	MainRender.color4(255, 0, 0);
-
-	MainRender.verex3(50.f, -50.f, 50.f);
-	MainRender.color4(255, 0, 0);
-
-
-	MainRender.verex3(-50.f, 50.f, 50.f);
-	MainRender.color4(255, 100, 0);
-
-	MainRender.verex3(50.f, 50.f, 50.f);
-	MainRender.color4(255, 100, 0);
-
-	MainRender.verex3(50.f, -50.f, 50.f);
-	MainRender.color4(255, 100, 0);
-
-	/*right*/
-	MainRender.verex3(50.f, -50.f, 50.f);
-	MainRender.color4(0, 255, 0);
-
-	MainRender.verex3(50.f, -50.f, -50.f);
-	MainRender.color4(0, 255, 0);
-
-	MainRender.verex3(50.f, 50.f, -50.f);
-	MainRender.color4(0, 255, 0);
-
-
-	MainRender.verex3(50.f, -50.f, 50.f);
-	MainRender.color4(100, 255, 0);
-
-	MainRender.verex3(50.f, 50.f,  50.f);
-	MainRender.color4(100, 255, 0);
-
-	MainRender.verex3(50.f, 50.f, -50.f);
-	MainRender.color4(100, 255, 0);
-
-	/*left*/
-	MainRender.verex3(-50.f, -50.f, 50.f);
-	MainRender.color4(0, 0, 255);
-
-	MainRender.verex3(-50.f, -50.f, -50.f);
-	MainRender.color4(0, 0, 255);
-
-	MainRender.verex3(-50.f, 50.f, -50.f);
-	MainRender.color4(0, 0, 255);
-
-
-	MainRender.verex3(-50.f, -50.f, 50.f);
-	MainRender.color4(0, 100, 255);
-
-	MainRender.verex3(-50.f, 50.f, 50.f);
-	MainRender.color4(0, 100, 255);
-
-	MainRender.verex3(-50.f, 50.f, -50.f);
-	MainRender.color4(0, 100, 255);
-
-	/*back*/
-	MainRender.verex3(-50.f, -50.f, -50.f);
-	MainRender.color4(255, 0, 255);
-
-	MainRender.verex3(-50.f, 50.f, -50.f);
-	MainRender.color4(255, 0, 255);
-
-	MainRender.verex3(50.f, -50.f, -50.f);
-	MainRender.color4(255, 0, 255);
-
-
-	MainRender.verex3(-50.f, 50.f, -50.f);
-	MainRender.color4(255, 100, 255);
-
-	MainRender.verex3(50.f, 50.f, -50.f);
-	MainRender.color4(255, 100, 255);
-
-	MainRender.verex3(50.f, -50.f, -50.f);
-	MainRender.color4(255, 100, 255);
-
-	/*top*/
-	MainRender.verex3(50.f, 50.f, 50.f);
-	MainRender.color4(100, 100, 50);
-
-	MainRender.verex3(50.f, 50.f, -50.f);
-	MainRender.color4(100, 100, 50);
-
-	MainRender.verex3(-50.f, 50.f, 50.f);
-	MainRender.color4(100, 100, 50);
-
-
-	MainRender.verex3(-50.f, 50.f, 50.f);
-	MainRender.color4(200, 105, 70);
-
-	MainRender.verex3(-50.f, 50.f, -50.f);
-	MainRender.color4(200, 105, 70);
-
-	MainRender.verex3(50.f, 50.f, -50.f);
-	MainRender.color4(200, 105, 70);
-
-	/*bot*/
-	MainRender.verex3(50.f, -50.f, 50.f);
-	MainRender.color4(211, 155, 71);
-
-	MainRender.verex3(50.f, -50.f, -50.f);
-	MainRender.color4(211, 155, 71);
-
-	MainRender.verex3(-50.f, -50.f, 50.f);
-	MainRender.color4(211, 155, 71);
-
-
-	MainRender.verex3(-50.f, -50.f, 50.f);
-	MainRender.color4(10, 25, 170);
-
-	MainRender.verex3(-50.f, -50.f, -50.f);
-	MainRender.color4(10, 25, 170);
-
-	MainRender.verex3(50.f, -50.f, -50.f);
-	MainRender.color4(10, 25, 170);
-
-
-	MainRender.end();
+	Render::createRawCube(MainRender);
+	glm::vec3 cubePositions[] = 
+	{
+		 glm::vec3(0.f,  0.f, 0.f),
+		 glm::vec3(2.0f,  5.0f, -15.0f),
+		 glm::vec3(-1.5f, -2.2f, -2.5f),
+		 glm::vec3(-3.8f, -2.0f, -12.3f),
+		 glm::vec3(2.4f, -4.f, -3.5f),
+		 glm::vec3(-1.7f,  3.0f, -7.5f),
+		 glm::vec3(1.3f, -2.0f, -2.5f),
+		 glm::vec3(1.5f,  2.0f, -2.5f),
+		 glm::vec3(2.5f,  1.f, -1.5f),
+		 glm::vec3(-1.3f,  1.0f, -1.5f),
+		 glm::vec3(-10.3f,  1.0f, -32.5f),
+		 glm::vec3(-21.3f,  5.0f, -40.5f)
+	};
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
@@ -255,6 +151,7 @@ int main(int argc, char** argv)
 	bool axisZ = 0;
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
+		ang = 0.f;
 		/*очищаю передний буфер*/
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -262,34 +159,41 @@ int main(int argc, char** argv)
 		/*shader prog*/
 		pShaderProg->use();
 
-		glm::mat4 modelMatrix(1.f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
-																				static_cast<float>(axisX),
-																				static_cast<float>(axisY), 
-																				static_cast<float>(axisZ)
-																		   )
-		                                                                 );
+		/*drawing*/
+		for (auto& pos : cubePositions)
+		{
+			ang += 10.f;
+			glm::mat4 modelMatrix(1.f);
+			modelMatrix = glm::translate(modelMatrix, pos);
+			modelMatrix = glm::rotate(modelMatrix, glm::radians((GLfloat)glfwGetTime() * 9.0f + ang), glm::vec3(
+																					1.f,
+																					1.f, 
+																					1.f
+																               )
+                                                                             );
+			modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
-		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
-		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
-		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
+			pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+			pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
+			pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
 
+			MainRender.drawArrays();
+		}
+		//glm::mat4 modelMatrix(1.f);
+		//modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
+		//modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
+		//																		static_cast<float>(axisX),
+		//																		static_cast<float>(axisY), 
+		//																		static_cast<float>(axisZ)
+		//																   )
+		//                                                                 );
+		//modelMatrix = glm::scale(modelMatrix, glm::vec3(45.f, 45.f, 45.f));
 
-		MainRender.drawArrays();
+		//pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+		//pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
+		//pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
 
-
-		Modules::GUIModule::GUIupdate();
-
-		ImGui::Begin("Scene Editor");
-		ImGui::SliderFloat("Rotation", &ang, 0.f, 360.f);
-		ImGui::Checkbox("axis of rotation X", &axisX);
-		ImGui::Checkbox("axis of rotation Y", &axisY);
-		ImGui::Checkbox("axis of rotation Z", &axisZ);
-		ImGui::End();
-
-		Modules::GUIModule::GUIdraw();
-
+		//MainRender.drawArrays();
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();
