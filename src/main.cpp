@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 	/*загрузка шейдеров*/
 	resourceManager.loadShaders();
 
-	std::string shaderName = "SpriteShader";
+	std::string shaderName = "DefaultShader";
 	
 	/*static tex*/
 	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
@@ -59,7 +59,6 @@ int main(int argc, char** argv)
 												-390.f
 											 )
 								);
-	//SqrSprite->setSpriteRotation(-55.f, glm::vec3(1.0f,0.f,0.f));
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -89,8 +88,11 @@ int main(int argc, char** argv)
 	//											-500.f, 500.f
 	//									   );
 
+
 	/*матрица модели*/
-	glm::mat4 modelMatrix(1.f);
+	//glm::mat4 modelMatrix(1.f);
+	//modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
+	//modelMatrix = glm::rotate(modelMatrix, glm::radians(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 	/*матрица вида*/
 	glm::mat4 viewMatrix(1.f);
@@ -100,13 +102,141 @@ int main(int argc, char** argv)
 
 	/*шейдерная программа для отрисовки GL примитивов*/
 	auto pShaderProg = resourceManager.getShaderProgram(shaderName);
-	pShaderProg->use();
+	//pShaderProg->use();
 
-	pShaderProg->setTexUniform("tex", 0);
+	//pShaderProg->setTexUniform("tex", 0);
 
-	pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+	//pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 	//pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
-	pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
+	//pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
+
+
+	Render::Renderer MainRender;
+
+	MainRender.begin(GL_TRIANGLES);
+
+	/*front*/
+	MainRender.verex3(-50.f, -50.f, 50.f);
+	MainRender.color4(255, 0, 0);
+
+	MainRender.verex3(-50.f, 50.f, 50.f);
+	MainRender.color4(255, 0, 0);
+
+	MainRender.verex3(50.f, -50.f, 50.f);
+	MainRender.color4(255, 0, 0);
+
+
+	MainRender.verex3(-50.f, 50.f, 50.f);
+	MainRender.color4(255, 100, 0);
+
+	MainRender.verex3(50.f, 50.f, 50.f);
+	MainRender.color4(255, 100, 0);
+
+	MainRender.verex3(50.f, -50.f, 50.f);
+	MainRender.color4(255, 100, 0);
+
+	/*right*/
+	MainRender.verex3(50.f, -50.f, 50.f);
+	MainRender.color4(0, 255, 0);
+
+	MainRender.verex3(50.f, -50.f, -50.f);
+	MainRender.color4(0, 255, 0);
+
+	MainRender.verex3(50.f, 50.f, -50.f);
+	MainRender.color4(0, 255, 0);
+
+
+	MainRender.verex3(50.f, -50.f, 50.f);
+	MainRender.color4(100, 255, 0);
+
+	MainRender.verex3(50.f, 50.f,  50.f);
+	MainRender.color4(100, 255, 0);
+
+	MainRender.verex3(50.f, 50.f, -50.f);
+	MainRender.color4(100, 255, 0);
+
+	/*left*/
+	MainRender.verex3(-50.f, -50.f, 50.f);
+	MainRender.color4(0, 0, 255);
+
+	MainRender.verex3(-50.f, -50.f, -50.f);
+	MainRender.color4(0, 0, 255);
+
+	MainRender.verex3(-50.f, 50.f, -50.f);
+	MainRender.color4(0, 0, 255);
+
+
+	MainRender.verex3(-50.f, -50.f, 50.f);
+	MainRender.color4(0, 100, 255);
+
+	MainRender.verex3(-50.f, 50.f, 50.f);
+	MainRender.color4(0, 100, 255);
+
+	MainRender.verex3(-50.f, 50.f, -50.f);
+	MainRender.color4(0, 100, 255);
+
+	/*back*/
+	MainRender.verex3(-50.f, -50.f, -50.f);
+	MainRender.color4(255, 0, 255);
+
+	MainRender.verex3(-50.f, 50.f, -50.f);
+	MainRender.color4(255, 0, 255);
+
+	MainRender.verex3(50.f, -50.f, -50.f);
+	MainRender.color4(255, 0, 255);
+
+
+	MainRender.verex3(-50.f, 50.f, -50.f);
+	MainRender.color4(255, 100, 255);
+
+	MainRender.verex3(50.f, 50.f, -50.f);
+	MainRender.color4(255, 100, 255);
+
+	MainRender.verex3(50.f, -50.f, -50.f);
+	MainRender.color4(255, 100, 255);
+
+	/*top*/
+	MainRender.verex3(50.f, 50.f, 50.f);
+	MainRender.color4(100, 100, 50);
+
+	MainRender.verex3(50.f, 50.f, -50.f);
+	MainRender.color4(100, 100, 50);
+
+	MainRender.verex3(-50.f, 50.f, 50.f);
+	MainRender.color4(100, 100, 50);
+
+
+	MainRender.verex3(-50.f, 50.f, 50.f);
+	MainRender.color4(200, 105, 70);
+
+	MainRender.verex3(-50.f, 50.f, -50.f);
+	MainRender.color4(200, 105, 70);
+
+	MainRender.verex3(50.f, 50.f, -50.f);
+	MainRender.color4(200, 105, 70);
+
+	/*bot*/
+	MainRender.verex3(50.f, -50.f, 50.f);
+	MainRender.color4(211, 155, 71);
+
+	MainRender.verex3(50.f, -50.f, -50.f);
+	MainRender.color4(211, 155, 71);
+
+	MainRender.verex3(-50.f, -50.f, 50.f);
+	MainRender.color4(211, 155, 71);
+
+
+	MainRender.verex3(-50.f, -50.f, 50.f);
+	MainRender.color4(10, 25, 170);
+
+	MainRender.verex3(-50.f, -50.f, -50.f);
+	MainRender.color4(10, 25, 170);
+
+	MainRender.verex3(50.f, -50.f, -50.f);
+	MainRender.color4(10, 25, 170);
+
+
+	MainRender.end();
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
@@ -119,46 +249,43 @@ int main(int argc, char** argv)
 	/*линейное размытие пикселей*/
 	glEnable(GL_LINE_SMOOTH);
 
-	float SRotation = 0.f;
-	bool axisX = false;
-	bool axisY = false;
-	bool axisZ = true;
-	float coordZ = -100.f;
+	float ang = 0.f;
+	bool axisX = 1;
+	bool axisY = 0;
+	bool axisZ = 0;
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*static sprite*/
+		/*shader prog*/
 		pShaderProg->use();
-		/*static sprite*/
-		SqrSprite->setSpriteRotation(
-										SRotation, 
-										glm::vec3(
-													static_cast<float>(axisX), 
-													static_cast<float>(axisY),
-													static_cast<float>(axisZ)
-												 )
-		                           );
-		SqrSprite->setSpritePosition(
-										glm::vec3(
-											-static_cast<float>(spriteSize) / 2.f,
-											-static_cast<float>(spriteSize) / 2.f,
-											coordZ
-										)
-		                            );
-		SqrSprite->renderSprite();
+
+		glm::mat4 modelMatrix(1.f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
+																				static_cast<float>(axisX),
+																				static_cast<float>(axisY), 
+																				static_cast<float>(axisZ)
+																		   )
+		                                                                 );
+
+		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
+		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
+
+
+		MainRender.drawArrays();
 
 
 		Modules::GUIModule::GUIupdate();
 
 		ImGui::Begin("Scene Editor");
-		ImGui::SliderFloat("Sprite rotation", &SRotation, 0.f, 360.f);
+		ImGui::SliderFloat("Rotation", &ang, 0.f, 360.f);
 		ImGui::Checkbox("axis of rotation X", &axisX);
 		ImGui::Checkbox("axis of rotation Y", &axisY);
 		ImGui::Checkbox("axis of rotation Z", &axisZ);
-		ImGui::SliderFloat("Sprite Z coord", &coordZ, -500.f, 0.f);
 		ImGui::End();
 
 		Modules::GUIModule::GUIdraw();
