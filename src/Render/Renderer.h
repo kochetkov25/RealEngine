@@ -14,10 +14,11 @@ namespace Render {
 	class Renderer
 	{
 	public:
-		enum class Shader
+		/*тип отрисовываемых примитивов*/
+		enum class State
 		{
-			_e_SPRITE_SHADER,
-			_e_PRIMITIVE_SHADER
+			TEXTURE_2D,
+			PRIMITIVES_GL
 		};
 
 		/*конструктор*/
@@ -26,6 +27,7 @@ namespace Render {
 			_elementsBuff.reserve(MAX_ELEMENTS);
 			_currMode = GL_TRIANGLES;
 			_vertexCount = 0;
+			_renderState = State::PRIMITIVES_GL;
 		}
 		/*добавление в буффер вершины из трех координат*/
 		template<typename _T>
@@ -38,7 +40,7 @@ namespace Render {
 			_vertexCount++;
 		}
 
-		/*добавление в буффер цвета для вершины в формате RGBA*/
+		/*добавление в буффер цвета для вершины в формате RGBA (от 0 до 255)*/
 		template<typename _T>
 		void color4(_T r, _T g, _T b, _T a = 1.f)
 		{
@@ -46,6 +48,14 @@ namespace Render {
 			_elementsBuff.emplace_back(static_cast<float>(g) / 255.f);
 			_elementsBuff.emplace_back(static_cast<float>(b) / 255.f);
 			_elementsBuff.emplace_back(static_cast<float>(a));
+		}
+
+		/*добавлене в буффер вершинй спрайта (от 0 до 1)*/
+		template<typename _T>
+		void vertexUV(_T U, _T V)
+		{
+			_elementsBuff.emplace_back(static_cast<float>(U));
+			_elementsBuff.emplace_back(static_cast<float>(V));
 		}
 
 		/*начать задание примитивов*/
@@ -56,19 +66,29 @@ namespace Render {
 
 		/*отрисовать все вершины*/
 		void drawArrays();
+
+		void Enable(State currState);
 	private:
 		/*буффер под вершины и цвета*/
 		std::vector<float> _elementsBuff;
 		size_t _vertexCount;
-		/*тип элементов в буффере*/
+		/*тип элементов в буффере для примитивов*/
 		std::vector<VertexBuffer::BufferElement> _vec3Col4 = {
 															   VertexBuffer::_e_DataType::Float3,
 															   VertexBuffer::_e_DataType::Float4
 		                                                     };
+		/*тип элементов в буффере для спрайтов*/
+		std::vector<VertexBuffer::BufferElement> _vec3UV2 = {
+																VertexBuffer::_e_DataType::Float3,
+																VertexBuffer::_e_DataType::Float2
+															};
 		/*текущий режим отрисовки*/
 		GLenum _currMode;
 
 		/*ВАО*/
 		VertexArray _VAO;
+
+		/*парамемтр хранит тип отрисовываемого примитива*/
+		State _renderState;
 	};
 }

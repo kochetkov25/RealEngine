@@ -28,6 +28,7 @@
 namespace Render
 {
 	extern void createRawCube(Renderer& render);
+	extern void createTexCube(Renderer& render);
 }
 
 int main(int argc, char** argv)
@@ -43,27 +44,11 @@ int main(int argc, char** argv)
 	/*загрузка шейдеров*/
 	resourceManager.loadShaders();
 
-	std::string shaderName = "DefaultShader";
+	std::string shaderName = "SpriteShader";
 	
-	/*static tex*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
-
-	unsigned int spriteSize = 128;
-
-	resourceManager.loadSprite(
-								"SqrSprite",
-								"ColoredSqr",
-								shaderName,
-								spriteSize, spriteSize
-							);
-	auto SqrSprite = resourceManager.getSprite("SqrSprite");
-	SqrSprite->setSpritePosition(
-									glm::vec3(
-												-static_cast<float>(spriteSize) / 2.f, 
-												-static_cast<float>(spriteSize) / 2.f,
-												-390.f
-											 )
-								);
+	/*load TEX*/
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/raiden.png");
+	auto currTex = resourceManager.getTexture2D("ColoredSqr");
 
 	/*матрица проекции*/
 	/*перспективная*/
@@ -117,22 +102,7 @@ int main(int argc, char** argv)
 
 
 	Render::Renderer MainRender;
-	Render::createRawCube(MainRender);
-	glm::vec3 cubePositions[] = 
-	{
-		 glm::vec3(0.f,  0.f, 0.f),
-		 glm::vec3(2.0f,  5.0f, -15.0f),
-		 glm::vec3(-1.5f, -2.2f, -2.5f),
-		 glm::vec3(-3.8f, -2.0f, -12.3f),
-		 glm::vec3(2.4f, -4.f, -3.5f),
-		 glm::vec3(-1.7f,  3.0f, -7.5f),
-		 glm::vec3(1.3f, -2.0f, -2.5f),
-		 glm::vec3(1.5f,  2.0f, -2.5f),
-		 glm::vec3(2.5f,  1.f, -1.5f),
-		 glm::vec3(-1.3f,  1.0f, -1.5f),
-		 glm::vec3(-10.3f,  1.0f, -32.5f),
-		 glm::vec3(-21.3f,  5.0f, -40.5f)
-	};
+	Render::createTexCube(MainRender);
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
@@ -142,16 +112,15 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	/*задаю дефолтные настройки смешивания*/
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	/*линейное размытие пикселей*/
-	glEnable(GL_LINE_SMOOTH);
 
+
+	currTex->bindTexture2D();
 	float ang = 0.f;
-	bool axisX = 1;
+	bool axisX = 0;
 	bool axisY = 0;
-	bool axisZ = 0;
+	bool axisZ = 1;
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
-		ang = 0.f;
 		/*очищаю передний буфер*/
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -160,40 +129,31 @@ int main(int argc, char** argv)
 		pShaderProg->use();
 
 		/*drawing*/
-		for (auto& pos : cubePositions)
-		{
-			ang += 10.f;
-			glm::mat4 modelMatrix(1.f);
-			modelMatrix = glm::translate(modelMatrix, pos);
-			modelMatrix = glm::rotate(modelMatrix, glm::radians((GLfloat)glfwGetTime() * 9.0f + ang), glm::vec3(
-																					1.f,
-																					1.f, 
-																					1.f
-																               )
-                                                                             );
-			modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
+		glm::mat4 modelMatrix(1.f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, -2.f));
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
+																				static_cast<float>(axisX),
+																				static_cast<float>(axisY), 
+																				static_cast<float>(axisZ)
+																            )
+                                                                            );
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
-			pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
-			pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
-			pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
+		pShaderProg->setTexUniform("tex", 0);
+		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
+		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
 
-			MainRender.drawArrays();
-		}
-		//glm::mat4 modelMatrix(1.f);
-		//modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
-		//modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
-		//																		static_cast<float>(axisX),
-		//																		static_cast<float>(axisY), 
-		//																		static_cast<float>(axisZ)
-		//																   )
-		//                                                                 );
-		//modelMatrix = glm::scale(modelMatrix, glm::vec3(45.f, 45.f, 45.f));
+		MainRender.drawArrays();
 
-		//pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
-		//pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
-		//pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
-
-		//MainRender.drawArrays();
+		Modules::GUIModule::GUIupdate();
+		ImGui::Begin("Scene Editor");
+		ImGui::SliderFloat("Cube rotation", &ang, -360.f, 360.f);
+		ImGui::Checkbox("axis of rotation X", &axisX);
+		ImGui::Checkbox("axis of rotation Y", &axisY);
+		ImGui::Checkbox("axis of rotation Z", &axisZ);
+		ImGui::End();
+		Modules::GUIModule::GUIdraw();
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();
