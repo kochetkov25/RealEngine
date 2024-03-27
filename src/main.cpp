@@ -47,7 +47,7 @@ int main(int argc, char** argv)
 	std::string shaderName = "SpriteShader";
 	
 	/*load TEX*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/raiden.png");
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
 	auto currTex = resourceManager.getTexture2D("ColoredSqr");
 
 	/*матрица проекции*/
@@ -113,8 +113,9 @@ int main(int argc, char** argv)
 	/*задаю дефолтные настройки смешивания*/
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
+	/*BIND TEX*/
 	currTex->bindTexture2D();
+	/*values*/
 	float ang = 0.f;
 	bool axisX = 0;
 	bool axisY = 0;
@@ -128,7 +129,7 @@ int main(int argc, char** argv)
 		/*shader prog*/
 		pShaderProg->use();
 
-		/*drawing*/
+		/*MATRIX*/
 		glm::mat4 modelMatrix(1.f);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, -2.f));
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
@@ -143,9 +144,11 @@ int main(int argc, char** argv)
 		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
-
+		/*DRAWING*/
 		MainRender.drawArrays();
 
+
+		/*User Interface*/
 		Modules::GUIModule::GUIupdate();
 		ImGui::Begin("Scene Editor");
 		ImGui::SliderFloat("Cube rotation", &ang, -360.f, 360.f);
