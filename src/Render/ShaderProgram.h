@@ -34,7 +34,13 @@ namespace Render
 		void setTexUniform(const std::string &textureName, const GLint value);
 
 		/*утсановить значение uniform mat4*/
-		void setMatrix4Uniform(const std::string &matrixName, const glm::mat4 &matrix);
+		void setMatrix4Uniform(const std::string &vecName, const glm::mat4 &matrix);
+
+		/*утсановить значение uniform vec3*/
+		void serVec3Uniform(const std::string& matrixName, const glm::vec3& vec3);
+
+		/*утсановить значение float uniform*/
+		void setFloatUniform(const std::string& name, const float value);
 
 		/*идентификатор шейдерной программы*/
 		GLuint getShaderProgramID() { return _ID; }

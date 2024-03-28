@@ -1,9 +1,36 @@
 #version 440
 out vec4 vertexColor;
+
 in vec2 texCoords;
+in vec3 texNormals;
+in vec3 vertexPosWorld;
 
 uniform sampler2D tex;
 
-void main() {
-   vertexColor = texture(tex, texCoords);
+uniform vec3 lightColor;
+uniform vec3 lightPos;
+uniform vec3 cameraPos;
+uniform float ambientFactor;
+uniform float diffuseFactor;
+uniform float specularFactor;
+uniform float shininess;
+
+void main() 
+{
+   // ambient
+   vec3 ambient = ambientFactor * lightColor;
+
+   // diffuse
+   vec3 normal = normalize(texNormals);
+   vec3 lightDirection = normalize(lightPos - vertexPosWorld);
+   vec3 diffuse =  diffuseFactor * lightColor * dot(normal, lightDirection);
+   diffuse = max(diffuse, 0.0);
+
+   // specular
+   vec3 cameraDirection = normalize(cameraPos - vertexPosWorld);
+   vec3 reflectDirection = reflect(-lightDirection, normal);
+   float specularDot = pow(max(dot(cameraDirection, reflectDirection), 0.0), shininess);
+   vec3 specular = specularFactor * specularDot * lightColor;
+
+   vertexColor = texture(tex, texCoords) * vec4(ambient + diffuse + specular, 1.f);
 }

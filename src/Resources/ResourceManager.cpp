@@ -269,4 +269,10 @@ void ResourceManager::loadShaders()
 						"res/shaders/spriteVertexShader.txt",
 						"res/shaders/DebugFragmentShader.txt"
 					 );
+	/*шейдер для источника света*/
+	loadShederProgram(
+						"LightShader",
+						"res/shaders/lightVertexShader.txt",
+						"res/shaders/lightFragmentShader.txt"
+					 );
 }

@@ -125,5 +125,22 @@ namespace Render
 		glUniformMatrix4fv(glGetUniformLocation(_ID, matrixName.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
+	/*============================================================*/
+	/*утсановить значение uniform vec3*/
+	void Render::ShaderProgram::serVec3Uniform(
+											  	const std::string& vecName,
+											  	const glm::vec3& vec3
+											  )
+	{
+		glUniform3f(glGetUniformLocation(_ID, vecName.c_str()), vec3.x, vec3.y, vec3.z);
+	}
+
+	/*============================================================*/
+	/*утсановить значение float uniform*/
+	void Render::ShaderProgram::setFloatUniform(const std::string& name, const float value)
+	{
+		glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);
+	}
+
 
 }

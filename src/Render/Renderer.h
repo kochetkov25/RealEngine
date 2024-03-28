@@ -18,7 +18,8 @@ namespace Render {
 		enum class State
 		{
 			TEXTURE_2D,
-			PRIMITIVES_GL
+			PRIMITIVES_GL,
+			TEXTURE_2D_LIGHT
 		};
 
 		/*конструктор*/
@@ -82,6 +83,12 @@ namespace Render {
 																VertexBuffer::_e_DataType::Float3,
 																VertexBuffer::_e_DataType::Float2
 															};
+		/*тип элементов в буффере для спрайтов с освещением*/
+		std::vector<VertexBuffer::BufferElement> _vec3UV2vec3 = {
+																VertexBuffer::_e_DataType::Float3,
+																VertexBuffer::_e_DataType::Float2,
+																VertexBuffer::_e_DataType::Float3,
+		                                                    };
 		/*текущий режим отрисовки*/
 		GLenum _currMode;
 

@@ -29,6 +29,7 @@ namespace Render
 {
 	extern void createRawCube(Renderer& render);
 	extern void createTexCube(Renderer& render);
+	extern void createTexCubeLight(Renderer& render);
 }
 
 int main(int argc, char** argv)
@@ -79,30 +80,21 @@ int main(int argc, char** argv)
 	//									   );
 
 
-	/*матрица модели*/
-	//glm::mat4 modelMatrix(1.f);
-	//modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, -350));
-	//modelMatrix = glm::rotate(modelMatrix, glm::radians(0.f), glm::vec3(0.0f, 1.0f, 0.0f));
-
 	/*матрица вида*/
 	glm::mat4 viewMatrix(1.f);
-	/*смещение камеры по Х*/
-	viewMatrix = glm::translate(viewMatrix, glm::vec3(0.0f, 0.0f, -5.0f));
+	/*позиция камеры*/
+	glm::vec3 cameraPosition(0.0f, -2.0f, -7.0f);
+	viewMatrix = glm::translate(viewMatrix, cameraPosition);
 
 
 	/*шейдерная программа для отрисовки GL примитивов*/
-	auto pShaderProg = resourceManager.getShaderProgram(shaderName);
-	//pShaderProg->use();
+	auto pShaderProg  = resourceManager.getShaderProgram(shaderName);
+	auto pLightShader = resourceManager.getShaderProgram("LightShader");
 
-	//pShaderProg->setTexUniform("tex", 0);
-
-	//pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
-	//pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
-	//pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
 
 
 	Render::Renderer MainRender;
-	Render::createTexCube(MainRender);
+	Render::createTexCubeLight(MainRender);
 
 
 	/*НАСТРОЙКА КОНТЕКСТА OpenGL*/
@@ -113,23 +105,32 @@ int main(int argc, char** argv)
 	/*задаю дефолтные настройки смешивания*/
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	/*BIND TEX*/
-	currTex->bindTexture2D();
-	/*values*/
+	/*values CUBE*/
 	float ang = 0.f;
 	bool axisX = 0;
 	bool axisY = 0;
 	bool axisZ = 1;
+	float X =  2.f;
+	float Y =  2.f;
+	float Z = -3.f;
+	float lightColor[3] = { 1.f, 1.f, 1.f };
+
+	float ambientFactor = 0.1f;
+	float diffuseFactor = 0.1f;
+	float specularFactor = 0.1f;
+	float shininess = 32.f;
+
+	/*BIND TEX*/
+	currTex->bindTexture2D();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
 		/*очищаю передний буфер*/
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		/*shader prog*/
+		/*shader prog cube*/
 		pShaderProg->use();
-
-		/*MATRIX*/
+		/*DRAWING CUBE*/
 		glm::mat4 modelMatrix(1.f);
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, -2.f));
 		modelMatrix = glm::rotate(modelMatrix, glm::radians(ang), glm::vec3(
@@ -138,13 +139,49 @@ int main(int argc, char** argv)
 																				static_cast<float>(axisZ)
 																            )
                                                                             );
-		modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(3.f, 3.f, 3.f));
 
 		pShaderProg->setTexUniform("tex", 0);
+		pShaderProg->serVec3Uniform("lightColor", glm::vec3(
+																lightColor[0],
+																lightColor[1],
+																lightColor[2]
+															));
+		pShaderProg->serVec3Uniform("lightPos",   glm::vec3(
+																X,
+																Y,
+																Z
+															));
+		pShaderProg->serVec3Uniform("cameraPos", glm::vec3(
+															-cameraPosition.x,
+															-cameraPosition.y,
+															-cameraPosition.z
+														 ));
+		pShaderProg->setFloatUniform("ambientFactor",  ambientFactor);
+		pShaderProg->setFloatUniform("diffuseFactor",  diffuseFactor);
+		pShaderProg->setFloatUniform("specularFactor", specularFactor);
+		pShaderProg->setFloatUniform("shininess",      shininess);
 		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
-		/*DRAWING*/
+		MainRender.drawArrays();
+
+
+		/*light shader*/
+		pLightShader->use();
+		/*DRAWING LIGHT*/
+		modelMatrix = glm::mat4(1.f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(X, Y, Z));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f, 0.5f, 0.5f));
+
+		pLightShader->serVec3Uniform("lightColor", glm::vec3(
+																lightColor[0],
+																lightColor[1],
+																lightColor[2]
+															));
+		pLightShader->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+		pLightShader->setMatrix4Uniform("modelMatrix", modelMatrix);
+		pLightShader->setMatrix4Uniform("viewMatrix", viewMatrix);
 		MainRender.drawArrays();
 
 
@@ -156,7 +193,19 @@ int main(int argc, char** argv)
 		ImGui::Checkbox("axis of rotation Y", &axisY);
 		ImGui::Checkbox("axis of rotation Z", &axisZ);
 		ImGui::End();
+
+		ImGui::Begin("Light Editor");
+		ImGui::SliderFloat("X", &X, -10.f, 10.f);
+		ImGui::SliderFloat("Y", &Y, -10.f, 10.f);
+		ImGui::SliderFloat("Z", &Z, -10.f, 10.f);
+		ImGui::ColorEdit3("Light Color", lightColor);
+		ImGui::SliderFloat("Ambient Factor", &ambientFactor, 0.f, 1.f);
+		ImGui::SliderFloat("Diffuse Factor", &diffuseFactor, 0.f, 1.f);
+		ImGui::SliderFloat("Specular Factor", &specularFactor, 0.f, 1.f);
+		ImGui::SliderFloat("Shininess", &shininess, 2.f, 512.f);
+		ImGui::End();
 		Modules::GUIModule::GUIdraw();
+
 
 		/*меняю буферы местами (обновление окна)*/
 		MainWindow.update();

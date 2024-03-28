@@ -29,6 +29,11 @@ namespace Render
 				elem = _vec3Col4;
 				break;
 			}
+			case Render::Renderer::State::TEXTURE_2D_LIGHT:
+			{
+				elem = _vec3UV2vec3;
+				break;
+			}
 			default:
 			{
 				elem = _vec3Col4;

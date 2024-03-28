@@ -284,4 +284,180 @@ namespace Render
 		render.Enable(Render::Renderer::State::TEXTURE_2D);
 	}
 
+	void createTexCubeLight(Renderer& render)
+	{
+		render.Enable(Render::Renderer::State::TEXTURE_2D_LIGHT);
+		render.begin(GL_TRIANGLES);
+
+		/*1*/
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+		render.verex3(0.5f, -0.5f, -0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+		render.verex3(0.5f, 0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+
+		render.verex3(0.5f, 0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+		render.verex3(-0.5f, 0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, -1.0f);
+
+
+
+
+		/*2*/
+		render.verex3(-0.5f, -0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+		render.verex3(0.5f, -0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+		render.verex3(-0.5f, 0.5f, 0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+		render.verex3(-0.5f, -0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, 0.0f, 1.0f);
+
+
+
+
+		/*3*/
+		render.verex3(-0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+		render.verex3(-0.5f, 0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+		render.verex3(-0.5f, -0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+		render.verex3(-0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(-1.0f, 0.0f, 0.0f);
+
+
+
+		/*4*/
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+		render.verex3(0.5f, 0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+		render.verex3(0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+
+		render.verex3(0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+		render.verex3(0.5f, -0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(1.0f, 0.0f, 0.0f);
+
+
+
+		/*5*/
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+		render.verex3(0.5f, -0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+		render.verex3(0.5f, -0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+
+		render.verex3(0.5f, -0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+		render.verex3(-0.5f, -0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+		render.verex3(-0.5f, -0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, -1.0f, 0.0f);
+
+
+
+		/*6*/
+		render.verex3(-0.5f, 0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+		render.verex3(0.5f, 0.5f, -0.5f);
+		render.vertexUV(1.0f, 1.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+
+		render.verex3(0.5f, 0.5f, 0.5f);
+		render.vertexUV(1.0f, 0.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+		render.verex3(-0.5f, 0.5f, 0.5f);
+		render.vertexUV(0.0f, 0.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+		render.verex3(-0.5f, 0.5f, -0.5f);
+		render.vertexUV(0.0f, 1.0f);
+		render.verex3(0.0f, 1.0f, 0.0f);
+
+		render.end();
+		render.Enable(Render::Renderer::State::TEXTURE_2D);
+	}
 }
