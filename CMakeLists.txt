@@ -26,7 +26,9 @@ src/Render/VertexArray.h
 src/Render/VertexArray.cpp
 src/Modules/GUIModule.h
 src/Modules/GUIModule.cpp
-src/Render/Primitives.cpp)
+src/Render/Primitives.cpp
+src/Render/Camera.h
+src/Render/Camera.cpp)
 
 add_subdirectory(dependencies/glfw)
 

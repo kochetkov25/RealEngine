@@ -3,7 +3,7 @@
 namespace Render
 {
 
-
+	/*цветной куб из GL примитивов*/
 	void createRawCube(Renderer& render)
 	{
 		render.begin(GL_TRIANGLES);
@@ -143,6 +143,7 @@ namespace Render
 		render.end();
 	}
 
+	/*куб с натянутой текстурой*/
 	void createTexCube(Renderer& render)
 	{
 		render.Enable(Render::Renderer::State::TEXTURE_2D);
@@ -284,6 +285,7 @@ namespace Render
 		render.Enable(Render::Renderer::State::TEXTURE_2D);
 	}
 
+	/*куб с натянутой текстурой и нормалями к каждой вершине*/
 	void createTexCubeLight(Renderer& render)
 	{
 		render.Enable(Render::Renderer::State::TEXTURE_2D_LIGHT);

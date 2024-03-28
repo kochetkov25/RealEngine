@@ -79,7 +79,7 @@ int main(int argc, char** argv)
 	//											-500.f, 500.f
 	//									   );
 
-
+	 
 	/*матрица вида*/
 	glm::mat4 viewMatrix(1.f);
 	/*позиция камеры*/
