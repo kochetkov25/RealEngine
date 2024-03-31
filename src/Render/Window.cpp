@@ -44,7 +44,7 @@ namespace Render
 			}
 			GLFWinit = true;
 		}
-
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 		/*инициализация окна*/
 		if (!_pWindow)
 		{
@@ -95,7 +95,6 @@ namespace Render
 	/*обновление окна*/
 	void Render::Window::update()
 	{
-		
 		glfwSwapBuffers(_pWindow); // меняю передний и задний буфер
 		glfwPollEvents(); // произвожу обработку событий
 	}

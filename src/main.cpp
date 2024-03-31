@@ -24,6 +24,8 @@
 
 #include "Render\Renderer.h"
 
+#include "Render\Camera.h"
+
 
 namespace Render
 {
@@ -40,6 +42,15 @@ int main(int argc, char** argv)
 		return -1;
 	/*создание контекста ImGui*/
 	Modules::GUIModule::onWindowCreate(MainWindow.getWindow());
+	/*создание камеры*/
+	Render::Camera MainCamera;
+	MainCamera.setWindowSize(
+								static_cast<float>(MainWindow.getHeight()),
+								static_cast<float>(MainWindow.getWidth())
+							);
+	MainCamera.setPosition(glm::vec3(0.f, 2.f, 7.f));
+	MainCamera.setPlane(0.1f, 500.f);
+	MainCamera.setProjectionMode(Render::Camera::ProjectionMode::PERSPECTIVE);
 	/*создание объекта ресурсного менеджера*/
 	ResourceManager resourceManager(argv[0]);
 	/*загрузка шейдеров*/
@@ -120,10 +131,16 @@ int main(int argc, char** argv)
 	float specularFactor = 0.1f;
 	float shininess = 32.f;
 
+	float zCam = 7.f;
+
 	/*BIND TEX*/
 	currTex->bindTexture2D();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
+		MainCamera.setPosition(glm::vec3(0.f, 0.f, zCam));
+		projectionMatrix = MainCamera.getProjMat();
+		viewMatrix = MainCamera.getViewMat();
+
 		/*очищаю передний буфер*/
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -192,6 +209,7 @@ int main(int argc, char** argv)
 		ImGui::Checkbox("axis of rotation X", &axisX);
 		ImGui::Checkbox("axis of rotation Y", &axisY);
 		ImGui::Checkbox("axis of rotation Z", &axisZ);
+		ImGui::SliderFloat("Z position camera", &zCam, -15.f, 15.f);
 		ImGui::End();
 
 		ImGui::Begin("Light Editor");
