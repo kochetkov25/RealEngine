@@ -12,6 +12,7 @@ namespace Render
 	class Camera
 	{
 	public:
+		/*тип камеры*/
 		enum class ProjectionMode
 		{
 			PERSPECTIVE,
@@ -19,6 +20,15 @@ namespace Render
 			ORTHOGRAPHIC_LEFT_BOT
 		};
 
+		/*конструктор*/
+		/*
+		* ВНИМАНИЕ!!!
+		* Для корректной работы камеры
+		* необходимо задать правильные
+		* параметры frustum.
+		* windowHeight и windowHeight должны
+		* совпадать с параметрами окна отрисовки
+		*/
 		Camera(
 				const glm::vec3& position = { 0,0,0 },
 				const glm::vec3& rotation = { 0,0,0 },
@@ -39,19 +49,24 @@ namespace Render
 			updateProjMat();
 		}
 
+		/*установка near и far plane*/
 		void setPlane(const float near, const float far);
+		/*установка размеров окна отрисовки*/
 		void setWindowSize(const float height, const float width);
 
+		/*позиция камеры в мировой СК*/
 		void setPosition(const glm::vec3& position);
-
+		/*поворот камеры*/
 		void setRotation(const glm::vec3& rotation);
 
-
+		/*установка одновременно и позиции и поворта камеры*/
 		void setPositionRotation(const glm::vec3& position, const glm::vec3& rotation);
-
+		/*установка типа камеры*/
 		void setProjectionMode(ProjectionMode mode);
 
+		/*матрица вида*/
 		glm::mat4 getViewMat();
+		/*матрица проекции*/
 		glm::mat4 getProjMat();
 	private:
 		ProjectionMode _projectionMode;
@@ -67,7 +82,9 @@ namespace Render
 		float _windowHeight;
 		float _windowWidth;
 
+		/*пересоздать матрицу вида*/
 		void updateViewMat();
+		/*пересоздать матрицу проекции*/
 		void updateProjMat();
 	};
 
