@@ -10,6 +10,8 @@
 
 #include "../Modules/GUIModule.h"
 
+#include "Events/MouseEvent.h"
+
 #include <iostream>
 
 namespace Render
@@ -23,6 +25,27 @@ namespace Render
 		_width = 1024;
 		_height = 768;
 		_windowName = "mainWindow";
+
+		/*устанавливаем дефолтный callBack*/
+		/*setFunCallBack([](Event& e)
+			{
+				std::cout << e.format() << std::endl;
+			});*/
+
+		setFunCallBack([this](Event& e)
+			{
+				this->_dispatcher.dispatch(e);
+			});
+	}
+
+	void Render::Window::initEvents()
+	{
+		_dispatcher.addEventListner<MouseMovedEvent>(
+			[](MouseMovedEvent& e)
+			{
+				std::cout << e.format() << std::endl;
+			}
+		);
 	}
 
 	/*============================================================*/
@@ -59,6 +82,12 @@ namespace Render
 
 		/*установка данного окна как контекст отрисовки*/
 		glfwMakeContextCurrent(_pWindow);
+
+		initEvents();
+		/*установка callBack функций*/
+		glfwSetWindowUserPointer(_pWindow, this);
+		/*callBack движение мыши*/
+		glfwSetCursorPosCallback(_pWindow, mouseMovedCallBack);
 
 		/*инициализация GLAD*/
 		if (!gladLoadGL()) {
@@ -97,5 +126,17 @@ namespace Render
 	{
 		glfwSwapBuffers(_pWindow); // меняю передний и задний буфер
 		glfwPollEvents(); // произвожу обработку событий
+	}
+
+	/*============================================================*/
+	/*callBack при движении мышки*/
+	void Window::mouseMovedCallBack(GLFWwindow* pWindow, double x, double y)
+	{
+		/*получаем ссылку на окно с пользовательскими данными*/
+		auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+		/*создаем event для движения мыши*/
+		MouseMovedEvent event(x, y);
+		/*выполяем callBack для движения мыши*/
+		handle.funCallBack(event);
 	}
 }

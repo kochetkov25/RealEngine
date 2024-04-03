@@ -30,7 +30,8 @@ src/Render/Primitives.cpp
 src/Render/Camera.h
 src/Render/Camera.cpp
 src/Render/Event.h
-src/Render/Event.cpp)
+src/Render/Event.cpp
+src/Render/Events/MouseEvent.h)
 
 add_subdirectory(dependencies/glfw)
 
@@ -63,11 +64,18 @@ file(GLOB_RECURSE SRC_MODULES
     "src/Modules/*.h"
 )
 
+file(GLOB_RECURSE SRC_EVENTS
+    "src/Render/Events/*.cpp"
+    "src/Render/Events/*.h"
+)
+
 source_group("Render" FILES ${SRC_RENDER})
 
 source_group("Resources" FILES ${SRC_RESOURCES})
 
 source_group("Modules" FILES ${SRC_MODULES})
+
+source_group("Events" FILES ${SRC_EVENTS})
 
 
 

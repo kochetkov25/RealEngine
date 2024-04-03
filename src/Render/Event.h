@@ -1,16 +1,21 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <functional>
+#include <iostream>
 
 namespace Render
 {
-
+	/*базовый класс для создания событий*/
 	class Event
 	{
 	public:
 		/*типы ивентов*/
 		enum class EventType
 		{
-			MOUSE_MOVED
+			MOUSE_MOVED = 1,
+
+			COUNT
 		};
 
 		virtual ~Event() = default;
@@ -31,6 +36,35 @@ namespace Render
 			:
 			_type(type),
 			_name(name) {}
+	};
+
+	/*диспетчер событий*/
+	class EventDispatcher
+	{
+	public:
+		template<typename _typeEvent>
+		void addEventListner(std::function<void(_typeEvent&)> callBack)
+		{
+			auto base = [func = std::move(callBack)](Event& e)
+			{
+				func(static_cast<_typeEvent&>(e));
+			};
+			_vecEventCallBacks.emplace_back(base);
+		}
+
+		void dispatch(Event& event)
+		{
+			size_t type = static_cast<size_t>(event.getType());
+			if (type > _vecEventCallBacks.size())
+			{
+				std::cerr << "Event not set!" << std::endl;
+				return;
+			}
+			_vecEventCallBacks[type - 1](event);
+		}
+
+	private:
+		std::vector<std::function<void(Event&)>> _vecEventCallBacks;
 	};
 
 }
