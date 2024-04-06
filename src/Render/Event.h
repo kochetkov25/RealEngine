@@ -14,6 +14,9 @@ namespace Render
 		enum class EventType
 		{
 			MOUSE_MOVED = 1,
+			WINDOW_CLOSED,
+			KEY_PRESSED,
+			KEY_RELEASED,
 
 			COUNT
 		};
@@ -38,6 +41,9 @@ namespace Render
 			_name(name) {}
 	};
 
+
+
+
 	/*диспетчер событий*/
 	class EventDispatcher
 	{
@@ -45,13 +51,17 @@ namespace Render
 		template<typename _typeEvent>
 		void addEventListner(std::function<void(_typeEvent&)> callBack)
 		{
+			/*лямбда, которая принимает ссылку на базовый Event и даункастит до
+			  ссылки на необходимый Event (для добавления коллбека в вектор)*/
 			auto base = [func = std::move(callBack)](Event& e)
 			{
+				/*даункаст до ссылки на нужный объект*/
 				func(static_cast<_typeEvent&>(e));
 			};
 			_vecEventCallBacks.emplace_back(base);
 		}
 
+		/*вызов callback в соответствии с типои event*/
 		void dispatch(Event& event)
 		{
 			size_t type = static_cast<size_t>(event.getType());
@@ -64,6 +74,7 @@ namespace Render
 		}
 
 	private:
+		/*вектор, который хранит коллбеки*/
 		std::vector<std::function<void(Event&)>> _vecEventCallBacks;
 	};
 

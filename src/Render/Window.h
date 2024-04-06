@@ -52,16 +52,18 @@ namespace Render
 		void setResolution(unsigned int width, unsigned int height) 
 		{ _height = height; _width = width; };
 
-
+		/*диспетчер событий*/
 		EventDispatcher _dispatcher;
-
 	private:
 		std::string _windowName; // название окна
 
-		GLFWwindow* _pWindow; // указатель на контекст окна
+		GLFWwindow* _pWindow; // указатель на GL контекст окна
 
 		unsigned int _height;
 		unsigned int _width;
+
+		bool init_GLFW();
+		bool init_GLAD();
 
 		bool _init; // инициализация окна
 
@@ -76,5 +78,9 @@ namespace Render
 		/*callBacks*/
 		/*callBack для движения мыши*/
 		static void mouseMovedCallBack(GLFWwindow* pWindow, double x, double y);
+		/*callBack для закрытия окна*/
+		static void windowClosedCallBack(GLFWwindow* pWindow);
+		/*callBack для нажатия клавиш клавиатуры*/
+		static void keyPressedCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods);
 	};
 }

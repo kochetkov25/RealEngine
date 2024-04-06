@@ -9,13 +9,17 @@ namespace Modules
 	class GUIModule
 	{
 	public:
+		/*инициализация модуля пользовательского интерфейса*/
 		static void onWindowCreate(GLFWwindow* pWindow);
 
+		/*освобождения ресурсов, занятх модулем*/
 		static void onWindowClose();
 
-		static void GUIupdate();
+		/*начало отрисовки*/
+		static void GUIbegin();
 
-		static void GUIdraw();
+		/*конец отрисовки*/
+		static void GUIend();
 	};
 
 

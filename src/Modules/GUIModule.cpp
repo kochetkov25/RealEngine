@@ -9,12 +9,16 @@
 
 namespace Modules
 {
+
+
+	/*============================================================*/
+	/*инициализация модуля пользовательского интерфейса*/
 	void GUIModule::onWindowCreate(GLFWwindow* pWindow)
 	{
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 
-		auto io = ImGui::GetIO();
+		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |= ImGuiConfigFlags_::ImGuiConfigFlags_DockingEnable;
 		io.ConfigFlags |= ImGuiConfigFlags_::ImGuiConfigFlags_ViewportsEnable;
 
@@ -22,6 +26,8 @@ namespace Modules
 		ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
 	}
 
+	/*============================================================*/
+	/*освобождения ресурсов, занятх модулем*/
 	void GUIModule::onWindowClose()
 	{
 		ImGui_ImplOpenGL3_Shutdown();
@@ -29,14 +35,21 @@ namespace Modules
 		ImGui::DestroyContext();
 	}
 
-	void GUIModule::GUIupdate()
+	/*============================================================*/
+	/*начало отрисовки*/
+	void GUIModule::GUIbegin()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		/*settings for docking*/
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 	}
 
-	void GUIModule::GUIdraw()
+	/*============================================================*/
+	/*конец отрисовки*/
+	void GUIModule::GUIend()
 	{
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -49,5 +62,6 @@ namespace Modules
 			glfwMakeContextCurrent(backupCurrentContext);
 		}
 	}
+
 
 }

@@ -1,0 +1,43 @@
+ADD NEW EVENT
+
+1. Create new class that inherits form base Event class:
+
+class NewEvent : public Event
+{
+	public:
+		NewEvent() :
+		   Event("NEW EVENT", EventType::NEW_EVENT) {}
+		std::string format() const override
+		{
+			...
+		}
+}
+
+2. Register NewEvent in dispatchet:
+
+_dipstcher.addEventListner<NewEvent>(
+	[](NewEvent& e)
+	{
+		...
+	}
+);
+
+3. Register GLFW callBack:
+
+static void newEventCallBack(...)
+{
+	auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+	NewEvent event;
+	handle.funCallBack(event);
+}
+
+glfwSetNewEventCallback(GLFWwindow* pWindow, newEventCallBack);
+
+
+4. WARNING:
+you should have funCallBack in your class:
+
+setFunCallBack([this](Event& e)
+			{
+				this->_dispatcher.dispatch(e);
+			});

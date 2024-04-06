@@ -31,7 +31,12 @@ src/Render/Camera.h
 src/Render/Camera.cpp
 src/Render/Event.h
 src/Render/Event.cpp
-src/Render/Events/MouseEvent.h)
+src/Render/Events/MouseEvent.h
+src/Render/Events/WindowEvent.h
+src/Render/Events/KeyboardEvent.h
+src/Input/Input.h
+src/Input/Input.cpp
+)
 
 add_subdirectory(dependencies/glfw)
 
@@ -69,6 +74,11 @@ file(GLOB_RECURSE SRC_EVENTS
     "src/Render/Events/*.h"
 )
 
+file(GLOB_RECURSE SRC_INPUT
+    "src/Input/*.cpp"
+    "src/Input/*.h"
+)
+
 source_group("Render" FILES ${SRC_RENDER})
 
 source_group("Resources" FILES ${SRC_RESOURCES})
@@ -76,6 +86,8 @@ source_group("Resources" FILES ${SRC_RESOURCES})
 source_group("Modules" FILES ${SRC_MODULES})
 
 source_group("Events" FILES ${SRC_EVENTS})
+
+source_group("Input" FILES ${SRC_INPUT})
 
 
 

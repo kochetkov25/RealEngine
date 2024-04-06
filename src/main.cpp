@@ -26,6 +26,8 @@
 
 #include "Render\Camera.h"
 
+#include "Input/Input.h"
+
 
 namespace Render
 {
@@ -62,40 +64,12 @@ int main(int argc, char** argv)
 	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
 	auto currTex = resourceManager.getTexture2D("ColoredSqr");
 
-	/*матрица проекции*/
 	/*перспективная*/
-	const float aspect = static_cast<float>(MainWindow.getWidth()) /
-						 static_cast<float>(MainWindow.getHeight());
-	glm::mat4 projectionMatrix = glm::perspective(
-													glm::radians(45.f), 
-													aspect, 
-													0.1f, 
-													500.f
-												 );
-	
-	/*ортогональная, центр - левый нижний угол*/
-	//glm::mat4 projectionMatrix = glm::ortho(
-	//											0.f,
-	//											static_cast<float>(MainWindow.getWidth()), 
-	//											0.f, 
-	//											static_cast<float>(MainWindow.getHeight()), 
-	//											-100.f, 
-	//											100.f
-	//									   );
-
-	/*ортогональная, центр - центральная точка окна отрисовки*/
-	//glm::mat4 projectionMatrix = glm::ortho(
-	//											-static_cast<float>(MainWindow.getWidth()) / 2.f, static_cast<float>(MainWindow.getWidth()) / 2.f,
-	//											-static_cast<float>(MainWindow.getHeight()) / 2.f, static_cast<float>(MainWindow.getHeight()) / 2.f,
-	//											-500.f, 500.f
-	//									   );
-
-	 
+	glm::mat4 projectionMatrix;
 	/*матрица вида*/
 	glm::mat4 viewMatrix(1.f);
 	/*позиция камеры*/
 	glm::vec3 cameraPosition(0.0f, -2.0f, -7.0f);
-	viewMatrix = glm::translate(viewMatrix, cameraPosition);
 
 
 	/*шейдерная программа для отрисовки GL примитивов*/
@@ -201,9 +175,8 @@ int main(int argc, char** argv)
 		pLightShader->setMatrix4Uniform("viewMatrix", viewMatrix);
 		MainRender.drawArrays();
 
-
 		/*User Interface*/
-		Modules::GUIModule::GUIupdate();
+		Modules::GUIModule::GUIbegin();
 		ImGui::Begin("Scene Editor");
 		ImGui::SliderFloat("Cube rotation", &ang, -360.f, 360.f);
 		ImGui::Checkbox("axis of rotation X", &axisX);
@@ -222,7 +195,7 @@ int main(int argc, char** argv)
 		ImGui::SliderFloat("Specular Factor", &specularFactor, 0.f, 1.f);
 		ImGui::SliderFloat("Shininess", &shininess, 2.f, 512.f);
 		ImGui::End();
-		Modules::GUIModule::GUIdraw();
+		Modules::GUIModule::GUIend();
 
 
 		/*меняю буферы местами (обновление окна)*/
