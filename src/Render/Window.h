@@ -81,6 +81,8 @@ namespace Render
 		/*callBack для закрытия окна*/
 		static void windowClosedCallBack(GLFWwindow* pWindow);
 		/*callBack для нажатия клавиш клавиатуры*/
-		static void keyPressedCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods);
+		static void keyCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods);
+		/*callBack для нажатия кнопок мыши*/
+		static void mouseButtonCallBack(GLFWwindow* pWindow, int button, int action, int mods);
 	};
 }

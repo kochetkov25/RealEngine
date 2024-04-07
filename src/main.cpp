@@ -18,7 +18,8 @@
 #include "Render\VertexBuffer.h"
 #include "Render\VertexArray.h"
 
-#include "Modules/GUIModule.h"
+#include "Modules\GUIModule.h"
+#include "Modules\Time.h"
 
 #include <imgui.h>
 
@@ -26,7 +27,7 @@
 
 #include "Render\Camera.h"
 
-#include "Input/Input.h"
+#include "Input\Input.h"
 
 
 namespace Render
@@ -50,8 +51,11 @@ int main(int argc, char** argv)
 								static_cast<float>(MainWindow.getHeight()),
 								static_cast<float>(MainWindow.getWidth())
 							);
-	MainCamera.setPosition(glm::vec3(0.f, 2.f, 7.f));
+	/*позиция камеры*/
+	glm::vec3 cameraPosition(0.0f, 0.0f, 7.0f);
+	MainCamera.setPosition(cameraPosition);
 	MainCamera.setPlane(0.1f, 500.f);
+	MainCamera.setVelocity(5.f);
 	MainCamera.setProjectionMode(Render::Camera::ProjectionMode::PERSPECTIVE);
 	/*создание объекта ресурсного менеджера*/
 	ResourceManager resourceManager(argv[0]);
@@ -68,8 +72,6 @@ int main(int argc, char** argv)
 	glm::mat4 projectionMatrix;
 	/*матрица вида*/
 	glm::mat4 viewMatrix(1.f);
-	/*позиция камеры*/
-	glm::vec3 cameraPosition(0.0f, -2.0f, -7.0f);
 
 
 	/*шейдерная программа для отрисовки GL примитивов*/
@@ -105,15 +107,39 @@ int main(int argc, char** argv)
 	float specularFactor = 0.1f;
 	float shininess = 32.f;
 
-	float zCam = 7.f;
+	Core::Time MainTimer;
+
+	/*
+	* ROLL
+	* PITCH
+	* YAW
+	*/
+
+	float roll = 0.0f;
+	float pitch = 0.0f;
+	float yaw = -90.f;
 
 	/*BIND TEX*/
 	currTex->bindTexture2D();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
-		MainCamera.setPosition(glm::vec3(0.f, 0.f, zCam));
+		/*timer STOP*/
+		/*deltaTime in sec*/
+		auto deltaTime = MainTimer.stop() / 1000.f;
+		/*timer START*/
+		MainTimer.start();
+
+
+		MainCamera.setRotation(glm::vec3(
+											roll,
+											pitch,
+											yaw
+										));
+		MainCamera.moveCamera(deltaTime);
+
 		projectionMatrix = MainCamera.getProjMat();
 		viewMatrix = MainCamera.getViewMat();
+		cameraPosition = MainCamera.getPosition();
 
 		/*очищаю передний буфер*/
 		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
@@ -144,9 +170,9 @@ int main(int argc, char** argv)
 																Z
 															));
 		pShaderProg->serVec3Uniform("cameraPos", glm::vec3(
-															-cameraPosition.x,
-															-cameraPosition.y,
-															-cameraPosition.z
+															cameraPosition.x,
+															cameraPosition.y,
+															cameraPosition.z
 														 ));
 		pShaderProg->setFloatUniform("ambientFactor",  ambientFactor);
 		pShaderProg->setFloatUniform("diffuseFactor",  diffuseFactor);
@@ -182,7 +208,11 @@ int main(int argc, char** argv)
 		ImGui::Checkbox("axis of rotation X", &axisX);
 		ImGui::Checkbox("axis of rotation Y", &axisY);
 		ImGui::Checkbox("axis of rotation Z", &axisZ);
-		ImGui::SliderFloat("Z position camera", &zCam, -15.f, 15.f);
+		ImGui::Text("Time for frame:");
+		ImGui::SameLine();
+		ImGui::Text(std::to_string(deltaTime).c_str());
+		ImGui::SameLine();
+		ImGui::Text("sec");
 		ImGui::End();
 
 		ImGui::Begin("Light Editor");
@@ -194,6 +224,13 @@ int main(int argc, char** argv)
 		ImGui::SliderFloat("Diffuse Factor", &diffuseFactor, 0.f, 1.f);
 		ImGui::SliderFloat("Specular Factor", &specularFactor, 0.f, 1.f);
 		ImGui::SliderFloat("Shininess", &shininess, 2.f, 512.f);
+		ImGui::End();
+
+
+		ImGui::Begin("Camera angles");
+		ImGui::SliderFloat("ROLL", &roll, -360.f, 360.f);
+		ImGui::SliderFloat("PITCH", &pitch, -360.f, 360.f);
+		ImGui::SliderFloat("YAW", &yaw, -360.f, 360.f);
 		ImGui::End();
 		Modules::GUIModule::GUIend();
 

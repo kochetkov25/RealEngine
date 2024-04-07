@@ -1,5 +1,9 @@
 #include "Camera.h"
 
+#include "../Input/Input.h"
+
+#include <algorithm>
+
 
 namespace Render
 {
@@ -71,7 +75,10 @@ namespace Render
 	/*пересоздать матрицу вида*/
 	void Camera::updateViewMat()
 	{
-		_viewMat = glm::lookAt(_position, glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 1.f, 0.f));
+		_front.x = cos(glm::radians(_rotation[1])) * cos(glm::radians(_rotation[2]));
+		_front.y = sin(glm::radians(_rotation[1]));
+		_front.z = cos(glm::radians(_rotation[1])) * sin(glm::radians(_rotation[2]));
+		_viewMat = glm::lookAt(_position, _position + _front, glm::vec3(0.f, 1.f, 0.f));
 	}
 
 	/*============================================================*/
@@ -118,5 +125,42 @@ namespace Render
 		}
 	}
 
+
+	void Camera::moveCamera(const float duration)
+	{
+		bool isUpdateViewMat = false;
+		if (Core::Input::isKeyPressed(GLFW_KEY_W))
+		{
+			_position += (duration * _velocity) * _front;
+			isUpdateViewMat = true;
+		}
+
+		if(Core::Input::isKeyPressed(GLFW_KEY_S))
+		{
+			_position -= (duration * _velocity) * _front;
+			isUpdateViewMat = true;
+		}
+
+		if (Core::Input::isKeyPressed(GLFW_KEY_A))
+		{
+			_position -= glm::normalize(glm::cross(_front, _up)) * (duration * _velocity);
+			isUpdateViewMat = true;
+		}
+
+		if (Core::Input::isKeyPressed(GLFW_KEY_D))
+		{
+			_position += glm::normalize(glm::cross(_front, _up)) * (duration * _velocity);
+			isUpdateViewMat = true;
+		}
+
+		if (isUpdateViewMat)
+			updateViewMat();
+	}
+
+
+	void Camera::rotateCamera(const float duration)
+	{
+
+	}
 
 }

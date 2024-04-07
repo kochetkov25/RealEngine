@@ -8,7 +8,7 @@ namespace Render
 	class KeyPressedEvent : public Event
 	{
 	public:
-		KeyPressedEvent(int key):
+		KeyPressedEvent(int key = 0):
 			Event("KEY PRESSED EVENT",Event::EventType::KEY_PRESSED),
 			_key(key) {}
 
@@ -27,7 +27,7 @@ namespace Render
 	class KeyReleasedEvent : public Event
 	{
 	public:
-		KeyReleasedEvent(int key) :
+		KeyReleasedEvent(int key = 0) :
 			Event("KEY RELEASED EVENT", Event::EventType::KEY_RELEASED),
 			_key(key) {}
 

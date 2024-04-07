@@ -4,6 +4,8 @@
 #include <functional>
 #include <iostream>
 
+#include <map>
+
 namespace Render
 {
 	/*базовый класс для создания событий*/
@@ -17,6 +19,8 @@ namespace Render
 			WINDOW_CLOSED,
 			KEY_PRESSED,
 			KEY_RELEASED,
+			MOUSE_BUTTON_PRESSED,
+			MOUSE_BUTTON_RELEASED,
 
 			COUNT
 		};
@@ -43,7 +47,6 @@ namespace Render
 
 
 
-
 	/*диспетчер событий*/
 	class EventDispatcher
 	{
@@ -58,24 +61,24 @@ namespace Render
 				/*даункаст до ссылки на нужный объект*/
 				func(static_cast<_typeEvent&>(e));
 			};
-			_vecEventCallBacks.emplace_back(base);
+			/*creating event to get event type*/
+			_typeEvent e;
+			_mapEventCallBacks.emplace(e.getType(), base);
 		}
 
 		/*вызов callback в соответствии с типои event*/
 		void dispatch(Event& event)
 		{
-			size_t type = static_cast<size_t>(event.getType());
-			if (type > _vecEventCallBacks.size())
-			{
+			auto it = _mapEventCallBacks.find(event.getType());
+			if (it != _mapEventCallBacks.end())
+				it->second(event);
+			else
 				std::cerr << "Event not set!" << std::endl;
-				return;
-			}
-			_vecEventCallBacks[type - 1](event);
 		}
 
 	private:
-		/*вектор, который хранит коллбеки*/
-		std::vector<std::function<void(Event&)>> _vecEventCallBacks;
+		/*map для хранения callBack_ов*/
+		std::map<Event::EventType, std::function<void(Event&)>> _mapEventCallBacks;
 	};
 
 }

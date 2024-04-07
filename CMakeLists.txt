@@ -36,6 +36,8 @@ src/Render/Events/WindowEvent.h
 src/Render/Events/KeyboardEvent.h
 src/Input/Input.h
 src/Input/Input.cpp
+src/Modules/Time.h
+src/Modules/Time.cpp
 )
 
 add_subdirectory(dependencies/glfw)

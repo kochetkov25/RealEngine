@@ -70,7 +70,23 @@ namespace Render
 		_dispatcher.addEventListner<MouseMovedEvent>(
 			[](MouseMovedEvent& e)
 			{
+				Core::Input::setMousePosition(e.getPosition());
+			}
+		);
+
+		_dispatcher.addEventListner<MouseButtonPressed>(
+			[](MouseButtonPressed& e)
+			{
 				std::cout << e.format() << std::endl;
+				Core::Input::pressMouseBtn(e.getButton());
+			}
+		);
+
+		_dispatcher.addEventListner<MouseButtonReleased>(
+			[](MouseButtonReleased& e)
+			{
+				std::cout << e.format() << std::endl;
+				Core::Input::releaseMouseBtn(e.getButton());
 			}
 		);
 
@@ -112,6 +128,7 @@ namespace Render
 			return false;
 		/*запрещаю масщтабирование окна*/
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
 		/*инициализация окна*/
 		if (!_pWindow)
 		{
@@ -136,7 +153,9 @@ namespace Render
 		/*callback для закрытия окна*/
 		glfwSetWindowCloseCallback(_pWindow, windowClosedCallBack);
 		/*callback для нажатия клавиш*/
-		glfwSetKeyCallback(_pWindow, keyPressedCallBack);
+		glfwSetKeyCallback(_pWindow, keyCallBack);
+		/*callback для нажатия кнопок мыши*/
+		glfwSetMouseButtonCallback(_pWindow, mouseButtonCallBack);
 
 		/*инициализация GLAD*/
 		if (!init_GLAD())
@@ -161,6 +180,12 @@ namespace Render
 	/*обновление окна*/
 	void Render::Window::update()
 	{
+		/*hide cursor for move camera*/
+		if (Core::Input::isMouseBtnPressed(GLFW_MOUSE_BUTTON_RIGHT))
+			glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+		else
+			glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+
 		glfwSwapBuffers(_pWindow); // меняю передний и задний буфер
 		glfwPollEvents(); // произвожу обработку событий
 	}
@@ -189,7 +214,7 @@ namespace Render
 
 	/*============================================================*/
 	/*callBack при нажатии клавиш*/
-	void Render::Window::keyPressedCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods)
+	void Render::Window::keyCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods)
 	{
 		/*получаем ссылку на окно с пользовательскими данными*/
 		auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
@@ -212,6 +237,23 @@ namespace Render
 		{
 			break;
 		}
+		}
+	}
+
+	/*============================================================*/
+	/*callBack для нажатия кнопок мыши*/
+	void Window::mouseButtonCallBack(GLFWwindow* pWindow, int button, int action, int mods)
+	{
+		auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+		if (action == GLFW_PRESS)
+		{
+			MouseButtonPressed eventMousePressed(button);
+			handle.funCallBack(eventMousePressed);
+		}
+		else
+		{
+			MouseButtonReleased eventMouseReleased(button);
+			handle.funCallBack(eventMouseReleased);
 		}
 	}
 }
