@@ -180,12 +180,6 @@ namespace Render
 	/*обновление окна*/
 	void Render::Window::update()
 	{
-		/*hide cursor for move camera*/
-		if (Core::Input::isMouseBtnPressed(GLFW_MOUSE_BUTTON_RIGHT))
-			glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-		else
-			glfwSetInputMode(_pWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-
 		glfwSwapBuffers(_pWindow); // меняю передний и задний буфер
 		glfwPollEvents(); // произвожу обработку событий
 	}

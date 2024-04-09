@@ -37,6 +37,7 @@ namespace Render
 	void Camera::setRotation(const glm::vec3& rotation)
 	{
 		_rotation = rotation;
+		rotateCamera();
 		updateViewMat();
 	}
 
@@ -46,6 +47,7 @@ namespace Render
 	{
 		_position = position;
 		_rotation = rotation;
+		rotateCamera();
 		updateViewMat();
 	}
 
@@ -75,10 +77,7 @@ namespace Render
 	/*пересоздать матрицу вида*/
 	void Camera::updateViewMat()
 	{
-		_front.x = cos(glm::radians(_rotation[1])) * cos(glm::radians(_rotation[2]));
-		_front.y = sin(glm::radians(_rotation[1]));
-		_front.z = cos(glm::radians(_rotation[1])) * sin(glm::radians(_rotation[2]));
-		_viewMat = glm::lookAt(_position, _position + _front, glm::vec3(0.f, 1.f, 0.f));
+		_viewMat = glm::lookAt(_position, _position + _front, _up);
 	}
 
 	/*============================================================*/
@@ -125,7 +124,6 @@ namespace Render
 		}
 	}
 
-
 	void Camera::moveCamera(const float duration)
 	{
 		bool isUpdateViewMat = false;
@@ -153,14 +151,57 @@ namespace Render
 			isUpdateViewMat = true;
 		}
 
+		if (Core::Input::isKeyPressed(GLFW_KEY_SPACE))
+		{
+			_position += _up * (duration * _velocity);
+			isUpdateViewMat = true;
+		}
+
+		if(Core::Input::isKeyPressed(GLFW_KEY_LEFT_CONTROL))
+		{
+			_position -= _up * (duration * _velocity);
+			isUpdateViewMat = true;
+		}
+
+		if (Core::Input::isMouseBtnPressed(GLFW_MOUSE_BUTTON_RIGHT))
+		{
+			auto currentMousePos = Core::Input::getMousePosition();
+
+			if (_initMouse)
+			{
+				_initialMousePos.x = currentMousePos.x;
+				_initialMousePos.y = currentMousePos.y;
+				_initMouse = false;
+			}
+
+			_rotation.z -= (_initialMousePos.x - currentMousePos.x) * _sensitivity;
+			_rotation.y += (_initialMousePos.y - currentMousePos.y) * _sensitivity;
+
+			_initialMousePos.x = currentMousePos.x;
+			_initialMousePos.y = currentMousePos.y;
+
+			rotateCamera();
+
+			isUpdateViewMat = true;
+		}
+		else
+		{
+			_initMouse = true;
+		}
+
 		if (isUpdateViewMat)
 			updateViewMat();
 	}
 
-
-	void Camera::rotateCamera(const float duration)
+	void Camera::rotateCamera()
 	{
-
+		_front.x = cos(glm::radians(_rotation[1])) * cos(glm::radians(_rotation[2]));
+		_front.y = sin(glm::radians(_rotation[1]));
+		_front.z = cos(glm::radians(_rotation[1])) * sin(glm::radians(_rotation[2]));
 	}
 
+	void Camera::setSensitivity(const float sensitivity)
+	{
+		_sensitivity = (sensitivity >= 1) ? 1 : sensitivity;
+	}
 }

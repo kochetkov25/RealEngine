@@ -37,7 +37,8 @@ namespace Render
 			    const float windowHeight = 768.f,
 			    const float windowWidth = 1024.f,
 				const ProjectionMode projMode = ProjectionMode::PERSPECTIVE,
-				const float velocity = 0.0f
+				const float velocity = 0.0f,
+				const float sensitivity = 0.05f
 		      ) : _position(position),
 			      _rotation(rotation), 
 			      _projectionMode(projMode), 
@@ -45,7 +46,8 @@ namespace Render
 			      _farPlane(farplane),
 			      _windowHeight(windowHeight),
 			      _windowWidth(windowWidth),
-			      _velocity(velocity)
+			      _velocity(velocity),
+				  _sensitivity(sensitivity)
 		{ 
 			updateViewMat();
 			updateProjMat();
@@ -72,18 +74,21 @@ namespace Render
 		glm::mat4 getProjMat();
 
 		void setVelocity(const float velocity) { _velocity = velocity; }
+		void setSensitivity(const float sensitivity);
 
 		void moveCamera(const float duration);
-
-		void rotateCamera(const float duration);
 
 		glm::vec3 getPosition() { return _position; }
 	private:
 		ProjectionMode _projectionMode;
+
 		glm::vec3 _position;
-		glm::vec3 _rotation = { 0.0f, 0.0f, -90.0f }; /*ROLL PITCH YAW*/
+		glm::vec3 _rotation; /*ROLL PITCH YAW*/
 		glm::vec3 _front = { 0.0f, 0.0f, -1.0f };
-		glm::vec3 _up = { 0.0f, 1.0f, 0.0f };
+		glm::vec3 _up    = { 0.0f, 1.0f, 0.0f };
+
+		bool _initMouse = true;
+		glm::vec2 _initialMousePos = { 0.0f,0.0f };
 
 		glm::mat4 _viewMat;
 		glm::mat4 _projMat;
@@ -96,11 +101,14 @@ namespace Render
 		float _windowWidth;
 
 		float _velocity;
+		float _sensitivity;
 
 		/*пересоздать матрицу вида*/
 		void updateViewMat();
 		/*пересоздать матрицу проекции*/
 		void updateProjMat();
+
+		void rotateCamera();
 	};
 
 

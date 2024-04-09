@@ -2,7 +2,6 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include <chrono>
 
 #include <glm\vec2.hpp>
 #include <glm\mat4x4.hpp>
@@ -107,17 +106,10 @@ int main(int argc, char** argv)
 	float specularFactor = 0.1f;
 	float shininess = 32.f;
 
+	/*TIMER*/
 	Core::Time MainTimer;
 
-	/*
-	* ROLL
-	* PITCH
-	* YAW
-	*/
-
-	float roll = 0.0f;
-	float pitch = 0.0f;
-	float yaw = -90.f;
+	float sens = 0.05f;
 
 	/*BIND TEX*/
 	currTex->bindTexture2D();
@@ -129,12 +121,7 @@ int main(int argc, char** argv)
 		/*timer START*/
 		MainTimer.start();
 
-
-		MainCamera.setRotation(glm::vec3(
-											roll,
-											pitch,
-											yaw
-										));
+		/*move camera*/
 		MainCamera.moveCamera(deltaTime);
 
 		projectionMatrix = MainCamera.getProjMat();
@@ -224,13 +211,6 @@ int main(int argc, char** argv)
 		ImGui::SliderFloat("Diffuse Factor", &diffuseFactor, 0.f, 1.f);
 		ImGui::SliderFloat("Specular Factor", &specularFactor, 0.f, 1.f);
 		ImGui::SliderFloat("Shininess", &shininess, 2.f, 512.f);
-		ImGui::End();
-
-
-		ImGui::Begin("Camera angles");
-		ImGui::SliderFloat("ROLL", &roll, -360.f, 360.f);
-		ImGui::SliderFloat("PITCH", &pitch, -360.f, 360.f);
-		ImGui::SliderFloat("YAW", &yaw, -360.f, 360.f);
 		ImGui::End();
 		Modules::GUIModule::GUIend();
 
