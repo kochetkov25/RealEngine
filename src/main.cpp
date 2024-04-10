@@ -64,7 +64,8 @@ int main(int argc, char** argv)
 	std::string shaderName = "SpriteShader";
 	
 	/*load TEX*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/lambdaTex.png");
+	resourceManager.loadTexture2D("ColoredSqr", "res/textures/BOX.png");
+	resourceManager.loadTexture2D("LambdaSqr", "res/textures/lambdaTex.png");
 	auto currTex = resourceManager.getTexture2D("ColoredSqr");
 
 	/*перспективная*/
@@ -101,20 +102,32 @@ int main(int argc, char** argv)
 	float Z = -3.f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
-	float ambientFactor = 0.1f;
-	float diffuseFactor = 0.1f;
-	float specularFactor = 0.1f;
+	float materialAmbient  = 0.20f;
+	float materialDiffuse  = 0.55f;
+	float materialSpecular = 0.70f;
+
 	float shininess = 32.f;
+
+	float lightAmbient  = 0.20f;
+	float lightDiffuse  = 0.50f;
+	float lightSpecular = 1.00f;
+
 
 	/*TIMER*/
 	Core::Time MainTimer;
-
-	float sens = 0.05f;
 
 	/*BIND TEX*/
 	currTex->bindTexture2D();
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
 	{
+		glm::vec3 ambientFactor = { materialAmbient, materialAmbient, materialAmbient };
+		glm::vec3 diffuseFactor = { materialDiffuse, materialDiffuse, materialDiffuse };
+		glm::vec3 specularFactor = { materialSpecular, materialSpecular, materialSpecular };
+
+		glm::vec3 lightAmbientFactor = { lightAmbient,lightAmbient, lightAmbient };
+		glm::vec3 lightDiffuseFactor = { lightDiffuse, lightDiffuse, lightDiffuse };
+		glm::vec3 lightSpecularFactor = { lightSpecular, lightSpecular, lightSpecular };
+
 		/*timer STOP*/
 		/*deltaTime in sec*/
 		auto deltaTime = MainTimer.stop() / 1000.f;
@@ -146,12 +159,12 @@ int main(int argc, char** argv)
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(3.f, 3.f, 3.f));
 
 		pShaderProg->setTexUniform("tex", 0);
-		pShaderProg->serVec3Uniform("lightColor", glm::vec3(
+		pShaderProg->serVec3Uniform("light.lightColor", glm::vec3(
 																lightColor[0],
 																lightColor[1],
 																lightColor[2]
 															));
-		pShaderProg->serVec3Uniform("lightPos",   glm::vec3(
+		pShaderProg->serVec3Uniform("light.lightPos",   glm::vec3(
 																X,
 																Y,
 																Z
@@ -161,10 +174,15 @@ int main(int argc, char** argv)
 															cameraPosition.y,
 															cameraPosition.z
 														 ));
-		pShaderProg->setFloatUniform("ambientFactor",  ambientFactor);
-		pShaderProg->setFloatUniform("diffuseFactor",  diffuseFactor);
-		pShaderProg->setFloatUniform("specularFactor", specularFactor);
-		pShaderProg->setFloatUniform("shininess",      shininess);
+		pShaderProg->serVec3Uniform("material.ambientFactor",   ambientFactor);
+		pShaderProg->serVec3Uniform("material.diffuseFactor",   diffuseFactor);
+		pShaderProg->serVec3Uniform("material.specularFactor",  specularFactor);
+		pShaderProg->setFloatUniform("material.shininess",      shininess);
+
+		pShaderProg->serVec3Uniform("light.ambientFactor", lightAmbientFactor);
+		pShaderProg->serVec3Uniform("light.diffuseFactor", lightDiffuseFactor);
+		pShaderProg->serVec3Uniform("light.specularFactor", lightSpecularFactor);
+
 		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix", viewMatrix);
@@ -207,10 +225,18 @@ int main(int argc, char** argv)
 		ImGui::SliderFloat("Y", &Y, -10.f, 10.f);
 		ImGui::SliderFloat("Z", &Z, -10.f, 10.f);
 		ImGui::ColorEdit3("Light Color", lightColor);
-		ImGui::SliderFloat("Ambient Factor", &ambientFactor, 0.f, 1.f);
-		ImGui::SliderFloat("Diffuse Factor", &diffuseFactor, 0.f, 1.f);
-		ImGui::SliderFloat("Specular Factor", &specularFactor, 0.f, 1.f);
-		ImGui::SliderFloat("Shininess", &shininess, 2.f, 512.f);
+		ImGui::End();
+
+		ImGui::Begin("Material propertys");
+		ImGui::SliderFloat("Ambient",  &materialAmbient,  0.1f, 1.f);
+		ImGui::SliderFloat("Diffuse",  &materialDiffuse,  0.1f, 1.f);
+		ImGui::SliderFloat("Specular", &materialSpecular, 0.1f, 1.f);
+		ImGui::End();
+
+		ImGui::Begin("Light propertys");
+		ImGui::SliderFloat("Ambient",  &lightAmbient,  0.1f, 1.f);
+		ImGui::SliderFloat("Diffuse",  &lightDiffuse,  0.1f, 1.f);
+		ImGui::SliderFloat("Specular", &lightSpecular, 0.1f, 1.f);
 		ImGui::End();
 		Modules::GUIModule::GUIend();
 
