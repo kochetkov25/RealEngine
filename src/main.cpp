@@ -97,9 +97,9 @@ int main(int argc, char** argv)
 	bool axisX = 0;
 	bool axisY = 0;
 	bool axisZ = 1;
-	float X =  2.f;
-	float Y =  2.f;
-	float Z = -3.f;
+	float X =  0.031f;
+	float Y =  2.697f;
+	float Z = -2.047f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
 	float materialAmbient  = 0.20f;
