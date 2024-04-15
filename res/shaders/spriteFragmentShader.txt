@@ -17,6 +17,10 @@ struct Light
    vec3  ambientFactor;
    vec3  diffuseFactor;
    vec3  specularFactor;
+
+   float constantFactor;
+   float linearFactor;
+   float quadFactor;
 };
 
 uniform Light light;
@@ -32,6 +36,7 @@ struct Material
 };
 
 uniform Material material;
+ 
 
 void main() 
 {
@@ -52,6 +57,14 @@ void main()
 
    // emission
    vec3 emission = texture(material.emissionMap, texCoords).rgb;
+
+   // light fading
+   float dist = length(light.lightPos - vertexPosWorld);
+   float attenuation = 1.f / (light.constantFactor + light.linearFactor * dist + light.quadFactor * (dist * dist));
+
+   ambient *= attenuation;
+   diffuse *= attenuation;
+   specular *= attenuation;
 
    vertexColor = vec4(ambient + diffuse + specular + emission, 1.f);
 }

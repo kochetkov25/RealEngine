@@ -73,7 +73,7 @@ namespace Render
 			if (it != _mapEventCallBacks.end())
 				it->second(event);
 			else
-				std::cerr << "Event not set!" << std::endl;
+				std::cerr << __FUNCTION__ <<": Event not set!" << std::endl;
 		}
 
 	private:

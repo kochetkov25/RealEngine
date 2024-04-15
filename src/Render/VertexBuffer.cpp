@@ -16,7 +16,7 @@ namespace Render
 		case _e_Usage::Dynamic: return GL_DYNAMIC_DRAW;
 		case _e_Usage::Stream: return GL_STREAM_DRAW;
 		default:
-			std::cerr << "Unknow usage" << std::endl;
+			std::cerr << "Unknow usage (source: " << __FUNCTION__ << ")" << std::endl;
 			return GL_STREAM_DRAW;
 		}
 	}
@@ -59,7 +59,7 @@ namespace Render
 		case Render::VertexBuffer::_e_DataType::Int4:
 			return GL_INT;
 		default:
-			std::cerr << "Unknown data type!" << std::endl;
+			std::cerr << "Unknown data type! (source: " << __FUNCTION__ << ")" << std::endl;
 			return GL_FLOAT;
 		}
 	}
@@ -83,7 +83,7 @@ namespace Render
 		case Render::VertexBuffer::_e_DataType::Int4:
 			return 4;
 		default:
-			std::cerr << "Unknown data type!" << std::endl;
+			std::cerr << "Unknown data type! (source: " << __FUNCTION__ << ")" << std::endl;
 			return 0;
 		}
 	}

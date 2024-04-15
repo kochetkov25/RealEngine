@@ -48,7 +48,7 @@ std::string ResourceManager::getFileString(const std::string &relativeFilePath)
 	file.open(_path + "/" + relativeFilePath.c_str(), std::ios::in | std::ios::binary);
 	/*если файл не удалось открыть, возвращаем пустую строку*/
 	if (!file.is_open()){
-		std::cerr << "Failed open file (source: ResourceManager): " << relativeFilePath << std::endl;
+		std::cerr << "Failed open file (source: " << __FUNCTION__ << ") \n" << relativeFilePath << std::endl;
 		return std::string();
 	}
 
@@ -71,14 +71,14 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShederProgram(
 	/*строка с кодом вершинного шейдер */
 	std::string vertexString = getFileString(vertexShaderPathRelative);
 	if (vertexString.empty()){
-		std::cerr << "Failed to load VERTEX SHADER. (source: ResourceManager)" << std::endl;
+		std::cerr << "Failed to load VERTEX SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
 		return nullptr;
 	}
 
 	/*строка с кодом фрагментного шейдера*/
 	std::string fragmentString = getFileString(fragmentShaderPathRelative);
 	if (fragmentString.empty()){
-		std::cerr << "Failed to load FRAGMENT SHADER. (source: ResourceManager)" << std::endl;
+		std::cerr << "Failed to load FRAGMENT SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
 		return nullptr;
 	}
 
@@ -88,7 +88,7 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShederProgram(
 		std::cerr << "Can not create new shader program. Path to shaders: \n"
 			<< "Vertex shader: " << vertexShaderPathRelative << "\n"
 			<< "Fragment shader: " << fragmentShaderPathRelative <<"\n"
-			<<"(source: ResourceManager)"<<std::endl;
+			<<"(source: " << __FUNCTION__ << ")" << std::endl;
 		return nullptr;
 	}
 	/*сохраняем шейдерную программу, возвращаем указатель на нее*/
@@ -104,7 +104,7 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::getShaderProgram(const s
 	if (it != _shaderPrograms.end()){
 		return it->second;
 	}
-	std::cerr << "Can not find shader program (source: ResourceManager): " << shaderName << std::endl;
+	std::cerr << "Can not find shader program (source: " << __FUNCTION__ << ") " << shaderName << std::endl;
 	return nullptr;
 }
 
@@ -128,7 +128,7 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D(
 	unsigned char *pixelsArr=stbi_load(std::string(_path + "/" + texturePathRelative).c_str(), &width, &height, &chanels, 0);
 
 	if (!pixelsArr){
-		std::cerr << "Can not load texture image (source: ResourceManager): " << texturePathRelative << std::endl;
+		std::cerr << "Can not load texture image (source: " << __FUNCTION__ << ") " << texturePathRelative << std::endl;
 		return nullptr;
 	}
 
@@ -149,7 +149,7 @@ std::shared_ptr<Render::Texture2D> ResourceManager::getTexture2D(const std::stri
 	if (it != _texture2DMaps.end()){
 		return it->second;
 	}
-	std::cerr << "Can not find texture 2D (source: ResourceManager): " << texture2DName << std::endl;
+	std::cerr << "Can not find texture 2D (source: " << __FUNCTION__ << ") " << texture2DName << std::endl;
 	return nullptr;
 }
 
@@ -166,13 +166,13 @@ std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
 {
 	auto pTexture = getTexture2D(textureName);
 	if (!pTexture){
-		std::cerr << "Texture with this name can not be found (source: ResourceManager): " << textureName << std::endl;
+		std::cerr << "Texture with this name can not be found (source: " << __FUNCTION__ << ") " << textureName << std::endl;
 		return nullptr;
 	}
 
 	auto pShaderProgram = getShaderProgram(shaderProgramName);
 	if (!pShaderProgram){
-		std::cerr << "Shader program with this name can not be found (source: ResourceManager): " << shaderProgramName << std::endl;
+		std::cerr << "Shader program with this name can not be found (source: " << __FUNCTION__ << ") " << shaderProgramName << std::endl;
 	}
 
 	std::shared_ptr<Render::Sprite> pNewSprite = std::make_shared<Render::Sprite>(pTexture, subTextureName, pShaderProgram, glm::vec3(0.f, 0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
@@ -188,7 +188,7 @@ std::shared_ptr<Render::Sprite> ResourceManager::getSprite(const std::string &sp
 	if (it != _spriteMaps.end()){
 		return it->second;
 	}
-	std::cerr << "Can not find sprite (source: ResourceManager): " << spriteName << std::endl;
+	std::cerr << "Can not find sprite (source: " << __FUNCTION__ << ") " << spriteName << std::endl;
 	return nullptr;
 }
 

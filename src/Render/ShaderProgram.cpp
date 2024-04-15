@@ -26,14 +26,14 @@ namespace Render
 		/*создаем вершинный шейдер*/
 		GLuint vertexShaderID;
 		if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)){
-			std::cerr << "Error compile VERTEX SHADER. (source: ShaderProgram)" << std::endl;
+			std::cerr << "Error compile VERTEX SHADER. (source: " << __FUNCTION__<< ")" << std::endl;
 			return;
 		}
 
 		/*создаем фрагментный шейдер*/
 		GLuint fragmentShaderID;
 		if (!createShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderID)){
-			std::cerr << "Error compile FRAGMENT SHADER. (source: ShaderProgram)" << std::endl;
+			std::cerr << "Error compile FRAGMENT SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
 			// фрагментный шейдер не скомпилировался удаляем также и вершинный шейдер
 			glDeleteShader(vertexShaderID);
 			return;
@@ -51,7 +51,7 @@ namespace Render
 		if (!isSuccessLink){
 			GLchar infoLog[1024];
 			glGetProgramInfoLog(_ID, 1024, nullptr, infoLog);
-			std::cerr << "Error link SHADER PROGRAM (source: ShaderProgram): \n" << infoLog << std::endl;
+			std::cerr << "Error link SHADER PROGRAM (source: " << __FUNCTION__ << ") \n" << infoLog << std::endl;
 		}
 		else
 		{
@@ -91,7 +91,7 @@ namespace Render
 		if (!isSuccessCompile){
 			GLchar infoLog[1024];
 			glGetShaderInfoLog(shaderID, 1024, nullptr, infoLog);
-			std::cerr << "Error compile shader (source: ShaderProgram): \n" << infoLog << std::endl;
+			std::cerr << "Error compile shader (source: " << __FUNCTION__ << ") \n"<< infoLog << std::endl;
 			return false;
 		}
 		return true;
@@ -142,5 +142,10 @@ namespace Render
 		glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);
 	}
 
-
+	/*============================================================*/
+	/**/
+	void Render::ShaderProgram::setArrayUniform(const std::string& name, const size_t size, const float* arr)
+	{
+		glUniform1fv(glGetUniformLocation(_ID, name.c_str()), static_cast<float>(size), arr);
+	}
 }

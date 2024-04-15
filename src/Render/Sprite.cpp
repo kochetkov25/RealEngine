@@ -101,7 +101,7 @@ namespace Render
 			if (frameId > _frameParams.size() || 
 			    _frameParams.size() == 0)
 			{
-				std::cerr << "Unknown frame ID!" << std::endl;
+				std::cerr << "Unknown frame ID! (source: " << __FUNCTION__<< ")" << std::endl;
 				return;
 			}
 
@@ -208,7 +208,7 @@ namespace Render
 		if (frameID < _frameParams.size())
 			return _frameParams[frameID]._duration;
 
-		std::cerr << "sprite with this ID does not exist." << std::endl;
+		std::cerr << "sprite with this ID does not exist. (source: " << __FUNCTION__ << ")" << std::endl;
 		return 0;
 	}
 

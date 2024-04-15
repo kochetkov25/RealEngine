@@ -42,7 +42,7 @@ namespace Render
 	/*отрисовка спрайта*/
 	void AnimatedSprite::render()
 	{
-		_pSprite->renderSprite(_currFrame);
+		_pSprite->renderSprite(static_cast<short>(_currFrame));
 	}
 
 

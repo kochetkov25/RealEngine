@@ -42,6 +42,9 @@ namespace Render
 		/*утсановить значение float uniform*/
 		void setFloatUniform(const std::string& name, const float value);
 
+		/**/
+		void setArrayUniform(const std::string& name, const size_t size, const float* arr);
+
 		/*идентификатор шейдерной программы*/
 		GLuint getShaderProgramID() { return _ID; }
 

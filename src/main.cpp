@@ -1,12 +1,3 @@
-#include <iostream>
-#include <string>
-#include <cmath>
-#include <vector>
-
-#include <glm\vec2.hpp>
-#include <glm\mat4x4.hpp>
-#include <glm\gtc\matrix_transform.hpp>
-
 #include "Resources\ResourceManager.h"
 
 #include "Render\ShaderProgram.h"
@@ -16,20 +7,16 @@
 #include "Render\Window.h"
 #include "Render\VertexBuffer.h"
 #include "Render\VertexArray.h"
+#include "Render\Renderer.h"
+#include "Render\Camera.h"
 
 #include "Modules\GUIModule.h"
 #include "Modules\Time.h"
-
-#include <imgui.h>
-
-#include "Render\Renderer.h"
-
-#include "Render\Camera.h"
+#include "Modules\Random.h"
 
 #include "Input\Input.h"
 
-#include "Modules\Random.h"
-
+#include <imgui.h>
 
 namespace Render
 {
@@ -74,10 +61,10 @@ int main(int argc, char** argv)
 	std::string shaderName = "SpriteShader";
 	
 	/*load TEXTURES*/
-	resourceManager.loadTexture2D("ColoredSqr", "res/textures/BOX.png");
+	resourceManager.loadTexture2D("BOX_TEX",  "res/textures/BOX.png");
 	resourceManager.loadTexture2D("SpecularMap", "res/textures/BOX_specularMap.png");
 	resourceManager.loadTexture2D("EmissionMap", "res/textures/BOX_emissionMAP.png");
-	auto currTex = resourceManager.getTexture2D("ColoredSqr");
+	auto currTex = resourceManager.getTexture2D("BOX_TEX");
 	auto specularTex  = resourceManager.getTexture2D("SpecularMap");
 	auto emissionMap = resourceManager.getTexture2D("EmissionMap");
 
@@ -137,6 +124,7 @@ int main(int argc, char** argv)
 	float lightSpecular = 1.00f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
+
 	/*TIMER*/
 	Core::Time MainTimer;
 	while (!glfwWindowShouldClose(MainWindow.getWindow()))
@@ -159,7 +147,7 @@ int main(int argc, char** argv)
 		cameraPosition   = MainCamera.getPosition();
 
 		/*очищаю передний буфер*/
-		glClearColor(0.6f, 0.69f, 0.929f, 0.4f);
+		glClearColor(156.f / 255.f, 156.f / 255.f, 156.f / 255.f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		/*DRAWING CUBE*/
@@ -209,9 +197,14 @@ int main(int argc, char** argv)
 		pShaderProg->serVec3Uniform("light.diffuseFactor",  lightDiffuseFactor);
 		pShaderProg->serVec3Uniform("light.specularFactor", lightSpecularFactor);
 
+		pShaderProg->setFloatUniform("light.constantFactor", 1.f);
+		pShaderProg->setFloatUniform("light.linearFactor",   0.09f);
+		pShaderProg->setFloatUniform("light.quadFactor",     0.032f);
+
 		pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
+
 		MainRender.drawArrays();
 
 		/*small cubes*/
@@ -275,7 +268,7 @@ int main(int argc, char** argv)
 		ImGui::End();
 		Modules::GUIModule::GUIend();
 
-		/*меняю буферы местами (обновление окна)*/
+		/*update window (buffers)*/
 		MainWindow.update();
 	}
 	return 0;
