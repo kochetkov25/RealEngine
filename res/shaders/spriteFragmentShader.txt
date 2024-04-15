@@ -7,8 +7,6 @@ in vec3 vertexPosWorld;
 
 uniform sampler2D tex;
 
-// uniform vec3 lightColor;
-// uniform vec3 lightPos;
 uniform vec3 cameraPos;
 
 struct Light
@@ -25,9 +23,11 @@ uniform Light light;
 
 struct Material
 {
-   vec3  ambientFactor;
-   vec3  diffuseFactor;
-   vec3  specularFactor;
+   sampler2D texture;
+
+   sampler2D specularMap;
+   sampler2D emissionMap;
+
    float shininess;
 };
 
@@ -36,19 +36,22 @@ uniform Material material;
 void main() 
 {
    // ambient
-   vec3 ambient = material.ambientFactor * light.ambientFactor * light.lightColor;
+   vec3 ambient = light.ambientFactor * vec3(texture(material.texture, texCoords)) * light.lightColor;
 
    // diffuse
    vec3 normal = normalize(texNormals);
    vec3 lightDirection = normalize(light.lightPos - vertexPosWorld);
-   vec3 diffuse =  material.diffuseFactor * light.diffuseFactor * light.lightColor * dot(normal, lightDirection);
+   vec3 diffuse = light.diffuseFactor * vec3(texture(material.texture, texCoords)) * light.lightColor * dot(normal, lightDirection);
    diffuse = max(diffuse, 0.0);
 
    // specular
    vec3 cameraDirection = normalize(cameraPos - vertexPosWorld);
    vec3 reflectDirection = reflect(-lightDirection, normal);
    float specularDot = pow(max(dot(cameraDirection, reflectDirection), 0.0), material.shininess);
-   vec3 specular = material.specularFactor * light.specularFactor * specularDot * light.lightColor;
+   vec3 specular = vec3(texture(material.specularMap, texCoords)) * light.specularFactor * specularDot * light.lightColor;
 
-   vertexColor = texture(tex, texCoords) * vec4(ambient + diffuse + specular, 1.f);
+   // emission
+   vec3 emission = texture(material.emissionMap, texCoords).rgb;
+
+   vertexColor = vec4(ambient + diffuse + specular + emission, 1.f);
 }

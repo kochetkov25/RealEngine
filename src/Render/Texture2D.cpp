@@ -50,7 +50,7 @@ namespace Render
 		* в OpenGL поддерживается до 16 слотов под текстуры.
 		* Для загрузки текстуры делаем активным нулевой слот
 		*/
-		glActiveTexture(GL_TEXTURE0);
+		//glActiveTexture(GL_TEXTURE0);
 		/*
 		* привязка текстуры к слоту (2д текстура)
 		* (явно указываем, что мы будем работать с 2д текстурой)
@@ -79,8 +79,9 @@ namespace Render
 
 	/*============================================================*/
 	/*делаем текущую текстуру активной*/
-	void Texture2D::bindTexture2D()
+	void Texture2D::bindTexture2D(const unsigned short texBlock)
 	{
+		glActiveTexture(GL_TEXTURE0 + texBlock);
 		glBindTexture(GL_TEXTURE_2D, _ID);
 	}
 	

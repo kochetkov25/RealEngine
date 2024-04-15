@@ -38,7 +38,8 @@ src/Input/Input.h
 src/Input/Input.cpp
 src/Modules/Time.h
 src/Modules/Time.cpp
-)
+src/Modules/Random.h
+src/Modules/Random.cpp)
 
 add_subdirectory(dependencies/glfw)
 

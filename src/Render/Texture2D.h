@@ -51,7 +51,7 @@ namespace Render
 			     );
 
 		/*делаем текстуру активной*/
-		void bindTexture2D();
+		void bindTexture2D(const unsigned short texBlock = 0);
 
 		/*добавление новой текстуры из текстурного атласа*/
 		void addSubTexture2D(std::string textureName, const glm::vec2 &leftBottomUV, const glm::vec2 &rightTopUV);
