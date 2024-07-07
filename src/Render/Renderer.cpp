@@ -1,5 +1,7 @@
 #include "Renderer.h"
 
+#include "IndexBuffer.h"
+
 namespace Render 
 {
 
@@ -45,11 +47,30 @@ namespace Render
 	}
 
 	/*============================================================*/
+	/*установить порядок индексов для отрисовки*/
+	void Renderer::setIndices(const std::vector<GLuint>& indices)
+	{
+		IndexBuffer IBO(indices);
+		_indicesCount = indices.size();
+
+		_VAO.setIndexBuffer(IBO);
+	}
+
+	/*============================================================*/
 	/*отрисовка примитивов по вершинам*/
 	void Render::Renderer::drawArrays()
 	{
 		_VAO.bind();
 		glDrawArrays(_currMode, 0, _vertexCount);
+		_VAO.unbind();
+	}
+
+	/*============================================================*/
+	/*отрисовать все вершины с использованием индексов вершин*/
+	void Render::Renderer::drawElements()
+	{
+		_VAO.bind();
+		glDrawElements(_currMode, _indicesCount, GL_UNSIGNED_INT, 0);
 		_VAO.unbind();
 	}
 

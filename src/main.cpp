@@ -23,6 +23,7 @@ namespace Render
 	extern void createRawCube(Renderer& render);
 	extern void createTexCube(Renderer& render);
 	extern void createTexCubeLight(Renderer& render);
+	extern void createTexCubeLight_Indices(Renderer& render);
 }
 
 
@@ -30,6 +31,7 @@ int main(int argc, char** argv)
 {
 	/*RANDOM*/
 	Core::Random::Init();
+
 
 	/*creatin MAIN WINDOW*/
 	Render::Window MainWindow;
@@ -50,7 +52,7 @@ int main(int argc, char** argv)
 	glm::vec3 cameraPosition(0.0f, 0.0f, 7.0f);
 	MainCamera.setPosition(cameraPosition);
 	MainCamera.setPlane(0.1f, 500.f);
-	MainCamera.setVelocity(5.f);
+	MainCamera.setVelocity(10.f);
 	MainCamera.setProjectionMode(Render::Camera::ProjectionMode::PERSPECTIVE);
 
 	/*creating RESOURCE MANAGER*/
@@ -78,7 +80,8 @@ int main(int argc, char** argv)
 
 	/*MAIN RENDER*/
 	Render::Renderer MainRender;
-	Render::createTexCubeLight(MainRender);
+	//Render::createTexCubeLight(MainRender);
+	Render::createTexCubeLight_Indices(MainRender);
 
 
 	/*GL CONTEXT*/
@@ -150,6 +153,11 @@ int main(int argc, char** argv)
 		glClearColor(156.f / 255.f, 156.f / 255.f, 156.f / 255.f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		/*ОТРИСОВКА ТОЛЬКО ЛИНИЙ МОДЕЛИ*/
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		/*ВЕРНУТЬ НА ОТРИСОВКУ ПОЛИГОНОВ*/
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+
 		/*DRAWING CUBE*/
 		pShaderProg->use();
 		modelMatrix = glm::mat4(1.f);
@@ -205,7 +213,8 @@ int main(int argc, char** argv)
 		pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
 
-		MainRender.drawArrays();
+		//MainRender.drawArrays();
+		MainRender.drawElements();
 
 		/*small cubes*/
 		auto it = rotationCubes.begin();
@@ -215,7 +224,8 @@ int main(int argc, char** argv)
 			modelMatrix = glm::translate(modelMatrix, pos);
 			modelMatrix = glm::rotate(modelMatrix, glm::radians(*it), glm::vec3(1, 1, 1));
 			pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
-			MainRender.drawArrays();
+			//MainRender.drawArrays();
+			MainRender.drawElements();
 			it++;
 		}
 
@@ -235,7 +245,8 @@ int main(int argc, char** argv)
 		pLightShader->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pLightShader->setMatrix4Uniform("modelMatrix",      modelMatrix);
 		pLightShader->setMatrix4Uniform("viewMatrix",       viewMatrix);
-		MainRender.drawArrays();
+		//MainRender.drawArrays();
+		MainRender.drawElements();
 
 
 

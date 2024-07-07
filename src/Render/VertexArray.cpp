@@ -1,6 +1,8 @@
 
 #include "VertexArray.h"
 
+#include "IndexBuffer.h"
+
 #include "glad/glad.h"
 
 namespace Render
@@ -56,6 +58,13 @@ namespace Render
 			_layoutLocation++;
 		}
 
+		unbind();
+	}
+
+	void VertexArray::setIndexBuffer(IndexBuffer& indexBuffer)
+	{
+		bind();
+		indexBuffer.bind();
 		unbind();
 	}
 

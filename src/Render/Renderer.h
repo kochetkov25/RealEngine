@@ -28,6 +28,7 @@ namespace Render {
 			_elementsBuff.reserve(MAX_ELEMENTS);
 			_currMode = GL_TRIANGLES;
 			_vertexCount = 0;
+			_indicesCount = 0;
 			_renderState = State::PRIMITIVES_GL;
 		}
 		/*добавление в буффер вершины из трех координат*/
@@ -65,14 +66,21 @@ namespace Render {
 		/*закончить задание примитивов*/
 		void end();
 
+		/*установить порядок индексов для отрисовки*/
+		void setIndices(const std::vector<GLuint>& indices);
+
 		/*отрисовать все вершины*/
 		void drawArrays();
+
+		/*отрисовать все вершины с использованием индексов вершин*/
+		void drawElements();
 
 		void Enable(State currState);
 	private:
 		/*буффер под вершины и цвета*/
 		std::vector<float> _elementsBuff;
 		size_t _vertexCount;
+		size_t _indicesCount;
 		/*тип элементов в буффере для примитивов*/
 		std::vector<VertexBuffer::BufferElement> _vec3Col4 = {
 															   VertexBuffer::_e_DataType::Float3,

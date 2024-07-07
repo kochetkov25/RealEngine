@@ -39,7 +39,9 @@ src/Input/Input.cpp
 src/Modules/Time.h
 src/Modules/Time.cpp
 src/Modules/Random.h
-src/Modules/Random.cpp)
+src/Modules/Random.cpp
+src/Render/IndexBuffer.h
+src/Render/IndexBuffer.cpp)
 
 add_subdirectory(dependencies/glfw)
 

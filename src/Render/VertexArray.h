@@ -26,6 +26,8 @@ namespace Render
 		/*ассоциируем ВАО с ВБО*/
 		void addBuffer(VertexBuffer& vertexBuffer);
 
+		void setIndexBuffer(IndexBuffer& indexBuffer);
+
 		/*делаем ВАО активным*/
 		void bind() const;
 		/*отвязываем ВАО*/

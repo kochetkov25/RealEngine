@@ -12,6 +12,7 @@ namespace Render
 	{
 	public:
 		friend class VertexArray;
+		friend class IndexBuffer;
 
 		/*способ отрисовки*/
 		enum class _e_Usage
@@ -103,7 +104,7 @@ namespace Render
 		size_t _stride = 0;
 		_e_Usage _usage;
 
-		GLenum getGLenum(const _e_Usage usage);
+		static GLenum getGLenum(const _e_Usage usage);
 
 		/*вычисляет GL тип компонента*/
 		unsigned int getComponentType(_e_DataType type);
