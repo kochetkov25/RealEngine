@@ -50,6 +50,14 @@ namespace Render
 					  const GLenum wrapMode = GL_CLAMP_TO_EDGE
 			     );
 
+		Texture2D(
+					  const GLuint width,
+					  const GLuint height,
+					  const float* textureData,
+					  const unsigned int channels = 4,
+					  const GLenum filter = GL_LINEAR,
+					  const GLenum wrapMode = GL_CLAMP_TO_EDGE
+		        );
 		/*делаем текстуру активной*/
 		void bindTexture2D(const unsigned short texBlock = 0);
 

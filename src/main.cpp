@@ -18,6 +18,12 @@
 
 #include <imgui.h>
 
+
+#include <assimp/Importer.hpp>
+
+#include "Resources/ModelMesh.h"
+
+
 namespace Render
 {
 	extern void createRawCube(Renderer& render);
@@ -63,7 +69,7 @@ int main(int argc, char** argv)
 	std::string shaderName = "SpriteShader";
 	
 	/*load TEXTURES*/
-	resourceManager.loadTexture2D("BOX_TEX",  "res/textures/BOX.png");
+	resourceManager.loadTexture2D("BOX_TEX",  "res/textures/body_lstr.png");
 	resourceManager.loadTexture2D("SpecularMap", "res/textures/BOX_specularMap.png");
 	resourceManager.loadTexture2D("EmissionMap", "res/textures/BOX_emissionMAP.png");
 	auto currTex = resourceManager.getTexture2D("BOX_TEX");
@@ -121,19 +127,21 @@ int main(int argc, char** argv)
 	/*LIGHT properties*/
 	float X =  0.031f;
 	float Y =  2.697f;
-	float Z = -2.047f;
+	float Z = -3.047f;
 	float lightAmbient = 0.20f;
 	float lightDiffuse = 0.50f;
 	float lightSpecular = 1.00f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
 
+	auto mModel = resourceManager.loadModelMesh("android", "res/models/adv_1.glb");
+
 	/*TIMER*/
 	Core::Time MainTimer;
-	while (!glfwWindowShouldClose(MainWindow.getWindow()))
+	while (!glfwWindowShouldClose(MainWindow.getWindow())) 
 	{
-		glm::vec3 lightAmbientFactor = { lightAmbient,lightAmbient, lightAmbient };
-		glm::vec3 lightDiffuseFactor = { lightDiffuse, lightDiffuse, lightDiffuse };
+		glm::vec3 lightAmbientFactor =  { lightAmbient,lightAmbient, lightAmbient };
+		glm::vec3 lightDiffuseFactor =  { lightDiffuse, lightDiffuse, lightDiffuse };
 		glm::vec3 lightSpecularFactor = { lightSpecular, lightSpecular, lightSpecular };
 
 		/*timer STOP*/
@@ -170,17 +178,17 @@ int main(int argc, char** argv)
                                                                             );
 		modelMatrix = glm::scale(modelMatrix, glm::vec3(3.f, 3.f, 3.f));
 
-		/*TEXTURE*/
-		currTex->bindTexture2D(0);
-		pShaderProg->setTexUniform("material.texture", 0);
+		///*TEXTURE*/
+		//currTex->bindTexture2D(0);
+		//pShaderProg->setTexUniform("material.texture", 0);
 
-		/*SPECULAT MAP*/
-		specularTex->bindTexture2D(1);
-		pShaderProg->setTexUniform("material.specularMap", 1);
+		///*SPECULAT MAP*/
+		//specularTex->bindTexture2D(1);
+		//pShaderProg->setTexUniform("material.specularMap", 1);
 
-		/*EMISSION MAP*/
-		emissionMap->bindTexture2D(2);
-		pShaderProg->setTexUniform("material.emissionMap", 2);
+		///*EMISSION MAP*/
+		//emissionMap->bindTexture2D(2);
+		//pShaderProg->setTexUniform("material.emissionMap", 2);
 
 		/*CUBE*/
 		pShaderProg->serVec3Uniform("light.lightColor", glm::vec3(
@@ -213,8 +221,9 @@ int main(int argc, char** argv)
 		pShaderProg->setMatrix4Uniform("modelMatrix",      modelMatrix);
 		pShaderProg->setMatrix4Uniform("viewMatrix",       viewMatrix);
 
+		mModel->draw(pShaderProg);
 		//MainRender.drawArrays();
-		MainRender.drawElements();
+		//MainRender.drawElements();
 
 		/*small cubes*/
 		auto it = rotationCubes.begin();

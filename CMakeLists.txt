@@ -41,19 +41,27 @@ src/Modules/Time.cpp
 src/Modules/Random.h
 src/Modules/Random.cpp
 src/Render/IndexBuffer.h
-src/Render/IndexBuffer.cpp)
+src/Render/IndexBuffer.cpp
+src/Resources/BaseMesh.h
+src/Resources/BaseMesh.cpp
+src/Resources/ModelMesh.h
+src/Resources/ModelMesh.cpp)
 
+#linking GLFW
 add_subdirectory(dependencies/glfw)
 
 target_link_libraries(RealEngine glfw)
 
+#linkinh GLAD
 add_subdirectory(dependencies/glad)
 
 target_link_libraries(RealEngine glad)
 
+#linkinh GLM
 include_directories(dependencies/glm)
 
 set_target_properties(RealEngine PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
+
 
 add_custom_command(TARGET RealEngine POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -101,10 +109,7 @@ source_group("Input" FILES ${SRC_INPUT})
 
 
 
-
-
-
-
+#linking ImGui
 include_directories(dependencies/imgui)
 
 set(IMGUI_INCLUDES
@@ -131,3 +136,11 @@ add_library(ImGui STATIC
 target_link_libraries(ImGui glad glfw)
 
 target_link_libraries(RealEngine ImGui)
+
+
+
+
+#linking ASSIMP LIB
+add_subdirectory(dependencies/assimp ${CMAKE_BINARY_DIR}/assimp)
+
+target_link_libraries(RealEngine assimp)

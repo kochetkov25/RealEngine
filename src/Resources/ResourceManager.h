@@ -12,6 +12,11 @@
 #include <vector>
 #include <map>
 
+#include <assimp/texture.h>
+
+#define ASSIMP_LOAD_FLAGS (aiProcess_Triangulate | aiProcess_GenSmoothNormals /*| aiProcess_FlipUVs*/ | aiProcess_JoinIdenticalVertices)
+class ModelMesh;
+
 namespace Render{
 	class ShaderProgram;
 	class Texture2D;
@@ -42,6 +47,11 @@ public:
 														const std::string &texturePath
 													);
 
+	std::shared_ptr<Render::Texture2D> loadTexture2D_memory(
+																const std::string& textureName,
+																const aiTexture* rawData
+														   );
+
 	/*получить shared_ptr на 2D сырую текстуру*/
 	std::shared_ptr<Render::Texture2D> getTexture2D(const std::string &texture2DName);
 
@@ -67,6 +77,8 @@ public:
 															   const unsigned int subTextureHeight
 														  );
 
+	std::shared_ptr<ModelMesh> loadModelMesh(const std::string& modelname, const std::string& modelPath);
+
 	/*ВРЕМЕННЫЙ метод*/
 	/*загрузка всех шейдерных программ*/
 	void loadShaders();
@@ -82,6 +94,9 @@ private:
 	/*map для текстур*/
 	typedef std::map<const std::string, std::shared_ptr<Render::Texture2D>> Texture2DMap;
 	Texture2DMap _texture2DMaps;
+
+	typedef std::map <const std::string, std::shared_ptr<ModelMesh>> ModelMeshMap;
+	ModelMeshMap _modelMeshMaps;
 
 	/*map для спрайтов*/
 	typedef std::map<const std::string, std::shared_ptr<Render::Sprite>> SpriteMap;

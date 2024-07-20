@@ -11,6 +11,7 @@
 #include "../Render/ShaderProgram.h"
 #include "../Render/Sprite.h"
 #include "../Render/Texture2D.h"
+#include "ModelMesh.h"
 
 #include <sstream>
 #include <fstream>
@@ -19,6 +20,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #include "stb_image.h"
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 /*
 * загрузка текстур выполняется с использованием 
@@ -141,6 +146,34 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D(
 	return isNewTexture2DAdd.first->second;
 }
 
+std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D_memory(const std::string& textureName, const aiTexture* rawData)
+{
+	int chanels = 0;
+	int width = 0;
+	int height = 0;
+	/*
+	* координаты текстур в OpenGL задаются от нижнего левого угла.
+	* В STBI координаты текстур задаются от верхнего правого угла.
+	* Для решения этой проблемы выставляем флаг STBI
+	*/
+	stbi_set_flip_vertically_on_load(true);
+	/*загрузка текстуры*/
+	auto pixelsArr = stbi_loadf_from_memory(reinterpret_cast<unsigned char*>(rawData->pcData), rawData->mWidth, &width, &height, &chanels, STBI_rgb_alpha);
+
+	if (!pixelsArr) {
+		std::cerr << "Can not load texture image (tex name: " << __FUNCTION__ << ") " << textureName << std::endl;
+		return nullptr;
+	}
+
+	std::shared_ptr<Render::Texture2D> pNewTexture2D = std::make_shared<Render::Texture2D>(width, height, pixelsArr, chanels, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	auto isNewTexture2DAdd = _texture2DMaps.emplace(textureName, pNewTexture2D);
+	/*освобождаем память, которую заняла STBI для загрузки текстуры*/
+	stbi_image_free(pixelsArr);
+
+	/*возвращаем shared_ptr на текстуру*/
+	return isNewTexture2DAdd.first->second;
+}
+
 /*============================================================*/
 /*получить shared_ptr на сырую текстуру*/
 std::shared_ptr<Render::Texture2D> ResourceManager::getTexture2D(const std::string &texture2DName)
@@ -245,6 +278,34 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(
 		}
 	}
 	return pTexture;
+}
+
+std::shared_ptr<ModelMesh> ResourceManager::loadModelMesh(const std::string& modelname, const std::string& modelPath)
+{
+	Assimp::Importer Importer;
+	auto pathToModel = _path + "/" + modelPath;
+	const auto pScene = Importer.ReadFile(pathToModel.c_str(), ASSIMP_LOAD_FLAGS);
+	if (!pScene)
+	{
+		std::cerr << "Model with this name can not be found (source: " << __FUNCTION__ << ") " << modelPath << std::endl;
+		return nullptr;
+	}
+
+	/*массив текстур модели*/
+	std::vector< std::pair<std::string, std::shared_ptr<Render::Texture2D>> > vecTex_GL;
+	/*загрузка масства текстур модели*/
+	for (unsigned int i = 0; i < pScene->mNumTextures; i++)
+		vecTex_GL.push_back(
+		std::make_pair<std::string, std::shared_ptr<Render::Texture2D>>(
+																			pScene->mTextures[i]->mFilename.C_Str(), 
+																			loadTexture2D_memory(pScene->mTextures[i]->mFilename.C_Str(), pScene->mTextures[i])
+									                                    )
+		                   );
+
+	auto pNewModelMesh = std::make_shared<ModelMesh>(pScene, std::move(vecTex_GL));
+	auto isNewModelMesh = _modelMeshMaps.emplace(modelname, pNewModelMesh);
+
+	return isNewModelMesh.first->second;
 }
 
 /*============================================================*/

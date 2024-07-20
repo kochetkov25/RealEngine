@@ -70,6 +70,56 @@ namespace Render
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
+	Render::Texture2D::Texture2D(
+										const GLuint width, 
+										const GLuint height, 
+										const float* textureData, 
+										const unsigned int channels, 
+										const GLenum filter, 
+										const GLenum wrapMode
+								)
+	{
+		_height = height;
+		_width = width;
+
+		/*установка кол-ва каналов текстуры*/
+		switch (channels) {
+		case 4:
+			_mode = GL_RGBA;
+			break;
+		case 3:
+			_mode = GL_RGB;
+			break;
+		default:
+			_mode = GL_RGBA;
+			break;
+		}
+		/*создание id текстуры*/
+		glGenTextures(1, &_ID);
+		/*
+		* в OpenGL поддерживается до 16 слотов под текстуры.
+		* Для загрузки текстуры делаем активным нулевой слот
+		*/
+		//glActiveTexture(GL_TEXTURE0);
+		/*
+		* привязка текстуры к слоту (2д текстура)
+		* (явно указываем, что мы будем работать с 2д текстурой)
+		*/
+		glBindTexture(GL_TEXTURE_2D, _ID);
+		/*задание параметров текстуры*/
+		glTexImage2D(GL_TEXTURE_2D, 0, /*_mode*/GL_RGBA32F, _width, _height, 0, /*_mode*/GL_RGBA, GL_FLOAT, textureData);
+		/*установка параметров для фильтрации текстуры */
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+		/*установка параметров для мипмапов*/
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+		/*генерация мипмап текстуры*/
+		glGenerateMipmap(GL_TEXTURE_2D);
+		/*отвязка текстуры от слота (чтобы не создавать путаницу)*/
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 	/*============================================================*/
 	/*освобождение ресурсов видеопамяти*/
 	Texture2D::~Texture2D()
