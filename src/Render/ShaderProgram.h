@@ -7,10 +7,10 @@
 */
 
 #pragma once
-#include <glad\glad.h>
+#include <glad/glad.h>
 #include <string>
 
-#include <glm\mat4x4.hpp>
+#include <glm/mat4x4.hpp>
 
 namespace Render
 {
@@ -18,44 +18,44 @@ namespace Render
 
 	class ShaderProgram{
 	public:
-		/*конструктор. компилирует шейдерную программу*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		ShaderProgram(const std::string &vertexShader, const std::string &fragmentShader);
 
-		/*деструктор*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		~ShaderProgram();
 
-		/*результат компиляции шейдерной программы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		bool isCompiled() const { return _isCompiled; }
 
-		/*устанавливает контексту OpenGL использование шейдерной программы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ OpenGL пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void use() const;
 
-		/*установить uniform значение для текстуры*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void setTexUniform(const std::string &textureName, const GLint value);
 
-		/*утсановить значение uniform mat4*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform mat4*/
 		void setMatrix4Uniform(const std::string &vecName, const glm::mat4 &matrix);
 
-		/*утсановить значение uniform vec3*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform vec3*/
 		void serVec3Uniform(const std::string& matrixName, const glm::vec3& vec3);
 
-		/*утсановить значение float uniform*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ float uniform*/
 		void setFloatUniform(const std::string& name, const float value);
 
 		/**/
 		void setArrayUniform(const std::string& name, const size_t size, const float* arr);
 
-		/*идентификатор шейдерной программы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLuint getShaderProgramID() { return _ID; }
 
 	private:
-		/*создание шейдера*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		bool createShader(const std::string &shaderSource, const GLenum shaderType, GLuint &shaderID);
 
-		/*статус компиляции шейдерной программы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		bool _isCompiled = false;
 
-		/* идентификатор шейдерной программы*/
+		/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLuint _ID = 0;
 	};
 

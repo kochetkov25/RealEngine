@@ -1,20 +1,21 @@
-#include "Resources\ResourceManager.h"
+#include "Resources/ResourceManager.h"
 
-#include "Render\ShaderProgram.h"
-#include "Render\Texture2D.h"
-#include "Render\Sprite.h"
-#include "Render\AnimatedSprite.h"
-#include "Render\Window.h"
-#include "Render\VertexBuffer.h"
-#include "Render\VertexArray.h"
-#include "Render\Renderer.h"
-#include "Render\Camera.h"
+#include "Render/ShaderProgram.h"
+#include "Render/Texture2D.h"
+#include "Render/Sprite.h"
+#include "Render/AnimatedSprite.h"
+#include "Render/Window.h"
+#include "Render/IndexBuffer.h"
+#include "Render/VertexBuffer.h"
+#include "Render/VertexArray.h"
+#include "Render/Renderer.h"
+#include "Render/Camera.h"
 
-#include "Modules\GUIModule.h"
-#include "Modules\Time.h"
-#include "Modules\Random.h"
+#include "Modules/GUIModule.h"
+#include "Modules/Time.h"
+#include "Modules/Random.h"
 
-#include "Input\Input.h"
+#include "Input/Input.h"
 
 #include <imgui.h>
 

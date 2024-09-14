@@ -7,12 +7,12 @@
 */
 
 #pragma once
-#include "glad\glad.h"
+#include "glad/glad.h"
 
 #include "VertexArray.h"
 
-#include "glm\mat4x4.hpp"
-#include "glm\vec2.hpp"
+#include "glm/mat4x4.hpp"
+#include "glm/vec2.hpp"
 
 #include <string>
 #include <memory>
@@ -27,9 +27,9 @@ namespace Render
 	class Sprite{
 	public:
 		/*
-		* Для анимации спрайта.
-		* Структура описывает имя и длительность
-		* каждого кадра
+		* пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+		* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+		* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 		*/
 		struct FramePars
 		{
@@ -43,7 +43,7 @@ namespace Render
 			uint64_t _duration;
 		};
 
-		/*конструктор класса*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ*/
 		Sprite(std::shared_ptr<Texture2D> pTexture2D, 
 			   const std::string subTextureName,
 			   std::shared_ptr<ShaderProgram> pShaderProgram,
@@ -51,31 +51,31 @@ namespace Render
 			   const glm::vec2 &spriteSize,
 			   const float rotation);
 
-		/*деструктор*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		~Sprite();
 
 		/*
-		* функция отрисовки спрайта.
-		* frameId для анимации. По умолчанию задан невалидным
+		* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ.
+		* frameId пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		*/
 		void renderSprite(short frameId = -1);
 
-		/*установка позицииц спрайта*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void setSpritePosition(const glm::vec3 &spritePosition);
 
-		/*установка рзамера спрайта*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void setSpriteSize(const glm::vec2 &spriteSize);
 
-		/*установка поворота спрайта*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void setSpriteRotation(const float rotationAng, const glm::vec3& axis = glm::vec3(0.f,0.f,1.f));
 
-		/*получить длительность текущего кадра*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ*/
 		uint64_t getFrameDuration(const size_t frameID) const;
 
-		/*получить кол-во кадров в анимации*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		size_t getFramesCount() const;
 
-		/*установка параметров каждого кадра анимации*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void setAnimParams(std::vector<std::pair<std::string, uint64_t>>& framesDurations);
 
 	protected:
@@ -86,13 +86,13 @@ namespace Render
 		glm::vec3 _axis;
 		float _rotation;
 
-		/*VAO и VBO*/
+		/*VAO пїЅ VBO*/
 		std::shared_ptr<VertexBuffer> _pTexVertexVBO;
 		VertexArray _VAO;
 
 		std::vector<FramePars> _frameParams;
 
-		/*параметр для кэширования кадра*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ*/
 		 short _lastFrameID;
 	};
 

@@ -2,7 +2,7 @@
 
 namespace Core
 {
-	/*определение*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	bool Input::_keys[static_cast<size_t>(GLFW_KEY_LAST)] = {};
 
 	bool Input::_mouseBtns[static_cast<size_t>(GLFW_MOUSE_BUTTON_LAST)] = {};
@@ -10,21 +10,21 @@ namespace Core
 	glm::vec2 Input::_mousePos = {};
 
 	/*============================================================*/
-	/*проверка нажатия клавиши*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	bool Input::isKeyPressed(const int key)
 	{
 		return _keys[static_cast<size_t>(key)];
 	}
 
 	/*============================================================*/
-	/*отжатие клавищи*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	void Input::releaseKey(const int key)
 	{
 		_keys[static_cast<size_t>(key)] = false;
 	}
 
 	/*============================================================*/
-	/*нажатие клавиши*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	void Input::pressKey(const int key)
 	{
 		_keys[static_cast<size_t>(key)] = true;
@@ -49,7 +49,7 @@ namespace Core
 	}
 
 	/*============================================================*/
-	void Input::setMousePosition(glm::vec2& vec)
+	void Input::setMousePosition(const glm::vec2& vec)
 	{
 		_mousePos = vec;
 	}

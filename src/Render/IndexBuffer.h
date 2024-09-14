@@ -1,5 +1,6 @@
-#include "VertexBuffer.h"
+#pragma once
 
+#include "VertexBuffer.h"
 
 namespace Render
 {
@@ -8,7 +9,7 @@ namespace Render
 	class IndexBuffer
 	{
 	public:
-		/*конструктор*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		template <typename _T>
 		IndexBuffer(const std::vector<_T>& data, VertexBuffer::_e_Usage usage = VertexBuffer::_e_Usage::Static)
 		{
@@ -16,23 +17,23 @@ namespace Render
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, data.size() * sizeof(_T), data.data(), VertexBuffer::getGLenum(usage));
 		}
-		/*деструктор*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		~IndexBuffer();
 
-		/*конструктор по умолчанию*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		IndexBuffer() = delete;
 
-		/*перемещающий и копирующий конструкторы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		IndexBuffer(const IndexBuffer&) = delete;
 		IndexBuffer(IndexBuffer&&) = delete;
 
-		/*перемещающее и копирующее присваивание*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		IndexBuffer& operator=(const IndexBuffer&) = delete;
 		IndexBuffer& operator=(const IndexBuffer&&) = delete;
 
-		/*сделать данный буффер активным*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		void bind() const;
-		/*отвязать буффер*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ*/
 		static void unbind();
 
 	private:

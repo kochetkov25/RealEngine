@@ -10,42 +10,42 @@
 
 #include <iostream>
 
-#include <glm\gtc\type_ptr.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace Render
 {
 
 
 	/*============================================================*/
-	/*конструктор. компилирует шейдерную программу*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ. пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	ShaderProgram::ShaderProgram(
 									 const std::string &vertexShader, 
 									 const std::string &fragmentShader
 								)
 	{
-		/*создаем вершинный шейдер*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLuint vertexShaderID;
 		if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)){
 			std::cerr << "Error compile VERTEX SHADER. (source: " << __FUNCTION__<< ")" << std::endl;
 			return;
 		}
 
-		/*создаем фрагментный шейдер*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLuint fragmentShaderID;
 		if (!createShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderID)){
 			std::cerr << "Error compile FRAGMENT SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
-			// фрагментный шейдер не скомпилировался удаляем также и вершинный шейдер
+			// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 			glDeleteShader(vertexShaderID);
 			return;
 		}
 
-		/*соединяем шейдеры в шейдерную программу*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		_ID = glCreateProgram();
 		glAttachShader(_ID, vertexShaderID);
 		glAttachShader(_ID, fragmentShaderID);
 		glLinkProgram(_ID);
 
-		/*проверка ошибок линковки шейдерной программы*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLint isSuccessLink;
 		glGetProgramiv(_ID,GL_LINK_STATUS,&isSuccessLink);
 		if (!isSuccessLink){
@@ -55,37 +55,37 @@ namespace Render
 		}
 		else
 		{
-			/*компиляция прошла успешно*/
+			/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 			_isCompiled = true;
 		}
 
-		/*освобождение ресурсов под шейдеры*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		glDeleteShader(vertexShaderID);
 		glDeleteShader(fragmentShaderID);
 	}
 
 	/*============================================================*/
-	/*в деструкторе удаляем ресурсы шейдерной программы*/
+	/*пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	ShaderProgram::~ShaderProgram()
 	{
 		glDeleteProgram(_ID);
 	}
 	
 	/*============================================================*/
-	/*создание шейдера*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	bool ShaderProgram::createShader(
 										 const std::string &shaderSource, 
 										 const GLenum shaderType, 
 										 GLuint &shaderID
 									)
 	{
-		/*создание шейдера по переданному имени шейдера*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		shaderID = glCreateShader(shaderType);
 		const char* code = shaderSource.c_str();
 		glShaderSource(shaderID, 1, &code, nullptr);
 		glCompileShader(shaderID);
 
-		/*проверка ошибок компиляции шейдера*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		GLint isSuccessCompile;
 		glGetShaderiv(shaderID, GL_COMPILE_STATUS, &isSuccessCompile);
 		if (!isSuccessCompile){
@@ -98,15 +98,15 @@ namespace Render
 	}
 
 	/*============================================================*/
-	/*устанавливает контексту OpenGL использование 
-	  данной шейдерной программы*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ OpenGL пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 
+	  пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	void ShaderProgram::use()const
 	{
 		glUseProgram(_ID);
 	}
 
 	/*============================================================*/
-	/*установить uniform значение для текстуры*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 	void ShaderProgram::setTexUniform(
 										const std::string &textureName, 
 										const GLint value
@@ -116,7 +116,7 @@ namespace Render
 	}
 
 	/*============================================================*/
-	/*утсановить значение uniform mat4*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform mat4*/
 	void ShaderProgram::setMatrix4Uniform(
 											  const std::string &matrixName, 
 											  const glm::mat4 &matrix
@@ -126,7 +126,7 @@ namespace Render
 	}
 
 	/*============================================================*/
-	/*утсановить значение uniform vec3*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ uniform vec3*/
 	void Render::ShaderProgram::serVec3Uniform(
 											  	const std::string& vecName,
 											  	const glm::vec3& vec3
@@ -136,7 +136,7 @@ namespace Render
 	}
 
 	/*============================================================*/
-	/*утсановить значение float uniform*/
+	/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ float uniform*/
 	void Render::ShaderProgram::setFloatUniform(const std::string& name, const float value)
 	{
 		glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);

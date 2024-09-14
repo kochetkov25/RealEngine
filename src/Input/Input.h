@@ -9,13 +9,13 @@ namespace Core
 	class Input
 	{
 	public:
-		/*проверка нажатия клавиши*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		static bool isKeyPressed(const int key);
 
-		/*отжатие клавищи*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		static void releaseKey(const int key);
 
-		/*нажатие клавиши*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		static void pressKey(const int key);
 
 		static void pressMouseBtn(const int key);
@@ -24,11 +24,11 @@ namespace Core
 
 		static bool isMouseBtnPressed(const int key);
 
-		static void setMousePosition(glm::vec2& vec);
+		static void setMousePosition(const glm::vec2& vec);
 
 		static glm::vec2 getMousePosition();
 	private:
-		/*массив всех возможных клавиш клавиатуры*/
+		/*пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
 		static bool _keys[static_cast<size_t>(GLFW_KEY_LAST)];
 
 		static bool _mouseBtns[static_cast<size_t>(GLFW_MOUSE_BUTTON_LAST)];
