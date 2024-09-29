@@ -31,6 +31,7 @@ namespace Render
 	extern void createTexCube(Renderer& render);
 	extern void createTexCubeLight(Renderer& render);
 	extern void createTexCubeLight_Indices(Renderer& render);
+	extern void createXYplane(Renderer& render);
 }
 
 
@@ -84,11 +85,16 @@ int main(int argc, char** argv)
 	/*SHADERS*/
 	auto pShaderProg  = resourceManager.getShaderProgram(shaderName);
 	auto pLightShader = resourceManager.getShaderProgram("LightShader");
+	auto pDebugShader = resourceManager.getShaderProgram("DefaultShader");
 
 	/*MAIN RENDER*/
 	Render::Renderer MainRender;
 	//Render::createTexCubeLight(MainRender);
 	Render::createTexCubeLight_Indices(MainRender);
+
+	/*DEBUG RENDER*/
+	Render::Renderer DebugRender;
+	Render::createXYplane(DebugRender);
 
 
 	/*GL CONTEXT*/
@@ -98,6 +104,8 @@ int main(int argc, char** argv)
 	glEnable(GL_BLEND);
 	/*задаю дефолтные настройки смешивания*/
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	/*for MSAA*/
+	glEnable(GL_MULTISAMPLE);
 
 	/*CUBE properties*/
 	glm::mat4 modelMatrix(1.f);
@@ -134,7 +142,6 @@ int main(int argc, char** argv)
 	float lightSpecular = 1.00f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
-
 	auto mModel = resourceManager.loadModelMesh("android", "res/models/adv_1.glb");
 
 	/*TIMER*/
@@ -161,6 +168,7 @@ int main(int argc, char** argv)
 		/*очищаю передний буфер*/
 		glClearColor(156.f / 255.f, 156.f / 255.f, 156.f / 255.f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
 		/*ОТРИСОВКА ТОЛЬКО ЛИНИЙ МОДЕЛИ*/
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -259,6 +267,15 @@ int main(int argc, char** argv)
 		MainRender.drawElements();
 
 
+		/*DEBUG*/
+		pDebugShader->use();
+		modelMatrix = glm::mat4(1.f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0, 0));
+		modelMatrix = glm::scale(modelMatrix, glm::vec3(10000.f, 10000.f, 10000.f));
+		pDebugShader->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+		pDebugShader->setMatrix4Uniform("modelMatrix", modelMatrix);
+		pDebugShader->setMatrix4Uniform("viewMatrix", viewMatrix);
+		DebugRender.drawArrays();
 
 
 		/*User Interface*/

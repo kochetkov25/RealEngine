@@ -128,6 +128,8 @@ namespace Render
 			return false;
 		/*�������� ��������������� ����*/
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		/*enable 8x MSAA*/
+		glfwWindowHint(GLFW_SAMPLES, 8);
 
 		/*������������� ����*/
 		if (!_pWindow)

@@ -522,4 +522,30 @@ namespace Render
 
 		render.Enable(Render::Renderer::State::TEXTURE_2D);
 	}
+
+	void createXYplane(Renderer& render)
+	{
+		render.begin(GL_TRIANGLES);
+
+		render.verex3(0.5f, 0.0f,  -0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+		render.verex3(0.5f, 0.0f,  0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+		render.verex3(-0.5f, 0.0f,  0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+
+		render.verex3(0.5f, 0.0f,  -0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+		render.verex3(-0.5f, 0.0f,  -0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+		render.verex3(-0.5f, 0.0f,  0.5f);
+		render.color4(255.f, 0.f, 0.f);
+
+		render.end();
+	}
 }
