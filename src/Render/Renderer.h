@@ -19,7 +19,8 @@ namespace Render {
 		{
 			TEXTURE_2D,
 			PRIMITIVES_GL,
-			TEXTURE_2D_LIGHT
+			TEXTURE_2D_LIGHT,
+			COORDS
 		};
 
 		/*конструктор*/
@@ -81,6 +82,10 @@ namespace Render {
 		std::vector<float> _elementsBuff;
 		size_t _vertexCount;
 		size_t _indicesCount;
+		/*тип элементов в буффере для передачи только координат точек*/
+		std::vector<VertexBuffer::BufferElement> _vec3 = {
+															   VertexBuffer::_e_DataType::Float3,
+														 };
 		/*тип элементов в буффере для примитивов*/
 		std::vector<VertexBuffer::BufferElement> _vec3Col4 = {
 															   VertexBuffer::_e_DataType::Float3,

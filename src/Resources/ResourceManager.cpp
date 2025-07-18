@@ -315,25 +315,31 @@ void ResourceManager::loadShaders()
 	/*шейдер для отрисовки GL примитивов*/
 	loadShederProgram(
 						"DefaultShader",
-						"res/shaders/vertexShader.txt",
-						"res/shaders/fragmentShader.txt"
+						"res/shaders/defaultVertexShader.vert",
+						"res/shaders/defaultFragmentShader.frag"
 					 );
 	/*шейдер для отрисовки спрайтов*/
 	loadShederProgram(
 						"SpriteShader",
-						"res/shaders/spriteVertexShader.txt",
-						"res/shaders/spriteFragmentShader.txt"
+						"res/shaders/spriteVertexShader.vert",
+						"res/shaders/spriteFragmentShader.frag"
 					 );
 	/*шейдер для отладки отрисовки спрайтов*/
 	loadShederProgram(
 						"DebugShader",
-						"res/shaders/spriteVertexShader.txt",
-						"res/shaders/DebugFragmentShader.txt"
+						"res/shaders/spriteVertexShader.vert",
+						"res/shaders/spriteFragmentShader.frag"
 					 );
 	/*шейдер для источника света*/
 	loadShederProgram(
 						"LightShader",
-						"res/shaders/lightVertexShader.txt",
-						"res/shaders/lightFragmentShader.txt"
+						"res/shaders/lightVertexShader.vert",
+						"res/shaders/lightFragmentShader.frag"
 					 );
+	/*shader for 3d grid*/
+	loadShederProgram(
+		"gridShader",
+		"res/shaders/gridVertexShader.vert",
+		"res/shaders/gridFragmentShader.frag"
+	);
 }

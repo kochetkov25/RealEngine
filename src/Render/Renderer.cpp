@@ -36,6 +36,11 @@ namespace Render
 				elem = _vec3UV2vec3;
 				break;
 			}
+			case Render::Renderer::State::COORDS:
+			{
+				elem = _vec3;
+				break;
+			}
 			default:
 			{
 				elem = _vec3Col4;

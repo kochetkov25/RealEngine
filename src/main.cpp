@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 								static_cast<float>(MainWindow.getHeight()),
 								static_cast<float>(MainWindow.getWidth())
 							);
-	glm::vec3 cameraPosition(0.0f, 0.0f, 7.0f);
+	glm::vec3 cameraPosition(0.0f, 2.0f, 7.0f); 
 	MainCamera.setPosition(cameraPosition);
 	MainCamera.setPlane(0.1f, 500.f);
 	MainCamera.setVelocity(10.f);
@@ -71,12 +71,12 @@ int main(int argc, char** argv)
 	std::string shaderName = "SpriteShader";
 	
 	/*load TEXTURES*/
-	resourceManager.loadTexture2D("BOX_TEX",  "res/textures/body_lstr.png");
-	resourceManager.loadTexture2D("SpecularMap", "res/textures/BOX_specularMap.png");
-	resourceManager.loadTexture2D("EmissionMap", "res/textures/BOX_emissionMAP.png");
-	auto currTex = resourceManager.getTexture2D("BOX_TEX");
-	auto specularTex  = resourceManager.getTexture2D("SpecularMap");
-	auto emissionMap = resourceManager.getTexture2D("EmissionMap");
+	//resourceManager.loadTexture2D("BOX_TEX",  "res/textures/body_lstr.png");
+	//resourceManager.loadTexture2D("SpecularMap", "res/textures/BOX_specularMap.png");
+	//resourceManager.loadTexture2D("EmissionMap", "res/textures/BOX_emissionMAP.png");
+	//auto currTex = resourceManager.getTexture2D("BOX_TEX");
+	//auto specularTex  = resourceManager.getTexture2D("SpecularMap");
+	//auto emissionMap = resourceManager.getTexture2D("EmissionMap");
 
 	/*MATRIXES*/
 	glm::mat4 projectionMatrix;
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
 	/*SHADERS*/
 	auto pShaderProg  = resourceManager.getShaderProgram(shaderName);
 	auto pLightShader = resourceManager.getShaderProgram("LightShader");
-	auto pDebugShader = resourceManager.getShaderProgram("DefaultShader");
+	auto pDebugShader = resourceManager.getShaderProgram("gridShader");
 
 	/*MAIN RENDER*/
 	Render::Renderer MainRender;
@@ -95,6 +95,7 @@ int main(int argc, char** argv)
 	/*DEBUG RENDER*/
 	Render::Renderer DebugRender;
 	Render::createXYplane(DebugRender);
+
 
 
 	/*GL CONTEXT*/
@@ -142,7 +143,7 @@ int main(int argc, char** argv)
 	float lightSpecular = 1.00f;
 	float lightColor[3] = { 1.f, 1.f, 1.f };
 
-	auto mModel = resourceManager.loadModelMesh("android", "res/models/adv_1.glb");
+	auto mModel = resourceManager.loadModelMesh("android", "res/models/CubeNormals.glb");
 
 	/*TIMER*/
 	Core::Time MainTimer;

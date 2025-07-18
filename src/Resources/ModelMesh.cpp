@@ -56,6 +56,7 @@ void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader)
 		auto mTextures = mesh->getTexture();
 		for (const auto& mTex : mTextures)
 		{
+			std::cout << mTex._type << std::endl;
 			auto mTexture2D_GL = _vecTexGL[mTex._id];
 			mTexture2D_GL.second->bindTexture2D(0);
 			shader->setTexUniform("material.texture", 0);
