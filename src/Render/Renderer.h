@@ -7,35 +7,28 @@
 #include <vector>
 #include <string>
 
-static const size_t MAX_ELEMENTS = 1024 * 2;
-
 namespace Render {
+	static const size_t MAX_ELEMENTS = 1024 * 2;
 
-	class Renderer
-	{
+	static const size_t MAX_LAYOUT = 10;
+
+	class Renderer {
+		friend class RendererFactory;
 	public:
-		/*тип отрисовываемых примитивов*/
-		enum class State
-		{
-			TEXTURE_2D,
-			PRIMITIVES_GL,
-			TEXTURE_2D_LIGHT,
-			COORDS
+		enum DataType {
+			Float,
+			Float2,
+			Float3,
+			Float4,
+			Int,
+			Int2,
+			Int3,
+			Int4
 		};
 
-		/*конструктор*/
-		Renderer()
-		{
-			_elementsBuff.reserve(MAX_ELEMENTS);
-			_currMode = GL_TRIANGLES;
-			_vertexCount = 0;
-			_indicesCount = 0;
-			_renderState = State::PRIMITIVES_GL;
-		}
-		/*добавление в буффер вершины из трех координат*/
+		// Appends a vertex (x, y, z) to the buffer
 		template<typename _T>
-		void verex3(_T x, _T y, _T z)
-		{
+		void verex3(_T x, _T y, _T z) {
 			_elementsBuff.emplace_back(static_cast<float>(x));
 			_elementsBuff.emplace_back(static_cast<float>(y));
 			_elementsBuff.emplace_back(static_cast<float>(z));
@@ -43,72 +36,55 @@ namespace Render {
 			_vertexCount++;
 		}
 
-		/*добавление в буффер цвета дл€ вершины в формате RGBA (от 0 до 255)*/
+		// Adds RGBA vertex color (0Ц255 range) to the buffer
 		template<typename _T>
-		void color4(_T r, _T g, _T b, _T a = 1.f)
-		{
+		void color4(_T r, _T g, _T b, _T a = 1.f) {
 			_elementsBuff.emplace_back(static_cast<float>(r) / 255.f);
 			_elementsBuff.emplace_back(static_cast<float>(g) / 255.f);
 			_elementsBuff.emplace_back(static_cast<float>(b) / 255.f);
 			_elementsBuff.emplace_back(static_cast<float>(a));
 		}
 
-		/*добавлене в буффер вершинй спрайта (от 0 до 1)*/
+		// Appends sprite UV coordinates (normalized 0Ц1) to the buffer
 		template<typename _T>
-		void vertexUV(_T U, _T V)
-		{
+		void vertexUV(_T U, _T V) {
 			_elementsBuff.emplace_back(static_cast<float>(U));
 			_elementsBuff.emplace_back(static_cast<float>(V));
 		}
 
-		/*начать задание примитивов*/
-		void begin(GLenum mode);
+		// Sets the vertex layout describing the structure of vertex data.
+		void setLayout(const std::vector<DataType>& layout);
 
-		/*закончить задание примитивов*/
-		void end();
+		// Sets the OpenGL primitive draw mode (e.g., GL_TRIANGLES, GL_LINES).
+		void setDrawMode(GLenum mode);
 
-		/*установить пор€док индексов дл€ отрисовки*/
+		// Uploads the vertex data and layout to the GPU.
+		void upload();
+
+		// Sets the index buffer for indexed rendering.
 		void setIndices(const std::vector<GLuint>& indices);
 
-		/*отрисовать все вершины*/
+		// Draws the uploaded vertex buffer using the configured draw mode.
 		void drawArrays();
 
-		/*отрисовать все вершины с использованием индексов вершин*/
+		// Draws geometry using the uploaded vertex and index buffers.
 		void drawElements();
 
-		void Enable(State currState);
 	private:
-		/*буффер под вершины и цвета*/
+		// ctor
+		explicit Renderer() : _drawMode(GL_TRIANGLES), _vertexCount(0), _indicesCount(0) {
+			_elementsBuff.reserve(MAX_ELEMENTS);
+			_layout.reserve(MAX_LAYOUT);
+		}
+
 		std::vector<float> _elementsBuff;
 		size_t _vertexCount;
 		size_t _indicesCount;
-		/*тип элементов в буффере дл€ передачи только координат точек*/
-		std::vector<VertexBuffer::BufferElement> _vec3 = {
-															   VertexBuffer::_e_DataType::Float3,
-														 };
-		/*тип элементов в буффере дл€ примитивов*/
-		std::vector<VertexBuffer::BufferElement> _vec3Col4 = {
-															   VertexBuffer::_e_DataType::Float3,
-															   VertexBuffer::_e_DataType::Float4
-		                                                     };
-		/*тип элементов в буффере дл€ спрайтов*/
-		std::vector<VertexBuffer::BufferElement> _vec3UV2 = {
-																VertexBuffer::_e_DataType::Float3,
-																VertexBuffer::_e_DataType::Float2
-															};
-		/*тип элементов в буффере дл€ спрайтов с освещением*/
-		std::vector<VertexBuffer::BufferElement> _vec3UV2vec3 = {
-																VertexBuffer::_e_DataType::Float3,
-																VertexBuffer::_e_DataType::Float2,
-																VertexBuffer::_e_DataType::Float3,
-		                                                    };
-		/*текущий режим отрисовки*/
-		GLenum _currMode;
 
-		/*¬јќ*/
+		GLenum _drawMode;
+
 		VertexArray _VAO;
 
-		/*парамемтр хранит тип отрисовываемого примитива*/
-		State _renderState;
+		std::vector<VertexBuffer::BufferElement> _layout;
 	};
 }

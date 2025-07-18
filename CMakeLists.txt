@@ -18,6 +18,8 @@ src/Render/AnimatedSprite.h
 src/Render/AnimatedSprite.cpp
 src/Render/Renderer.h
 src/Render/Renderer.cpp
+src/Render/RendererFactory.h
+src/Render/RendererFactory.cpp
 src/Render/Window.h
 src/Render/Window.cpp
 src/Render/VertexBuffer.h

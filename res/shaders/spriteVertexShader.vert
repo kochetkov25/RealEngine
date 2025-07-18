@@ -2,6 +2,7 @@
 layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec2 texture_coords;
 layout(location = 2) in vec3 texture_normals;
+layout(location = 3) in vec3 texture_tangent;
 
 out vec2 texCoords;
 out vec3 texNormals;

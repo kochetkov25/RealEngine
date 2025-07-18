@@ -8,7 +8,8 @@
 #include "Render/IndexBuffer.h"
 #include "Render/VertexBuffer.h"
 #include "Render/VertexArray.h"
-#include "Render/Renderer.h"
+//#include "Render/Renderer.h"
+#include "Render/RendererFactory.h"
 #include "Render/Camera.h"
 
 #include "Modules/GUIModule.h"
@@ -27,11 +28,11 @@
 
 namespace Render
 {
-	extern void createRawCube(Renderer& render);
-	extern void createTexCube(Renderer& render);
-	extern void createTexCubeLight(Renderer& render);
-	extern void createTexCubeLight_Indices(Renderer& render);
-	extern void createXYplane(Renderer& render);
+	extern void createRawCube(std::shared_ptr<Renderer> render);
+	extern void createTexCube(std::shared_ptr<Renderer> render);
+	extern void createTexCubeLight(std::shared_ptr<Renderer> render);
+	extern void createTexCubeLight_Indices(std::shared_ptr<Renderer> render);
+	extern void createXYplane(std::shared_ptr<Renderer> render);
 }
 
 
@@ -88,12 +89,14 @@ int main(int argc, char** argv)
 	auto pDebugShader = resourceManager.getShaderProgram("gridShader");
 
 	/*MAIN RENDER*/
-	Render::Renderer MainRender;
+	//Render::Renderer MainRender;
+	auto MainRender = Render::RendererFactory::CreateDefault3DModelRenderer();
 	//Render::createTexCubeLight(MainRender);
 	Render::createTexCubeLight_Indices(MainRender);
 
 	/*DEBUG RENDER*/
-	Render::Renderer DebugRender;
+	//Render::Renderer DebugRender;
+	auto DebugRender = Render::RendererFactory::CreateDebugRenderer();
 	Render::createXYplane(DebugRender);
 
 
@@ -244,7 +247,7 @@ int main(int argc, char** argv)
 			modelMatrix = glm::rotate(modelMatrix, glm::radians(*it), glm::vec3(1, 1, 1));
 			pShaderProg->setMatrix4Uniform("modelMatrix", modelMatrix);
 			//MainRender.drawArrays();
-			MainRender.drawElements();
+			MainRender->drawElements();
 			it++;
 		}
 
@@ -265,7 +268,7 @@ int main(int argc, char** argv)
 		pLightShader->setMatrix4Uniform("modelMatrix",      modelMatrix);
 		pLightShader->setMatrix4Uniform("viewMatrix",       viewMatrix);
 		//MainRender.drawArrays();
-		MainRender.drawElements();
+		MainRender->drawElements();
 
 
 		/*DEBUG*/
@@ -276,7 +279,7 @@ int main(int argc, char** argv)
 		pDebugShader->setMatrix4Uniform("projectionMatrix", projectionMatrix);
 		pDebugShader->setMatrix4Uniform("modelMatrix", modelMatrix);
 		pDebugShader->setMatrix4Uniform("viewMatrix", viewMatrix);
-		DebugRender.drawArrays();
+		DebugRender->drawArrays();
 
 
 		/*User Interface*/

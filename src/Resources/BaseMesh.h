@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "../Render/Renderer.h"
+#include "../Render/RendererFactory.h"
 
 namespace Render
 {
@@ -49,7 +49,8 @@ public:
 		return _nameMesh;
 	}
 private:
-	Render::Renderer _renderer;
+	//Render::Renderer _renderer;
+	std::shared_ptr<Render::Renderer> _renderer;
 	std::string _nameMesh;
 
 	std::vector<Texture> _vecTextures;

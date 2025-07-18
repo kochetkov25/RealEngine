@@ -31,18 +31,17 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene)
 	_nameMesh = pMesh->mName.C_Str();
 
 	/*передача параметров меша в рендер*/
-	_renderer.Enable(Render::Renderer::State::TEXTURE_2D_LIGHT);
-	_renderer.begin(GL_TRIANGLES);
+	_renderer = Render::RendererFactory::CreateDefault3DModelRenderer();
 
 	/*позиции, текстурные координаты, нормали*/
 	for (int i = 0; i < pMesh->mNumVertices; i++)
 	{
 		/*позиция вершин*/
-		_renderer.verex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z);
+		_renderer->verex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z);
 		/*текстурные координаты*/
-		_renderer.vertexUV(pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y);
+		_renderer->vertexUV(pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y);
 		/*нормали*/
-		_renderer.verex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z);
+		_renderer->verex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z);
 	}
 
 	/*indices для данного меша*/
@@ -53,7 +52,7 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene)
 		for (int j = 0; j < face.mNumIndices; j++)
 			indices.push_back(face.mIndices[j]);
 	}
-	_renderer.setIndices(indices);
+	_renderer->setIndices(indices);
 
 	/*сохраняю тип и номер текстур, принадлежащих данному мешу*/
 	auto pMaterial = pScene->mMaterials[pMesh->mMaterialIndex];
@@ -72,11 +71,11 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene)
 	}
 	std::cout << std::endl;
 
-	_renderer.end();
+	_renderer->upload();
 }
 
 /*отрисовка меша*/
 void BaseMesh::drawMesh()
 {
-	_renderer.drawElements();
+	_renderer->drawElements();
 }

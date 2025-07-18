@@ -2,89 +2,76 @@
 
 #include "IndexBuffer.h"
 
-namespace Render 
+#include <unordered_map>
+#include <algorithm>
+#include <iterator>
+#include <cassert>
+
+namespace Render
 {
-
-
-	/*============================================================*/
-	/*начало задания координат. Установка mode*/
-	void Renderer::begin(GLenum mode)
-	{
-		_currMode = mode;
+	namespace {
+		std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType> kRendered2VertexBuffer{
+		{ Renderer::Float, VertexBuffer::_e_DataType::Float },
+		{ Renderer::Float2, VertexBuffer::_e_DataType::Float2 },
+		{ Renderer::Float3, VertexBuffer::_e_DataType::Float3 },
+		{ Renderer::Float4, VertexBuffer::_e_DataType::Float4 },
+		{ Renderer::Int, VertexBuffer::_e_DataType::Int },
+		{ Renderer::Int2, VertexBuffer::_e_DataType::Int2 },
+		{ Renderer::Int3, VertexBuffer::_e_DataType::Int3 },
+		{ Renderer::Int4, VertexBuffer::_e_DataType::Int4 },
+		};
 	}
 
-	/*============================================================*/
-	/*конец задания координат*/
-	void Renderer::end()
-	{
-		std::vector<Render::VertexBuffer::BufferElement> elem;
-		/*задаем расположение элементов в буффере в зависимости от State*/
-		switch (_renderState)
-		{
-			case Render::Renderer::State::TEXTURE_2D:
-			{
-				elem = _vec3UV2;
-				break;
-			}
-			case Render::Renderer::State::PRIMITIVES_GL:
-			{
-				elem = _vec3Col4;
-				break;
-			}
-			case Render::Renderer::State::TEXTURE_2D_LIGHT:
-			{
-				elem = _vec3UV2vec3;
-				break;
-			}
-			case Render::Renderer::State::COORDS:
-			{
-				elem = _vec3;
-				break;
-			}
-			default:
-			{
-				elem = _vec3Col4;
-				break;
-			}
+	// This must be called before upload(). The layout determines how the buffer
+	// contents are interpreted and passed to the vertex shader (e.g., positions,
+	// colors, UVs, normals).
+	void Renderer::setLayout(const std::vector<DataType>& layout) {
+		_layout.clear();
+		std::transform(layout.begin(), layout.end(), std::back_inserter(_layout), [](auto elem) {return kRendered2VertexBuffer.at(elem); });
+	}
+
+	// This controls how the GPU interprets the vertex data during rendering.
+	void Renderer::setDrawMode(GLenum mode) {
+		_drawMode = mode;
+	}
+
+	// This must be called after setting the layout and filling the vertex buffer.
+	// It creates a VertexBuffer with the current layout and attaches it to the VAO.
+	void Renderer::upload() {
+		if (_layout.empty()) {
+			assert(false && "Layout is empty! Dont know how to interpret buffer!");
 		}
-		VertexBuffer VBO(_elementsBuff, elem, VertexBuffer::_e_Usage::Static);
+
+		VertexBuffer VBO(_elementsBuff, _layout, VertexBuffer::_e_Usage::Static);
 		_VAO.addBuffer(VBO);
 	}
 
-	/*============================================================*/
-	/*установить порядок индексов для отрисовки*/
-	void Renderer::setIndices(const std::vector<GLuint>& indices)
-	{
+	// Stores the given indices and creates an IndexBuffer bound to the VAO.
+	// Call this before drawElements() if you plan to use indexed drawing.
+	void Renderer::setIndices(const std::vector<GLuint>& indices) {
 		IndexBuffer IBO(indices);
 		_indicesCount = indices.size();
 
 		_VAO.setIndexBuffer(IBO);
 	}
 
-	/*============================================================*/
-	/*отрисовка примитивов по вершинам*/
-	void Render::Renderer::drawArrays()
-	{
+	// This uses non-indexed rendering (glDrawArrays) and requires vertex data
+	// to have been uploaded beforehand.
+	void Render::Renderer::drawArrays() {
 		_VAO.bind();
-		glDrawArrays(_currMode, 0, _vertexCount);
+		glDrawArrays(_drawMode, 0, _vertexCount);
 		_VAO.unbind();
 	}
 
-	/*============================================================*/
-	/*отрисовать все вершины с использованием индексов вершин*/
-	void Render::Renderer::drawElements()
-	{
+	// This uses indexed rendering (glDrawElements), so make sure to call
+	// setIndices() before this. Requires a valid layout and uploaded vertex data.
+	void Render::Renderer::drawElements() {
+		if (_indicesCount == 0) {
+			assert(false && "Cannot call drawElements(): index buffer has not been set.");
+		}
 		_VAO.bind();
-		glDrawElements(_currMode, _indicesCount, GL_UNSIGNED_INT, 0);
+		glDrawElements(_drawMode, _indicesCount, GL_UNSIGNED_INT, 0);
 		_VAO.unbind();
 	}
-
-	/*============================================================*/
-	/*установка типа отрисовываемого примитива*/
-	void Render::Renderer::Enable(State currState)
-	{
-		_renderState = currState;
-	}
-
 
 }
