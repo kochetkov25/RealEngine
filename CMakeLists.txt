@@ -1,148 +1,105 @@
+cmake_minimum_required(VERSION 3.13)
+
+# Export symbols on Windows automatically
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
-cmake_minimum_required(VERSION 3.13.0)
+project(RealEngine VERSION 0.1.0 LANGUAGES CXX)
 
-project(RealEngine VERSION 0.1.0)
+# C++ standard configuration
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_executable(RealEngine src/main.cpp
-src/Render/ShaderProgram.cpp
-src/Render/ShaderProgram.h
-src/Resources/ResourceManager.cpp
-src/Resources/ResourceManager.h
-src/Resources/stb_image.h
-src/Render/Texture2D.h
-src/Render/Texture2D.cpp
-src/Render/Sprite.cpp
-src/Render/Sprite.h
-src/Render/AnimatedSprite.h
-src/Render/AnimatedSprite.cpp
-src/Render/Renderer.h
-src/Render/Renderer.cpp
-src/Render/RendererFactory.h
-src/Render/RendererFactory.cpp
-src/Render/Window.h
-src/Render/Window.cpp
-src/Render/VertexBuffer.h
-src/Render/VertexBuffer.cpp
-src/Render/VertexArray.h
-src/Render/VertexArray.cpp
-src/Modules/GUIModule.h
-src/Modules/GUIModule.cpp
-src/Render/Primitives.cpp
-src/Render/Camera.h
-src/Render/Camera.cpp
-src/Render/Event.h
-src/Render/Event.cpp
-src/Render/Events/MouseEvent.h
-src/Render/Events/WindowEvent.h
-src/Render/Events/KeyboardEvent.h
-src/Input/Input.h
-src/Input/Input.cpp
-src/Modules/Time.h
-src/Modules/Time.cpp
-src/Modules/Random.h
-src/Modules/Random.cpp
-src/Render/IndexBuffer.h
-src/Render/IndexBuffer.cpp
-src/Resources/BaseMesh.h
-src/Resources/BaseMesh.cpp
-src/Resources/ModelMesh.h
-src/Resources/ModelMesh.cpp)
-
-#linking GLFW
-add_subdirectory(dependencies/glfw)
-
-target_link_libraries(RealEngine glfw)
-
-#linkinh GLAD
-add_subdirectory(dependencies/glad)
-
-target_link_libraries(RealEngine glad)
-
-#linkinh GLM
-include_directories(dependencies/glm)
-
-set_target_properties(RealEngine PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/)
-
-
-add_custom_command(TARGET RealEngine POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy_directory
-			${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:RealEngine>/res)
-
-file(GLOB_RECURSE SRC_RENDER
+# Collect engine sources
+file(GLOB_RECURSE SRC_RENDER CONFIGURE_DEPENDS
     "src/Render/*.cpp"
     "src/Render/*.h"
 )
-
-file(GLOB_RECURSE SRC_RESOURCES
+file(GLOB_RECURSE SRC_RESOURCES CONFIGURE_DEPENDS
     "src/Resources/*.cpp"
     "src/Resources/*.h"
 )
-
-file(GLOB_RECURSE SRC_MODULES
+file(GLOB_RECURSE SRC_MODULES CONFIGURE_DEPENDS
     "src/Modules/*.cpp"
     "src/Modules/*.h"
 )
-
-file(GLOB_RECURSE SRC_EVENTS
+file(GLOB_RECURSE SRC_EVENTS CONFIGURE_DEPENDS
     "src/Render/Events/*.cpp"
     "src/Render/Events/*.h"
 )
-
-file(GLOB_RECURSE SRC_INPUT
+file(GLOB_RECURSE SRC_INPUT CONFIGURE_DEPENDS
     "src/Input/*.cpp"
     "src/Input/*.h"
 )
 
+set(ENGINE_SOURCES
+    src/main.cpp
+    ${SRC_RENDER}
+    ${SRC_RESOURCES}
+    ${SRC_MODULES}
+    ${SRC_EVENTS}
+    ${SRC_INPUT}
+)
+
+add_executable(RealEngine ${ENGINE_SOURCES})
+
+target_include_directories(RealEngine PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glm
+)
+
+# Source groups for IDEs
 source_group("Render" FILES ${SRC_RENDER})
-
 source_group("Resources" FILES ${SRC_RESOURCES})
-
 source_group("Modules" FILES ${SRC_MODULES})
-
 source_group("Events" FILES ${SRC_EVENTS})
-
 source_group("Input" FILES ${SRC_INPUT})
 
+# GLFW
+add_subdirectory(dependencies/glfw)
 
+target_link_libraries(RealEngine PRIVATE glfw)
 
+# GLAD
+add_subdirectory(dependencies/glad)
 
+target_link_libraries(RealEngine PRIVATE glad)
 
-
-
-
-#linking ImGui
-include_directories(dependencies/imgui)
-
-set(IMGUI_INCLUDES
-	dependencies/imgui/imgui.h
-	dependencies/imgui/backends/imgui_impl_glfw.h
-	dependencies/imgui/backends/imgui_impl_opengl3.h
+# ImGui
+file(GLOB IMGUI_HEADERS CONFIGURE_DEPENDS
+    dependencies/imgui/imgui.h
+    dependencies/imgui/backends/imgui_impl_glfw.h
+    dependencies/imgui/backends/imgui_impl_opengl3.h
 )
-
-set(IMGUI_SOURCES
-	dependencies/imgui/imgui.cpp
-	dependencies/imgui/backends/imgui_impl_glfw.cpp
-	dependencies/imgui/backends/imgui_impl_opengl3.cpp
-	dependencies/imgui/imgui_demo.cpp
-	dependencies/imgui/imgui_tables.cpp
-	dependencies/imgui/imgui_widgets.cpp
-	dependencies/imgui/imgui_draw.cpp
+file(GLOB IMGUI_SOURCES CONFIGURE_DEPENDS
+    dependencies/imgui/imgui.cpp
+    dependencies/imgui/backends/imgui_impl_glfw.cpp
+    dependencies/imgui/backends/imgui_impl_opengl3.cpp
+    dependencies/imgui/imgui_demo.cpp
+    dependencies/imgui/imgui_tables.cpp
+    dependencies/imgui/imgui_widgets.cpp
+    dependencies/imgui/imgui_draw.cpp
 )
+add_library(ImGui STATIC ${IMGUI_HEADERS} ${IMGUI_SOURCES})
 
-add_library(ImGui STATIC
-	${IMGUI_INCLUDES}
-	${IMGUI_SOURCES}
-)
+target_include_directories(ImGui PUBLIC dependencies/imgui)
 
-target_link_libraries(ImGui glad glfw)
+target_link_libraries(ImGui PUBLIC glad glfw)
 
-target_link_libraries(RealEngine ImGui)
+target_link_libraries(RealEngine PRIVATE ImGui)
 
-
-
-
-#linking ASSIMP LIB
+# Assimp
 add_subdirectory(dependencies/assimp ${CMAKE_BINARY_DIR}/assimp)
 
-target_link_libraries(RealEngine assimp)
+target_link_libraries(RealEngine PRIVATE assimp)
+
+# Runtime output
+set_target_properties(RealEngine PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+# Copy resources after build
+add_custom_command(TARGET RealEngine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/res $<TARGET_FILE_DIR:RealEngine>/res
+)

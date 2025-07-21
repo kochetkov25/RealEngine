@@ -120,8 +120,11 @@ namespace Render
 	void ShaderProgram::setMatrix4Uniform(
 											  const std::string &matrixName, 
 											  const glm::mat4 &matrix
-										 )
-	{
+										 ) {
+		auto loc = glGetUniformLocation(_ID, matrixName.c_str());
+		if (loc == -1) {
+			assert(false && "Cant find uniform location!");
+		}
 		glUniformMatrix4fv(glGetUniformLocation(_ID, matrixName.c_str()), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
