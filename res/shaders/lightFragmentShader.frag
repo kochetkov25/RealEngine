@@ -1,4 +1,5 @@
 #version 440
+
 out vec4 vertexColor;
 
 uniform vec3 lightColor;

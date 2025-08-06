@@ -27,7 +27,7 @@ class UniformBuffer {
 
   void set(const T& data, size_t offset = 0) {
     glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(T), data);
+    glBufferSubData(GL_UNIFORM_BUFFER, offset, sizeof(T), &data);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 

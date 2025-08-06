@@ -4,7 +4,6 @@
 
 namespace Render {
 
-/*============================================================*/
 /*перевод из usage класса в usage OpenGL*/
 GLenum Render::VertexBuffer::getGLenum(const _e_Usage usage) {
   switch (usage) {
@@ -20,19 +19,15 @@ GLenum Render::VertexBuffer::getGLenum(const _e_Usage usage) {
   }
 }
 
-/*============================================================*/
-/*осаобождаем ресурсы OpenGL*/
+/*освобождаем ресурсы OpenGL*/
 Render::VertexBuffer::~VertexBuffer() { glDeleteBuffers(1, &_id); }
 
-/*============================================================*/
 /*делаем буффер активным*/
 void Render::VertexBuffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, _id); }
 
-/*============================================================*/
 /*деактивируем буффер*/
 void Render::VertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
-/*============================================================*/
 /*выччисляем тип компоненат по встроенному типу*/
 unsigned int Render::VertexBuffer::getComponentType(_e_DataType type) {
   switch (type) {
@@ -53,8 +48,7 @@ unsigned int Render::VertexBuffer::getComponentType(_e_DataType type) {
   }
 }
 
-/*============================================================*/
-/*выччисляем размер элемента по встроенному типу*/
+/*вычисляем размер элемента по встроенному типу*/
 unsigned int Render::VertexBuffer::getElementSize(_e_DataType type) {
   switch (type) {
     case Render::VertexBuffer::_e_DataType::Float:
@@ -76,7 +70,6 @@ unsigned int Render::VertexBuffer::getElementSize(_e_DataType type) {
   }
 }
 
-/*============================================================*/
 /*отдаем наружу смещение*/
 size_t Render::VertexBuffer::getStride() { return _stride; }
 }  // namespace Render

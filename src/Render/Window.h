@@ -1,88 +1,91 @@
-/*
-**  File        :	Window.h
-**  Authors     :   Kochetkov K.I.
-**  Created on  :   08.03.2024
-**  Modified on :   08.03.2024
-**  Description :
-*/
+// clang-format off
 
 #pragma once
-#include <glad/glad.h>
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <functional>
+#include <string>
 
 #include "Event.h"
 
-#include <string>
-#include <functional>
+// clang-format on
 
-namespace Render
-{
-	class Event;
-	class EventDispatcher;
+namespace Render {
+class Event;
+class EventDispatcher;
 
-	class Window
-	{
-	public:
-		/*конструктор*/
-		Window();
-		/*деструктор*/
-		~Window();
+class Window {
+ public:
+  enum class RenderMode { Fill, Wireframe, Point };
+  /*конструктор*/
+  Window();
+  /*деструктор*/
+  ~Window();
 
-		/*запрещаю использование конструкторов копирования*/
-		Window(const Window&) = delete;
-		Window(Window&&) = delete;
-		Window& operator=(const Window&) = delete;
-		Window& operator=(Window&&) = delete;
+  /*запрещаю использование конструкторов копирования*/
+  Window(const Window&) = delete;
+  Window(Window&&) = delete;
+  Window& operator=(const Window&) = delete;
+  Window& operator=(Window&&) = delete;
 
-		/*обновление окна каждый кадр*/
-		void update();
-		/*инициализация окна*/
-		bool init();
+  /*обновление окна каждый кадр*/
+  void update();
+  /*инициализация окна*/
+  bool init();
 
-		void initEvents();
+  void initEvents();
 
-		/*получение параметров окна*/
-		unsigned int getWidth() const { return _width; };
-		unsigned int getHeight() const { return _height; };
-		GLFWwindow* getWindow() const { return _pWindow; };
+  /*получение параметров окна*/
+  unsigned int getWidth() const { return _width; };
+  unsigned int getHeight() const { return _height; };
+  GLFWwindow* getWindow() const { return _pWindow; };
 
-		/*установка параметров окна*/
-		void setName(std::string name) { _windowName = std::move(name); };
-		void setResolution(unsigned int width, unsigned int height) 
-		{ _height = height; _width = width; };
+  /*установка параметров окна*/
+  void setName(std::string name) { _windowName = std::move(name); };
+  void setResolution(unsigned int width, unsigned int height) {
+    _height = height;
+    _width = width;
+  };
 
-		/*диспетчер событий*/
-		EventDispatcher _dispatcher;
-	private:
-		std::string _windowName; // название окна
+  void setRenderMode(RenderMode mode);
 
-		GLFWwindow* _pWindow; // указатель на GL контекст окна
+  bool windowShouldClose();
 
-		unsigned int _height;
-		unsigned int _width;
+  /*диспетчер событий*/
+  EventDispatcher _dispatcher;
 
-		bool init_GLFW();
-		bool init_GLAD();
+ private:
+  std::string _windowName;  // название окна
 
-		bool _init; // инициализация окна
+  GLFWwindow* _pWindow;  // указатель на GL контекст окна
 
-		/*полиморфная обертка для callBack*/
-		std::function<void(Event&)> funCallBack;
-		/*функция для установки callBack*/
-		void setFunCallBack(const std::function<void(Event&)>& callBack)
-		{
-			funCallBack = callBack;
-		}
+  unsigned int _height;
+  unsigned int _width;
 
-		/*callBacks*/
-		/*callBack для движения мыши*/
-		static void mouseMovedCallBack(GLFWwindow* pWindow, double x, double y);
-		/*callBack для закрытия окна*/
-		static void windowClosedCallBack(GLFWwindow* pWindow);
-		/*callBack для нажатия клавиш клавиатуры*/
-		static void keyCallBack(GLFWwindow* pWindow, int key, int scancode, int action, int mods);
-		/*callBack для нажатия кнопок мыши*/
-		static void mouseButtonCallBack(GLFWwindow* pWindow, int button, int action, int mods);
-	};
-}
+  bool init_GLFW();
+  bool init_GLAD();
+
+  bool _init;  // инициализация окна
+
+  /*полиморфная обертка для callBack*/
+  std::function<void(Event&)> funCallBack;
+  /*функция для установки callBack*/
+  void setFunCallBack(const std::function<void(Event&)>& callBack) {
+    funCallBack = callBack;
+  }
+
+  /*callBacks*/
+  /*callBack для движения мыши*/
+  static void mouseMovedCallBack(GLFWwindow* pWindow, double x, double y);
+  /*callBack для закрытия окна*/
+  static void windowClosedCallBack(GLFWwindow* pWindow);
+  /*callBack для нажатия клавиш клавиатуры*/
+  static void keyCallBack(GLFWwindow* pWindow, int key, int scancode,
+                          int action, int mods);
+  /*callBack для нажатия кнопок мыши*/
+  static void mouseButtonCallBack(GLFWwindow* pWindow, int button, int action,
+                                  int mods);
+};
+}  // namespace Render

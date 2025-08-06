@@ -31,6 +31,10 @@ file(GLOB_RECURSE SRC_INPUT CONFIGURE_DEPENDS
     "src/Input/*.cpp"
     "src/Input/*.h"
 )
+file(GLOB_RECURSE SRC_SHADER_UTILS CONFIGURE_DEPENDS
+    "src/Render/ShaderUtils/*.cpp"
+    "src/Render/ShaderUtils/*.h"
+)
 
 set(ENGINE_SOURCES
     src/main.cpp
@@ -39,6 +43,7 @@ set(ENGINE_SOURCES
     ${SRC_MODULES}
     ${SRC_EVENTS}
     ${SRC_INPUT}
+    ${SRC_SHADER_UTILS}
 )
 
 add_executable(RealEngine ${ENGINE_SOURCES})
@@ -54,6 +59,7 @@ source_group("Resources" FILES ${SRC_RESOURCES})
 source_group("Modules" FILES ${SRC_MODULES})
 source_group("Events" FILES ${SRC_EVENTS})
 source_group("Input" FILES ${SRC_INPUT})
+source_group("ShaderUtils" FILES ${SRC_SHADER_UTILS})
 
 # GLFW
 add_subdirectory(dependencies/glfw)

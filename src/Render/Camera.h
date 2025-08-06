@@ -1,115 +1,116 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/trigonometric.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec3.hpp>
 
-namespace Render 
-{
+#include "Render/ShaderUtils/UniformCamera.h"
+#include "Render/UniformBuffer.h"
 
+namespace Render {
 
-	class Camera
-	{
-	public:
-		/*тип камеры*/
-		enum class ProjectionMode
-		{
-			PERSPECTIVE,
-			ORTHOGRAPHIC_CENTER,
-			ORTHOGRAPHIC_LEFT_BOT
-		};
+class Camera {
+ public:
+  /*тип камеры*/
+  enum class ProjectionMode {
+    PERSPECTIVE,
+    ORTHOGRAPHIC_CENTER,
+    ORTHOGRAPHIC_LEFT_BOT
+  };
 
-		/*конструктор*/
-		/*
-		* ВНИМАНИЕ!!!
-		* Для корректной работы камеры
-		* необходимо задать правильные
-		* параметры frustum.
-		* windowHeight и windowHeight должны
-		* совпадать с параметрами окна отрисовки
-		*/
-		Camera(
-				const glm::vec3& position = { 0,0,0 },
-				const glm::vec3& rotation = { 0,0,-90 },
-				const float nearPlane = 0.1f,
-				const float farplane = 100.f,
-			    const float windowHeight = 768.f,
-			    const float windowWidth = 1024.f,
-				const ProjectionMode projMode = ProjectionMode::PERSPECTIVE,
-				const float velocity = 0.0f,
-				const float sensitivity = 0.05f
-		      ) : _position(position),
-			      _rotation(rotation), 
-			      _projectionMode(projMode), 
-			      _nearPlane(nearPlane), 
-			      _farPlane(farplane),
-			      _windowHeight(windowHeight),
-			      _windowWidth(windowWidth),
-			      _velocity(velocity),
-				  _sensitivity(sensitivity)
-		{ 
-			updateViewMat();
-			updateProjMat();
-		}
+  /*конструктор*/
+  /*
+   * ВНИМАНИЕ!!!
+   * Для корректной работы камеры
+   * необходимо задать правильные
+   * параметры frustum.
+   * windowHeight и windowHeight должны
+   * совпадать с параметрами окна отрисовки
+   */
+  Camera(const glm::vec3& position = {0, 0, 0},
+         const glm::vec3& rotation = {0, 0, -90}, const float nearPlane = 0.1f,
+         const float farplane = 100.f, const float windowHeight = 768.f,
+         const float windowWidth = 1024.f,
+         const ProjectionMode projMode = ProjectionMode::PERSPECTIVE,
+         const float velocity = 0.0f, const float sensitivity = 0.05f)
+      : _position(position),
+        _rotation(rotation),
+        _projectionMode(projMode),
+        _nearPlane(nearPlane),
+        _farPlane(farplane),
+        _windowHeight(windowHeight),
+        _windowWidth(windowWidth),
+        _velocity(velocity),
+        _sensitivity(sensitivity),
+        _cameraUBO(0) {
+    updateViewMat();
+    updateProjMat();
+  }
 
-		/*установка near и far plane*/
-		void setPlane(const float near, const float far);
-		/*установка размеров окна отрисовки*/
-		void setWindowSize(const float height, const float width);
+  /*установка near и far plane*/
+  void setPlane(const float near, const float far);
+  /*установка размеров окна отрисовки*/
+  void setWindowSize(const float height, const float width);
 
-		/*позиция камеры в мировой СК*/
-		void setPosition(const glm::vec3& position);
-		/*поворот камеры*/
-		void setRotation(const glm::vec3& rotation);
+  /*позиция камеры в мировой СК*/
+  void setPosition(const glm::vec3& position);
+  /*поворот камеры*/
+  void setRotation(const glm::vec3& rotation);
 
-		/*установка одновременно и позиции и поворта камеры*/
-		void setPositionRotation(const glm::vec3& position, const glm::vec3& rotation);
-		/*установка типа камеры*/
-		void setProjectionMode(ProjectionMode mode);
+  /*установка одновременно и позиции и поворта камеры*/
+  void setPositionRotation(const glm::vec3& position,
+                           const glm::vec3& rotation);
+  /*установка типа камеры*/
+  void setProjectionMode(ProjectionMode mode);
 
-		/*матрица вида*/
-		glm::mat4 getViewMat();
-		/*матрица проекции*/
-		glm::mat4 getProjMat();
+  /*матрица вида*/
+  glm::mat4 getViewMat();
+  /*матрица проекции*/
+  glm::mat4 getProjMat();
 
-		void setVelocity(const float velocity) { _velocity = velocity; }
-		void setSensitivity(const float sensitivity);
+  void setVelocity(const float velocity) { _velocity = velocity; }
+  void setSensitivity(const float sensitivity);
 
-		void moveCamera(const float duration);
+  void moveCamera(const float duration);
 
-		glm::vec3 getPosition() { return _position; }
-	private:
-		ProjectionMode _projectionMode;
+  glm::vec3 getPosition() { return _position; }
 
-		glm::vec3 _position;
-		glm::vec3 _rotation; /*ROLL PITCH YAW*/
-		glm::vec3 _front = { 0.0f, 0.0f, -1.0f };
-		glm::vec3 _up    = { 0.0f, 1.0f, 0.0f };
+  ShaderUtils::CameraBlock getCameraBlock();
 
-		bool _initMouse = true;
-		glm::vec2 _initialMousePos = { 0.0f,0.0f };
+  void update();
 
-		glm::mat4 _viewMat;
-		glm::mat4 _projMat;
+ private:
+  ProjectionMode _projectionMode;
 
+  glm::vec3 _position;
+  glm::vec3 _rotation; /*ROLL PITCH YAW*/
+  glm::vec3 _front = {0.0f, 0.0f, -1.0f};
+  glm::vec3 _up = {0.0f, 1.0f, 0.0f};
 
-		float _nearPlane;
-		float _farPlane;
+  bool _initMouse = true;
+  glm::vec2 _initialMousePos = {0.0f, 0.0f};
 
-		float _windowHeight;
-		float _windowWidth;
+  glm::mat4 _viewMat;
+  glm::mat4 _projMat;
 
-		float _velocity;
-		float _sensitivity;
+  float _nearPlane;
+  float _farPlane;
 
-		/*пересоздать матрицу вида*/
-		void updateViewMat();
-		/*пересоздать матрицу проекции*/
-		void updateProjMat();
+  float _windowHeight;
+  float _windowWidth;
 
-		void rotateCamera();
-	};
+  float _velocity;
+  float _sensitivity;
 
+  UniformBuffer<ShaderUtils::CameraBlock> _cameraUBO;
 
-}
+  /*пересоздать матрицу вида*/
+  void updateViewMat();
+  /*пересоздать матрицу проекции*/
+  void updateProjMat();
+
+  void rotateCamera();
+};
+
+}  // namespace Render

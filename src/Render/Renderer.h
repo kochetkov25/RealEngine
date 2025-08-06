@@ -2,89 +2,82 @@
 
 #include <glad/glad.h>
 
+#include <string>
+#include <vector>
+
 #include "VertexArray.h"
 
-#include <vector>
-#include <string>
-
 namespace Render {
-	static const size_t MAX_ELEMENTS = 1024 * 2;
+static const size_t MAX_ELEMENTS = 1024 * 2;
 
-	static const size_t MAX_LAYOUT = 10;
+static const size_t MAX_LAYOUT = 10;
 
-	class Renderer {
-		friend class RendererFactory;
-	public:
-		enum DataType {
-			Float,
-			Float2,
-			Float3,
-			Float4,
-			Int,
-			Int2,
-			Int3,
-			Int4
-		};
+class Renderer {
+  friend class RendererFactory;
 
-		// Appends a vertex (x, y, z) to the buffer
-		template<typename _T>
-		void verex3(_T x, _T y, _T z) {
-			_elementsBuff.emplace_back(static_cast<float>(x));
-			_elementsBuff.emplace_back(static_cast<float>(y));
-			_elementsBuff.emplace_back(static_cast<float>(z));
+ public:
+  enum DataType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4 };
 
-			_vertexCount++;
-		}
+  // Appends a vertex (x, y, z) to the buffer
+  template <typename _T>
+  void verex3(_T x, _T y, _T z) {
+    _elementsBuff.emplace_back(static_cast<float>(x));
+    _elementsBuff.emplace_back(static_cast<float>(y));
+    _elementsBuff.emplace_back(static_cast<float>(z));
 
-		// Adds RGBA vertex color (0–255 range) to the buffer
-		template<typename _T>
-		void color4(_T r, _T g, _T b, _T a = 1.f) {
-			_elementsBuff.emplace_back(static_cast<float>(r) / 255.f);
-			_elementsBuff.emplace_back(static_cast<float>(g) / 255.f);
-			_elementsBuff.emplace_back(static_cast<float>(b) / 255.f);
-			_elementsBuff.emplace_back(static_cast<float>(a));
-		}
+    _vertexCount++;
+  }
 
-		// Appends sprite UV coordinates (normalized 0–1) to the buffer
-		template<typename _T>
-		void vertexUV(_T U, _T V) {
-			_elementsBuff.emplace_back(static_cast<float>(U));
-			_elementsBuff.emplace_back(static_cast<float>(V));
-		}
+  // Adds RGBA vertex color (0–255 range) to the buffer
+  template <typename _T>
+  void color4(_T r, _T g, _T b, _T a = 1.f) {
+    _elementsBuff.emplace_back(static_cast<float>(r) / 255.f);
+    _elementsBuff.emplace_back(static_cast<float>(g) / 255.f);
+    _elementsBuff.emplace_back(static_cast<float>(b) / 255.f);
+    _elementsBuff.emplace_back(static_cast<float>(a));
+  }
 
-		// Sets the vertex layout describing the structure of vertex data.
-		void setLayout(const std::vector<DataType>& layout);
+  // Appends sprite UV coordinates (normalized 0–1) to the buffer
+  template <typename _T>
+  void vertexUV(_T U, _T V) {
+    _elementsBuff.emplace_back(static_cast<float>(U));
+    _elementsBuff.emplace_back(static_cast<float>(V));
+  }
 
-		// Sets the OpenGL primitive draw mode (e.g., GL_TRIANGLES, GL_LINES).
-		void setDrawMode(GLenum mode);
+  // Sets the vertex layout describing the structure of vertex data.
+  void setLayout(const std::vector<DataType>& layout);
 
-		// Uploads the vertex data and layout to the GPU.
-		void upload();
+  // Sets the OpenGL primitive draw mode (e.g., GL_TRIANGLES, GL_LINES).
+  void setDrawMode(GLenum mode);
 
-		// Sets the index buffer for indexed rendering.
-		void setIndices(const std::vector<GLuint>& indices);
+  // Uploads the vertex data and layout to the GPU.
+  void upload();
 
-		// Draws the uploaded vertex buffer using the configured draw mode.
-		void drawArrays();
+  // Sets the index buffer for indexed rendering.
+  void setIndices(const std::vector<GLuint>& indices);
 
-		// Draws geometry using the uploaded vertex and index buffers.
-		void drawElements();
+  // Draws the uploaded vertex buffer using the configured draw mode.
+  void drawArrays();
 
-	private:
-		// ctor
-		explicit Renderer() : _drawMode(GL_TRIANGLES), _vertexCount(0), _indicesCount(0) {
-			_elementsBuff.reserve(MAX_ELEMENTS);
-			_layout.reserve(MAX_LAYOUT);
-		}
+  // Draws geometry using the uploaded vertex and index buffers.
+  void drawElements();
 
-		std::vector<float> _elementsBuff;
-		size_t _vertexCount;
-		size_t _indicesCount;
+ private:
+  // ctor
+  explicit Renderer()
+      : _drawMode(GL_TRIANGLES), _vertexCount(0), _indicesCount(0) {
+    _elementsBuff.reserve(MAX_ELEMENTS);
+    _layout.reserve(MAX_LAYOUT);
+  }
 
-		GLenum _drawMode;
+  std::vector<float> _elementsBuff;
+  size_t _vertexCount;
+  size_t _indicesCount;
 
-		VertexArray _VAO;
+  GLenum _drawMode;
 
-		std::vector<VertexBuffer::BufferElement> _layout;
-	};
-}
+  VertexArray _VAO;
+
+  std::vector<VertexBuffer::BufferElement> _layout;
+};
+}  // namespace Render

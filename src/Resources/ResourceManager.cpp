@@ -8,338 +8,385 @@
 
 #include "ResourceManager.h"
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include "../Render/ShaderProgram.h"
 #include "../Render/Sprite.h"
 #include "../Render/Texture2D.h"
 #include "ModelMesh.h"
 
-#include <sstream>
-#include <fstream>
-#include <iostream>
-
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
-#include "stb_image.h"
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
 
 #include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+
+#include "stb_image.h"
+
+namespace {
+const std::string kShaderPath = "res/shaders/";
+const std::unordered_set<char> kMustReplace = {'<', '>', '"'};
+}  // namespace
 
 /*
-* загрузка текстур выполняется с использованием 
-* библиотеки STBI.
-* Текстуры должны загружаться в формате .png,
-* использование других форматов отключено.
-*/
+ * загрузка текстур выполняется с использованием
+ * библиотеки STBI.
+ * Текстуры должны загружаться в формате .png,
+ * использование других форматов отключено.
+ */
 
-/*============================================================*/
 /*конструктор, передаем директорию .exe файла приложения*/
-ResourceManager::ResourceManager(const std::string &executablePath)
-{
-	/*обрезаем путь до .exe файла, чтобы получить путь
-	  до исполняемой директории*/
-	size_t found = executablePath.find_last_of("/\\");
-	_path = executablePath.substr(0, found);
+ResourceManager::ResourceManager(const std::string &executablePath) {
+  /*обрезаем путь до .exe файла, чтобы получить путь
+    до исполняемой директории*/
+  size_t found = executablePath.find_last_of("/\\");
+  _path = executablePath.substr(0, found);
 }
 
-/*============================================================*/
 /*
-* чтение файла из исполняемой директории. Возвращает
-* std::string с содержимым файла
-*/
-std::string ResourceManager::getFileString(const std::string &relativeFilePath)
-{
-	std::fstream file;
-	file.open(_path + "/" + relativeFilePath.c_str(), std::ios::in | std::ios::binary);
-	/*если файл не удалось открыть, возвращаем пустую строку*/
-	if (!file.is_open()){
-		std::cerr << "Failed open file (source: " << __FUNCTION__ << ") \n" << relativeFilePath << std::endl;
-		return std::string();
-	}
+ * чтение файла из исполняемой директории. Возвращает
+ * std::string с содержимым файла
+ */
+std::string ResourceManager::getFileString(
+    const std::string &relativeFilePath) {
+  std::fstream file;
+  file.open(_path + "/" + relativeFilePath.c_str(),
+            std::ios::in | std::ios::binary);
+  /*если файл не удалось открыть, возвращаем пустую строку*/
+  if (!file.is_open()) {
+    std::cerr << "Failed open file (source: " << __FUNCTION__ << ") \n"
+              << relativeFilePath << std::endl;
+    return std::string();
+  }
 
-	std::stringstream buffer;
-	buffer << file.rdbuf();
-	return buffer.str();
+  std::stringstream buffer;
+  buffer << file.rdbuf();
+  return buffer.str();
 }
 
-/*============================================================*/
+std::string ResourceManager::resolveShaderIncludes(
+    const std::string &shaderSource) {
+  std::unordered_set<std::string> alreadyInclude;
+
+  std::ostringstream output;
+  std::string line;
+
+  std::istringstream issShader(shaderSource);
+
+  while (std::getline(issShader, line)) {
+    auto formatLine = line;
+    std::for_each(formatLine.begin(), formatLine.end(), [](auto &ch) {
+      if (kMustReplace.count(ch)) {
+        ch = ' ';
+      }
+    });
+
+    std::istringstream issLine(formatLine);
+    std::string word;
+
+    issLine >> word;
+    if (word != "#include") {
+      output << line << '\n';
+      continue;
+    }
+
+    std::string fileName;
+    issLine >> fileName;
+
+    if (alreadyInclude.count(fileName)) {
+      std::cerr << "Duplicate include! File: " << fileName
+                << ".(source: " << __FUNCTION__ << ")" << std::endl;
+      assert(false);
+      continue;
+    }
+    alreadyInclude.insert(fileName);
+
+    auto includeFileSource = getFileString(kShaderPath + fileName);
+    output << includeFileSource << '\n';
+  }
+
+  return output.str();
+}
+
 /*
-* создание объекта шейдерной программы и загрузка в 
-* ResourceManager
-*/
+ * создание объекта шейдерной программы и загрузка в
+ * ResourceManager
+ */
 std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShederProgram(
-																			const std::string &shaderName, 
-																			const std::string &vertexShaderPathRelative, 
-																			const std::string fragmentShaderPathRelative
-																		 )
-{
-	/*строка с кодом вершинного шейдер */
-	std::string vertexString = getFileString(vertexShaderPathRelative);
-	if (vertexString.empty()){
-		std::cerr << "Failed to load VERTEX SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
-		return nullptr;
-	}
+    const std::string &shaderName, const std::string &vertexShaderPathRelative,
+    const std::string fragmentShaderPathRelative) {
+  /*строка с кодом вершинного шейдер */
+  std::string vertexString = getFileString(vertexShaderPathRelative);
+  vertexString = resolveShaderIncludes(vertexString);
+  std::cout << vertexString << std::endl;
+  if (vertexString.empty()) {
+    std::cerr << "Failed to load VERTEX SHADER. (source: " << __FUNCTION__
+              << ")" << std::endl;
+    assert(false);
+    return nullptr;
+  }
 
-	/*строка с кодом фрагментного шейдера*/
-	std::string fragmentString = getFileString(fragmentShaderPathRelative);
-	if (fragmentString.empty()){
-		std::cerr << "Failed to load FRAGMENT SHADER. (source: " << __FUNCTION__ << ")" << std::endl;
-		return nullptr;
-	}
+  /*строка с кодом фрагментного шейдера*/
+  std::string fragmentString = getFileString(fragmentShaderPathRelative);
+  fragmentString = resolveShaderIncludes(fragmentString);
+  if (fragmentString.empty()) {
+    std::cerr << "Failed to load FRAGMENT SHADER. (source: " << __FUNCTION__
+              << ")" << std::endl;
+    assert(false);
+    return nullptr;
+  }
 
-	std::shared_ptr<Render::ShaderProgram> pNewShaderProgram = std::make_shared<Render::ShaderProgram>(vertexString, fragmentString);
-	/*проверка компиляции шейдерной программы*/
-	if (!pNewShaderProgram->isCompiled()){
-		std::cerr << "Can not create new shader program. Path to shaders: \n"
-			<< "Vertex shader: " << vertexShaderPathRelative << "\n"
-			<< "Fragment shader: " << fragmentShaderPathRelative <<"\n"
-			<<"(source: " << __FUNCTION__ << ")" << std::endl;
-		return nullptr;
-	}
-	/*сохраняем шейдерную программу, возвращаем указатель на нее*/
-	auto isShaderProgramAdd = _shaderPrograms.emplace(shaderName, pNewShaderProgram);
-	return isShaderProgramAdd.first->second;
+  std::shared_ptr<Render::ShaderProgram> pNewShaderProgram =
+      std::make_shared<Render::ShaderProgram>(vertexString, fragmentString);
+  /*проверка компиляции шейдерной программы*/
+  if (!pNewShaderProgram->isCompiled()) {
+    std::cerr << "Can not create new shader program. Path to shaders: \n"
+              << "Vertex shader: " << vertexShaderPathRelative << "\n"
+              << "Fragment shader: " << fragmentShaderPathRelative << "\n"
+              << "(source: " << __FUNCTION__ << ")" << std::endl;
+    assert(false);
+    return nullptr;
+  }
+  /*сохраняем шейдерную программу, возвращаем указатель на нее*/
+  auto isShaderProgramAdd =
+      _shaderPrograms.emplace(shaderName, pNewShaderProgram);
+  return isShaderProgramAdd.first->second;
 }
 
 /*============================================================*/
 /*получить shared_ptr на шейдерную программу.*/
-std::shared_ptr<Render::ShaderProgram> ResourceManager::getShaderProgram(const std::string &shaderName)
-{
-	ShaderProgramsMap::const_iterator it = _shaderPrograms.find(shaderName);
-	if (it != _shaderPrograms.end()){
-		return it->second;
-	}
-	std::cerr << "Can not find shader program (source: " << __FUNCTION__ << ") " << shaderName << std::endl;
-	return nullptr;
+std::shared_ptr<Render::ShaderProgram> ResourceManager::getShaderProgram(
+    const std::string &shaderName) {
+  ShaderProgramsMap::const_iterator it = _shaderPrograms.find(shaderName);
+  if (it != _shaderPrograms.end()) {
+    return it->second;
+  }
+  std::cerr << "Can not find shader program (source: " << __FUNCTION__ << ") "
+            << shaderName << std::endl;
+  assert(false);
+  return nullptr;
 }
 
-/*============================================================*/
 /*загрузка сырой текстуры с помощью STBI.*/
 std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D(
-																	const std::string &textureName, 
-																	const std::string &texturePathRelative
-																 )
-{
-	int chanels = 0;
-	int width = 0;
-	int height = 0;
-	/*
-	* координаты текстур в OpenGL задаются от нижнего левого угла.
-	* В STBI координаты текстур задаются от верхнего правого угла.
-	* Для решения этой проблемы выставляем флаг STBI
-	*/
-	stbi_set_flip_vertically_on_load(true);
-	/*загрузка текстуры*/
-	unsigned char *pixelsArr=stbi_load(std::string(_path + "/" + texturePathRelative).c_str(), &width, &height, &chanels, 0);
+    const std::string &textureName, const std::string &texturePathRelative) {
+  int chanels = 0;
+  int width = 0;
+  int height = 0;
+  /*
+   * координаты текстур в OpenGL задаются от нижнего левого угла.
+   * В STBI координаты текстур задаются от верхнего правого угла.
+   * Для решения этой проблемы выставляем флаг STBI
+   */
+  stbi_set_flip_vertically_on_load(true);
+  /*загрузка текстуры*/
+  unsigned char *pixelsArr =
+      stbi_load(std::string(_path + "/" + texturePathRelative).c_str(), &width,
+                &height, &chanels, 0);
 
-	if (!pixelsArr){
-		std::cerr << "Can not load texture image (source: " << __FUNCTION__ << ") " << texturePathRelative << std::endl;
-		return nullptr;
-	}
+  if (!pixelsArr) {
+    std::cerr << "Can not load texture image (source: " << __FUNCTION__ << ") "
+              << texturePathRelative << std::endl;
+    assert(false);
+    return nullptr;
+  }
 
-	std::shared_ptr<Render::Texture2D> pNewTexture2D = std::make_shared<Render::Texture2D>(width, height, pixelsArr, chanels, GL_NEAREST, GL_CLAMP_TO_EDGE);
-	auto isNewTexture2DAdd = _texture2DMaps.emplace(textureName, pNewTexture2D);
-	/*освобождаем память, которую заняла STBI для загрузки текстуры*/
-	stbi_image_free(pixelsArr);
-	
-	/*возвращаем shared_ptr на текстуру*/
-	return isNewTexture2DAdd.first->second;
+  std::shared_ptr<Render::Texture2D> pNewTexture2D =
+      std::make_shared<Render::Texture2D>(width, height, pixelsArr, chanels,
+                                          GL_NEAREST, GL_CLAMP_TO_EDGE);
+  auto isNewTexture2DAdd = _texture2DMaps.emplace(textureName, pNewTexture2D);
+  /*освобождаем память, которую заняла STBI для загрузки текстуры*/
+  stbi_image_free(pixelsArr);
+
+  /*возвращаем shared_ptr на текстуру*/
+  return isNewTexture2DAdd.first->second;
 }
 
-std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D_memory(const std::string& textureName, const aiTexture* rawData)
-{
-	int chanels = 0;
-	int width = 0;
-	int height = 0;
-	/*
-	* координаты текстур в OpenGL задаются от нижнего левого угла.
-	* В STBI координаты текстур задаются от верхнего правого угла.
-	* Для решения этой проблемы выставляем флаг STBI
-	*/
-	stbi_set_flip_vertically_on_load(true);
-	/*загрузка текстуры*/
-	auto pixelsArr = stbi_loadf_from_memory(reinterpret_cast<unsigned char*>(rawData->pcData), rawData->mWidth, &width, &height, &chanels, STBI_rgb_alpha);
+std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D_memory(
+    const std::string &textureName, const aiTexture *rawData) {
+  int chanels = 0;
+  int width = 0;
+  int height = 0;
+  /*
+   * координаты текстур в OpenGL задаются от нижнего левого угла.
+   * В STBI координаты текстур задаются от верхнего правого угла.
+   * Для решения этой проблемы выставляем флаг STBI
+   */
+  stbi_set_flip_vertically_on_load(true);
+  /*загрузка текстуры*/
+  auto pixelsArr = stbi_loadf_from_memory(
+      reinterpret_cast<unsigned char *>(rawData->pcData), rawData->mWidth,
+      &width, &height, &chanels, STBI_rgb_alpha);
 
-	if (!pixelsArr) {
-		std::cerr << "Can not load texture image (tex name: " << __FUNCTION__ << ") " << textureName << std::endl;
-		return nullptr;
-	}
+  if (!pixelsArr) {
+    std::cerr << "Can not load texture image (tex name: " << __FUNCTION__
+              << ") " << textureName << std::endl;
+    assert(false);
+    return nullptr;
+  }
 
-	std::shared_ptr<Render::Texture2D> pNewTexture2D = std::make_shared<Render::Texture2D>(width, height, pixelsArr, chanels, GL_NEAREST, GL_CLAMP_TO_EDGE);
-	auto isNewTexture2DAdd = _texture2DMaps.emplace(textureName, pNewTexture2D);
-	/*освобождаем память, которую заняла STBI для загрузки текстуры*/
-	stbi_image_free(pixelsArr);
+  std::shared_ptr<Render::Texture2D> pNewTexture2D =
+      std::make_shared<Render::Texture2D>(width, height, pixelsArr, chanels,
+                                          GL_NEAREST, GL_CLAMP_TO_EDGE);
+  auto isNewTexture2DAdd = _texture2DMaps.emplace(textureName, pNewTexture2D);
+  /*освобождаем память, которую заняла STBI для загрузки текстуры*/
+  stbi_image_free(pixelsArr);
 
-	/*возвращаем shared_ptr на текстуру*/
-	return isNewTexture2DAdd.first->second;
+  /*возвращаем shared_ptr на текстуру*/
+  return isNewTexture2DAdd.first->second;
 }
 
-/*============================================================*/
 /*получить shared_ptr на сырую текстуру*/
-std::shared_ptr<Render::Texture2D> ResourceManager::getTexture2D(const std::string &texture2DName)
-{
-	Texture2DMap::const_iterator it = _texture2DMaps.find(texture2DName);
-	if (it != _texture2DMaps.end()){
-		return it->second;
-	}
-	std::cerr << "Can not find texture 2D (source: " << __FUNCTION__ << ") " << texture2DName << std::endl;
-	return nullptr;
+std::shared_ptr<Render::Texture2D> ResourceManager::getTexture2D(
+    const std::string &texture2DName) {
+  Texture2DMap::const_iterator it = _texture2DMaps.find(texture2DName);
+  if (it != _texture2DMaps.end()) {
+    return it->second;
+  }
+  std::cerr << "Can not find texture 2D (source: " << __FUNCTION__ << ") "
+            << texture2DName << std::endl;
+  assert(false);
+  return nullptr;
 }
 
-/*============================================================*/
 /*загрузка спрайта*/
 std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
-																const std::string &spriteName,
-																const std::string &textureName,
-																const std::string &shaderProgramName,
-																const unsigned int spriteWidth,
-																const unsigned int spriteHeight,
-																const std::string& subTextureName
-														  )
-{
-	auto pTexture = getTexture2D(textureName);
-	if (!pTexture){
-		std::cerr << "Texture with this name can not be found (source: " << __FUNCTION__ << ") " << textureName << std::endl;
-		return nullptr;
-	}
+    const std::string &spriteName, const std::string &textureName,
+    const std::string &shaderProgramName, const unsigned int spriteWidth,
+    const unsigned int spriteHeight, const std::string &subTextureName) {
+  auto pTexture = getTexture2D(textureName);
+  if (!pTexture) {
+    std::cerr << "Texture with this name can not be found (source: "
+              << __FUNCTION__ << ") " << textureName << std::endl;
+    return nullptr;
+  }
 
-	auto pShaderProgram = getShaderProgram(shaderProgramName);
-	if (!pShaderProgram){
-		std::cerr << "Shader program with this name can not be found (source: " << __FUNCTION__ << ") " << shaderProgramName << std::endl;
-	}
+  auto pShaderProgram = getShaderProgram(shaderProgramName);
+  if (!pShaderProgram) {
+    std::cerr << "Shader program with this name can not be found (source: "
+              << __FUNCTION__ << ") " << shaderProgramName << std::endl;
+    assert(false);
+  }
 
-	std::shared_ptr<Render::Sprite> pNewSprite = std::make_shared<Render::Sprite>(pTexture, subTextureName, pShaderProgram, glm::vec3(0.f, 0.f, 0.f), glm::vec2(spriteWidth, spriteHeight), 0.f);
-	auto isNewSpriteAdd = _spriteMaps.emplace(spriteName, pNewSprite);
-	return isNewSpriteAdd.first->second;
+  std::shared_ptr<Render::Sprite> pNewSprite = std::make_shared<Render::Sprite>(
+      pTexture, subTextureName, pShaderProgram, glm::vec3(0.f, 0.f, 0.f),
+      glm::vec2(spriteWidth, spriteHeight), 0.f);
+  auto isNewSpriteAdd = _spriteMaps.emplace(spriteName, pNewSprite);
+  return isNewSpriteAdd.first->second;
 }
 
-/*============================================================*/
 /*получить shared_ptr на спрайт*/
-std::shared_ptr<Render::Sprite> ResourceManager::getSprite(const std::string &spriteName)
-{
-	SpriteMap::const_iterator it = _spriteMaps.find(spriteName);
-	if (it != _spriteMaps.end()){
-		return it->second;
-	}
-	std::cerr << "Can not find sprite (source: " << __FUNCTION__ << ") " << spriteName << std::endl;
-	return nullptr;
+std::shared_ptr<Render::Sprite> ResourceManager::getSprite(
+    const std::string &spriteName) {
+  SpriteMap::const_iterator it = _spriteMaps.find(spriteName);
+  if (it != _spriteMaps.end()) {
+    return it->second;
+  }
+  std::cerr << "Can not find sprite (source: " << __FUNCTION__ << ") "
+            << spriteName << std::endl;
+  assert(false);
+  return nullptr;
 }
 
-/*============================================================*/
 /*
-* загрузка текстурного атласа. Загружается целиком текстура
-* текстурного атласа. Затем в соответствии с вектором имен
-* subTextureNames и длинной и высотой ОДНОЙ сабтекстуры,
-* (subTextureWidth, subTextureHeight) текстурный атлас
-* разбивается на сабтекстуры
-*/
+ * загрузка текстурного атласа. Загружается целиком текстура
+ * текстурного атласа. Затем в соответствии с вектором имен
+ * subTextureNames и длинной и высотой ОДНОЙ сабтекстуры,
+ * (subTextureWidth, subTextureHeight) текстурный атлас
+ * разбивается на сабтекстуры
+ */
 std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAthlas2D(
-																			const std::string &texture2DName,
-																			const std::string &texturePath,
-																			std::vector<std::string> subTextureNames,
-																			const unsigned int subTextureWidth,
-																			const unsigned int subTextureHeight
-																	   )
-{
-	/*загружаем текстуру текстурного атласа*/
-	auto pTexture = loadTexture2D(texture2DName, texturePath);
-	if (pTexture)
-	{
-		const unsigned int textureWidth = pTexture->getWidth();
-		const unsigned int texturHeight = pTexture->getHeight();
-		/*устанавливаем начальное положение (левый верхний угол)*/
-		unsigned int currentTextureOffsetX = 0;
-		unsigned int currentTextureOffsetY = texturHeight;
+    const std::string &texture2DName, const std::string &texturePath,
+    std::vector<std::string> subTextureNames,
+    const unsigned int subTextureWidth, const unsigned int subTextureHeight) {
+  /*загружаем текстуру текстурного атласа*/
+  auto pTexture = loadTexture2D(texture2DName, texturePath);
+  if (pTexture) {
+    const unsigned int textureWidth = pTexture->getWidth();
+    const unsigned int texturHeight = pTexture->getHeight();
+    /*устанавливаем начальное положение (левый верхний угол)*/
+    unsigned int currentTextureOffsetX = 0;
+    unsigned int currentTextureOffsetY = texturHeight;
 
-		/*отступ, чтобы избежать артефактов при отрисовке текстуры*/
-		const float margin = 0.01f;
+    /*отступ, чтобы избежать артефактов при отрисовке текстуры*/
+    const float margin = 0.01f;
 
-		/*
-		* проходим по массиву имен сабтекстур, вычисляем координаты
-		* каждой сабтекстуры (leftBottomUV, rightTopUV)
-		*/
-		for (auto &currentSubtextureName : subTextureNames)
-		{
-			glm::vec2 leftBottomUV(static_cast<float>(currentTextureOffsetX + margin) / textureWidth,
-								   static_cast<float>(currentTextureOffsetY - subTextureHeight + margin) / texturHeight);
+    /*
+     * проходим по массиву имен сабтекстур, вычисляем координаты
+     * каждой сабтекстуры (leftBottomUV, rightTopUV)
+     */
+    for (auto &currentSubtextureName : subTextureNames) {
+      glm::vec2 leftBottomUV(
+          static_cast<float>(currentTextureOffsetX + margin) / textureWidth,
+          static_cast<float>(currentTextureOffsetY - subTextureHeight +
+                             margin) /
+              texturHeight);
 
-			glm::vec2 rightTopUV(static_cast<float>(currentTextureOffsetX + subTextureWidth - margin) / textureWidth,
-								 static_cast<float>(currentTextureOffsetY - margin) / texturHeight);
+      glm::vec2 rightTopUV(
+          static_cast<float>(currentTextureOffsetX + subTextureWidth - margin) /
+              textureWidth,
+          static_cast<float>(currentTextureOffsetY - margin) / texturHeight);
 
-			// после вычисления, добавляем в объект класса Texture2D имя сабтекстуры и координаты углов
-			pTexture->addSubTexture2D(currentSubtextureName, leftBottomUV, rightTopUV);
+      // после вычисления, добавляем в объект класса Texture2D имя сабтекстуры и
+      // координаты углов
+      pTexture->addSubTexture2D(currentSubtextureName, leftBottomUV,
+                                rightTopUV);
 
-			currentTextureOffsetX += subTextureWidth;
-			if (currentTextureOffsetX >= textureWidth)
-			{
-				currentTextureOffsetX = 0;
-				currentTextureOffsetY -= subTextureHeight;
-			}
-		}
-	}
-	return pTexture;
+      currentTextureOffsetX += subTextureWidth;
+      if (currentTextureOffsetX >= textureWidth) {
+        currentTextureOffsetX = 0;
+        currentTextureOffsetY -= subTextureHeight;
+      }
+    }
+  }
+  return pTexture;
 }
 
-std::shared_ptr<ModelMesh> ResourceManager::loadModelMesh(const std::string& modelname, const std::string& modelPath)
-{
-	Assimp::Importer Importer;
-	auto pathToModel = _path + "/" + modelPath;
-	const auto pScene = Importer.ReadFile(pathToModel.c_str(), ASSIMP_LOAD_FLAGS);
-	if (!pScene)
-	{
-		std::cerr << "Model with this name can not be found (source: " << __FUNCTION__ << ") " << modelPath << std::endl;
-		return nullptr;
-	}
+std::shared_ptr<ModelMesh> ResourceManager::loadModelMesh(
+    const std::string &modelname, const std::string &modelPath) {
+  Assimp::Importer Importer;
+  auto pathToModel = _path + "/" + modelPath;
+  const auto pScene = Importer.ReadFile(pathToModel.c_str(), ASSIMP_LOAD_FLAGS);
+  if (!pScene) {
+    std::cerr << "Model with this name can not be found (source: "
+              << __FUNCTION__ << ") " << modelPath << std::endl;
+    assert(false);
+    return nullptr;
+  }
 
-	/*массив текстур модели*/
-	std::vector< std::pair<std::string, std::shared_ptr<Render::Texture2D>> > vecTex_GL;
-	/*загрузка масства текстур модели*/
-	for (unsigned int i = 0; i < pScene->mNumTextures; i++)
-		vecTex_GL.push_back(
-		std::make_pair<std::string, std::shared_ptr<Render::Texture2D>>(
-																			pScene->mTextures[i]->mFilename.C_Str(), 
-																			loadTexture2D_memory(pScene->mTextures[i]->mFilename.C_Str(), pScene->mTextures[i])
-									                                    )
-		                   );
+  /*массив текстур модели*/
+  std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>>
+      vecTex_GL;
+  /*загрузка масства текстур модели*/
+  for (unsigned int i = 0; i < pScene->mNumTextures; i++)
+    vecTex_GL.push_back(
+        std::make_pair<std::string, std::shared_ptr<Render::Texture2D>>(
+            pScene->mTextures[i]->mFilename.C_Str(),
+            loadTexture2D_memory(pScene->mTextures[i]->mFilename.C_Str(),
+                                 pScene->mTextures[i])));
 
-	auto pNewModelMesh = std::make_shared<ModelMesh>(pScene, std::move(vecTex_GL));
-	auto isNewModelMesh = _modelMeshMaps.emplace(modelname, pNewModelMesh);
+  auto pNewModelMesh =
+      std::make_shared<ModelMesh>(pScene, std::move(vecTex_GL));
+  auto isNewModelMesh = _modelMeshMaps.emplace(modelname, pNewModelMesh);
 
-	return isNewModelMesh.first->second;
+  return isNewModelMesh.first->second;
 }
 
-/*============================================================*/
 /*ВРЕМЕННАЯ функция для загрузки шейдеров*/
-void ResourceManager::loadShaders()
-{
-	/*шейдер для отрисовки GL примитивов*/
-	loadShederProgram(
-						"DefaultShader",
-						"res/shaders/defaultVertexShader.vert",
-						"res/shaders/defaultFragmentShader.frag"
-					 );
-	/*шейдер для отрисовки спрайтов*/
-	loadShederProgram(
-						"SpriteShader",
-						"res/shaders/spriteVertexShader.vert",
-						"res/shaders/spriteFragmentShader.frag"
-					 );
-	/*шейдер для отладки отрисовки спрайтов*/
-	loadShederProgram(
-						"DebugShader",
-						"res/shaders/spriteVertexShader.vert",
-						"res/shaders/spriteFragmentShader.frag"
-					 );
-	/*шейдер для источника света*/
-	loadShederProgram(
-						"LightShader",
-						"res/shaders/lightVertexShader.vert",
-						"res/shaders/lightFragmentShader.frag"
-					 );
-	/*shader for 3d grid*/
-	loadShederProgram(
-		"gridShader",
-		"res/shaders/gridVertexShader.vert",
-		"res/shaders/gridFragmentShader.frag"
-	);
+void ResourceManager::loadShaders() {
+  /*шейдер для отрисовки спрайтов*/
+  loadShederProgram("MainShader", "res/shaders/spriteVertexShader.vert",
+                    "res/shaders/spriteFragmentShader.frag");
+  /*шейдер для отладки отрисовки спрайтов*/
+  loadShederProgram("DebugShader", "res/shaders/spriteVertexShader.vert",
+                    "res/shaders/spriteFragmentShader.frag");
+  /*шейдер для источника света*/
+  loadShederProgram("LightShader", "res/shaders/lightVertexShader.vert",
+                    "res/shaders/lightFragmentShader.frag");
+  /*shader for 3d grid*/
+  loadShederProgram("DebugGridShader", "res/shaders/debuGridVertexShader.vert",
+                    "res/shaders/debuGridFragmentShader.frag");
 }
