@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/trigonometric.hpp>
 #include <glm/vec3.hpp>
@@ -25,6 +28,7 @@ class Camera {
   // The constructor initializes the frustum.
   // windowHeight and windowWidth should be set
   // in the correct order for proper frustum calculation.
+  // rotation parameter: {roll, pitch, yaw} in degrees (for backward compatibility)
   Camera(const glm::vec3& position = {0, 0, 0},
          const glm::vec3& rotation = {0, 0, -90}, const float nearPlane = 0.1f,
          const float farplane = 100.f, const float windowHeight = 768.f,
@@ -32,7 +36,6 @@ class Camera {
          const ProjectionMode projMode = ProjectionMode::PERSPECTIVE,
          const float velocity = 0.0f, const float sensitivity = 0.05f)
       : _position(position),
-        _rotation(rotation),
         _projectionMode(projMode),
         _nearPlane(nearPlane),
         _farPlane(farplane),
@@ -40,7 +43,13 @@ class Camera {
         _windowWidth(windowWidth),
         _velocity(velocity),
         _sensitivity(sensitivity),
-        _cameraUBO(0) {
+        _cameraUBO(0),
+        _pitch(rotation.y),
+        _yaw(rotation.z) {
+    // Clamp initial pitch
+    _pitch = std::clamp(_pitch, kMinPitch, kMaxPitch);
+    updateOrientation();
+    updateBasisVectors();
     updateViewMat();
     updateProjMat();
   }
@@ -81,9 +90,23 @@ class Camera {
   ProjectionMode _projectionMode;
 
   glm::vec3 _position;
-  glm::vec3 _rotation;  // ROLL PITCH YAW
+  
+  // Quaternion-based rotation system (eliminates gimbal lock)
+  glm::quat _orientation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);  // Identity quaternion
+  
+  // Camera basis vectors (computed from orientation)
   glm::vec3 _front = {0.0f, 0.0f, -1.0f};
+  glm::vec3 _right = {1.0f, 0.0f, 0.0f};
   glm::vec3 _up = {0.0f, 1.0f, 0.0f};
+  
+  // Euler angles for backward compatibility and input handling
+  // Note: These are derived from quaternion, not used for rotation calculations
+  float _yaw = -90.0f;    // Rotation around Y-axis (left/right)
+  float _pitch = 0.0f;    // Rotation around X-axis (up/down)
+  
+  // Pitch clamping to prevent flipping
+  static constexpr float kMaxPitch = 89.0f;
+  static constexpr float kMinPitch = -89.0f;
 
   bool _initMouse = true;
   glm::vec2 _initialMousePos = {0.0f, 0.0f};
@@ -107,7 +130,11 @@ class Camera {
   // Update projection matrix
   void updateProjMat();
 
-  void rotateCamera();
+  // Update camera orientation from yaw and pitch (quaternion-based)
+  void updateOrientation();
+  
+  // Update camera basis vectors from orientation quaternion
+  void updateBasisVectors();
 };
 
 }  // namespace Render

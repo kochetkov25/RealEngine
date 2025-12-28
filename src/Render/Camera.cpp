@@ -1,6 +1,7 @@
 #include "Camera.h"
 
 #include <algorithm>
+#include <cmath>
 
 #include "../Input/Input.h"
 
@@ -25,10 +26,13 @@ void Camera::setPosition(const glm::vec3& position) {
   updateViewMat();
 }
 
-// Set camera rotation
+// Set camera rotation (Euler angles in degrees: {roll, pitch, yaw})
+// Converts to quaternion internally to avoid gimbal lock
 void Camera::setRotation(const glm::vec3& rotation) {
-  _rotation = rotation;
-  rotateCamera();
+  _pitch = std::clamp(rotation.y, kMinPitch, kMaxPitch);
+  _yaw = rotation.z;
+  updateOrientation();
+  updateBasisVectors();
   updateViewMat();
 }
 
@@ -36,8 +40,10 @@ void Camera::setRotation(const glm::vec3& rotation) {
 void Camera::setPositionRotation(const glm::vec3& position,
                                  const glm::vec3& rotation) {
   _position = position;
-  _rotation = rotation;
-  rotateCamera();
+  _pitch = std::clamp(rotation.y, kMinPitch, kMaxPitch);
+  _yaw = rotation.z;
+  updateOrientation();
+  updateBasisVectors();
   updateViewMat();
 }
 
@@ -53,9 +59,13 @@ glm::mat4 Camera::getViewMat() const { return _viewMat; }
 // Get projection matrix
 glm::mat4 Camera::getProjMat() const { return _projMat; }
 
-// Update the view matrix
+// Update the view matrix using quaternion-based orientation
 void Camera::updateViewMat() {
-  _viewMat = glm::lookAt(_position, _position + _front, _up);
+  // Build view matrix from quaternion orientation
+  // This approach is more stable than Euler angles and eliminates gimbal lock
+  const glm::mat4 rotationMatrix = glm::mat4_cast(glm::conjugate(_orientation));
+  const glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), -_position);
+  _viewMat = rotationMatrix * translationMatrix;
 }
 
 // Update the projection matrix
@@ -124,13 +134,26 @@ void Camera::moveCamera(const float duration) {
       _initMouse = false;
     }
 
-    _rotation.z -= (_initialMousePos.x - currentMousePos.x) * _sensitivity;
-    _rotation.y += (_initialMousePos.y - currentMousePos.y) * _sensitivity;
+    // Calculate mouse delta
+    // Horizontal movement (deltaX) should affect yaw (left/right rotation)
+    // Vertical movement (deltaY) should affect pitch (up/down rotation)
+    const float deltaX = (_initialMousePos.x - currentMousePos.x) * _sensitivity;
+    const float deltaY = (_initialMousePos.y - currentMousePos.y) * _sensitivity;
+
+    // Update yaw and pitch
+    // Note: Both directions are inverted - moving mouse right rotates camera left, moving mouse up rotates camera down
+    _yaw += deltaX;      // Horizontal mouse movement -> yaw rotation (inverted direction)
+    _pitch += deltaY;    // Vertical mouse movement -> pitch rotation (inverted direction)
+    
+    // Clamp pitch to prevent flipping at ±90 degrees
+    _pitch = std::clamp(_pitch, kMinPitch, kMaxPitch);
+
+    // Update orientation quaternion and basis vectors
+    updateOrientation();
+    updateBasisVectors();
 
     _initialMousePos.x = currentMousePos.x;
     _initialMousePos.y = currentMousePos.y;
-
-    rotateCamera();
 
     isUpdateViewMat = true;
   } else {
@@ -146,10 +169,30 @@ ShaderUtils::CameraBlock Camera::getCameraBlock() const {
 
 void Camera::update() { _cameraUBO.set(getCameraBlock()); }
 
-void Camera::rotateCamera() {
-  _front.x = cos(glm::radians(_rotation[1])) * cos(glm::radians(_rotation[2]));
-  _front.y = sin(glm::radians(_rotation[1]));
-  _front.z = cos(glm::radians(_rotation[1])) * sin(glm::radians(_rotation[2]));
+// Update orientation quaternion from yaw and pitch Euler angles
+// This conversion is only for input handling; rotation is stored as quaternion
+void Camera::updateOrientation() {
+  const glm::quat yawQuat = glm::angleAxis(glm::radians(_yaw), glm::vec3(0.0f, 1.0f, 0.0f));
+  const glm::quat pitchQuat = glm::angleAxis(glm::radians(_pitch), glm::vec3(1.0f, 0.0f, 0.0f));
+  
+  _orientation = yawQuat * pitchQuat;
+  _orientation = glm::normalize(_orientation);
+}
+
+// Update camera basis vectors (front, right, up) from orientation quaternion
+void Camera::updateBasisVectors() {
+  // Extract forward direction from quaternion
+  // The forward vector in camera space is (0, 0, -1)
+  const glm::vec3 worldForward = glm::vec3(0.0f, 0.0f, -1.0f);
+  _front = glm::normalize(_orientation * worldForward);
+  
+  // Extract right direction (1, 0, 0 in camera space)
+  const glm::vec3 worldRight = glm::vec3(1.0f, 0.0f, 0.0f);
+  _right = glm::normalize(_orientation * worldRight);
+  
+  // Extract up direction (0, 1, 0 in camera space)
+  const glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f);
+  _up = glm::normalize(_orientation * worldUp);
 }
 
 void Camera::setSensitivity(const float sensitivity) {
