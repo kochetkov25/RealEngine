@@ -1,5 +1,6 @@
 #include "Window.h"
 
+#include <cassert>
 #include <iostream>
 
 #include "../Input/Input.h"
@@ -10,14 +11,8 @@
 
 namespace Render {
 
-Render::Window::Window() {
-  _init = false;
-  _pWindow = nullptr;
-  _width = 1024;
-  _height = 768;
-  _windowName = "mainWindow";
-
-  setFunCallBack([this](Event& e) { this->_dispatcher.dispatch(e); });
+Render::Window::Window() : _windowName("mainWindow"), _pWindow(nullptr) {
+  setEventCallback([this](Event& e) { this->_dispatcher.dispatch(e); });
 }
 
 void Window::setRenderMode(RenderMode mode) {
@@ -36,7 +31,9 @@ void Window::setRenderMode(RenderMode mode) {
   }
 }
 
-bool Window::windowShouldClose() { return glfwWindowShouldClose(_pWindow); }
+bool Window::windowShouldClose() const {
+  return glfwWindowShouldClose(_pWindow);
+}
 
 bool Render::Window::init_GLFW() {
   if (!glfwInit()) {
@@ -59,29 +56,29 @@ bool Render::Window::init_GLAD() {
 }
 
 void Render::Window::initEvents() {
-  _dispatcher.addEventListner<MouseMovedEvent>([](MouseMovedEvent& e) {
+  _dispatcher.addEventListener<MouseMovedEvent>([](MouseMovedEvent& e) {
     Core::Input::setMousePosition(e.getPosition());
   });
 
-  _dispatcher.addEventListner<MouseButtonPressed>([](MouseButtonPressed& e) {
+  _dispatcher.addEventListener<MouseButtonPressed>([](MouseButtonPressed& e) {
     std::cout << e.format() << std::endl;
     Core::Input::pressMouseBtn(e.getButton());
   });
 
-  _dispatcher.addEventListner<MouseButtonReleased>([](MouseButtonReleased& e) {
+  _dispatcher.addEventListener<MouseButtonReleased>([](MouseButtonReleased& e) {
     std::cout << e.format() << std::endl;
     Core::Input::releaseMouseBtn(e.getButton());
   });
 
-  _dispatcher.addEventListner<WindowClosedEvent>(
+  _dispatcher.addEventListener<WindowClosedEvent>(
       [](WindowClosedEvent& e) { std::cout << e.format() << std::endl; });
 
-  _dispatcher.addEventListner<KeyPressedEvent>([](KeyPressedEvent& e) {
+  _dispatcher.addEventListener<KeyPressedEvent>([](KeyPressedEvent& e) {
     std::cout << e.format() << std::endl;
     Core::Input::pressKey(e.getKey());
   });
 
-  _dispatcher.addEventListner<KeyReleasedEvent>([](KeyReleasedEvent& e) {
+  _dispatcher.addEventListener<KeyReleasedEvent>([](KeyReleasedEvent& e) {
     std::cout << e.format() << std::endl;
     Core::Input::releaseKey(e.getKey());
   });
@@ -114,10 +111,10 @@ bool Render::Window::init() {
 
   initEvents();
   glfwSetWindowUserPointer(_pWindow, this);
-  glfwSetCursorPosCallback(_pWindow, mouseMovedCallBack);
-  glfwSetWindowCloseCallback(_pWindow, windowClosedCallBack);
-  glfwSetKeyCallback(_pWindow, keyCallBack);
-  glfwSetMouseButtonCallback(_pWindow, mouseButtonCallBack);
+  glfwSetCursorPosCallback(_pWindow, mouseMovedCallback);
+  glfwSetWindowCloseCallback(_pWindow, windowClosedCallback);
+  glfwSetKeyCallback(_pWindow, keyCallback);
+  glfwSetMouseButtonCallback(_pWindow, mouseButtonCallback);
 
   if (!init_GLAD()) return false;
 
@@ -136,52 +133,56 @@ void Render::Window::update() {
   glfwSwapBuffers(_pWindow);
   glfwPollEvents();
 
-  glClearColor(0 / 255.f, 0 / 255.f, 0 / 255.f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Window::mouseMovedCallBack(GLFWwindow* pWindow, double x, double y) {
-  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
-  MouseMovedEvent event(x, y);
-  handle.funCallBack(event);
+void Window::mouseMovedCallback(GLFWwindow* window, double x, double y) {
+  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(window));
+  MouseMovedEvent event(static_cast<int>(x), static_cast<int>(y));
+  handle._eventCallback(event);
 }
 
-void Render::Window::windowClosedCallBack(GLFWwindow* pWindow) {
-  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+void Render::Window::windowClosedCallback(GLFWwindow* window) {
+  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(window));
   WindowClosedEvent event;
-  handle.funCallBack(event);
+  handle._eventCallback(event);
 }
 
-void Render::Window::keyCallBack(GLFWwindow* pWindow, int key, int scancode,
+void Render::Window::keyCallback(GLFWwindow* window, int key, int scancode,
                                  int action, int mods) {
-  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+  (void)scancode;  // Unused parameter
+  (void)mods;      // Unused parameter
+
+  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(window));
 
   switch (action) {
     case GLFW_PRESS: {
       KeyPressedEvent eventPressed(key);
-      handle.funCallBack(eventPressed);
+      handle._eventCallback(eventPressed);
       break;
     }
     case GLFW_RELEASE: {
       KeyReleasedEvent eventReleased(key);
-      handle.funCallBack(eventReleased);
+      handle._eventCallback(eventReleased);
       break;
     }
-    default: {
+    default:
       break;
-    }
   }
 }
 
-void Window::mouseButtonCallBack(GLFWwindow* pWindow, int button, int action,
+void Window::mouseButtonCallback(GLFWwindow* window, int button, int action,
                                  int mods) {
-  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(pWindow));
+  (void)mods;  // Unused parameter
+
+  auto& handle = *static_cast<Window*>(glfwGetWindowUserPointer(window));
   if (action == GLFW_PRESS) {
     MouseButtonPressed eventMousePressed(button);
-    handle.funCallBack(eventMousePressed);
-  } else {
+    handle._eventCallback(eventMousePressed);
+  } else if (action == GLFW_RELEASE) {
     MouseButtonReleased eventMouseReleased(button);
-    handle.funCallBack(eventMouseReleased);
+    handle._eventCallback(eventMouseReleased);
   }
 }
 }  // namespace Render

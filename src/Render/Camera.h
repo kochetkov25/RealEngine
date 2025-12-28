@@ -12,22 +12,19 @@ namespace Render {
 
 class Camera {
  public:
-  /*тип камеры*/
+  // Projection mode type
   enum class ProjectionMode {
     PERSPECTIVE,
     ORTHOGRAPHIC_CENTER,
     ORTHOGRAPHIC_LEFT_BOT
   };
 
-  /*конструктор*/
-  /*
-   * ВНИМАНИЕ!!!
-   * Для корректной работы камеры
-   * необходимо задать правильные
-   * параметры frustum.
-   * windowHeight и windowHeight должны
-   * совпадать с параметрами окна отрисовки
-   */
+  // Constructor
+  // Note: For correct projection matrix calculation,
+  // the window size must be set after construction.
+  // The constructor initializes the frustum.
+  // windowHeight and windowWidth should be set
+  // in the correct order for proper frustum calculation.
   Camera(const glm::vec3& position = {0, 0, 0},
          const glm::vec3& rotation = {0, 0, -90}, const float nearPlane = 0.1f,
          const float farplane = 100.f, const float windowHeight = 768.f,
@@ -48,35 +45,35 @@ class Camera {
     updateProjMat();
   }
 
-  /*установка near и far plane*/
+  // Set near and far plane
   void setPlane(const float near, const float far);
-  /*установка размеров окна отрисовки*/
+  // Set window size for projection calculations
   void setWindowSize(const float height, const float width);
 
-  /*позиция камеры в мировой СК*/
+  // Set camera position and update view matrix
   void setPosition(const glm::vec3& position);
-  /*поворот камеры*/
+  // Set camera rotation
   void setRotation(const glm::vec3& rotation);
 
-  /*установка одновременно и позиции и поворта камеры*/
+  // Set both position and rotation simultaneously
   void setPositionRotation(const glm::vec3& position,
                            const glm::vec3& rotation);
-  /*установка типа камеры*/
+  // Set projection mode
   void setProjectionMode(ProjectionMode mode);
 
-  /*матрица вида*/
-  glm::mat4 getViewMat();
-  /*матрица проекции*/
-  glm::mat4 getProjMat();
+  // Get view matrix
+  [[nodiscard]] glm::mat4 getViewMat() const;
+  // Get projection matrix
+  [[nodiscard]] glm::mat4 getProjMat() const;
 
   void setVelocity(const float velocity) { _velocity = velocity; }
   void setSensitivity(const float sensitivity);
 
   void moveCamera(const float duration);
 
-  glm::vec3 getPosition() { return _position; }
+  [[nodiscard]] glm::vec3 getPosition() const { return _position; }
 
-  ShaderUtils::CameraBlock getCameraBlock();
+  [[nodiscard]] ShaderUtils::CameraBlock getCameraBlock() const;
 
   void update();
 
@@ -84,7 +81,7 @@ class Camera {
   ProjectionMode _projectionMode;
 
   glm::vec3 _position;
-  glm::vec3 _rotation; /*ROLL PITCH YAW*/
+  glm::vec3 _rotation;  // ROLL PITCH YAW
   glm::vec3 _front = {0.0f, 0.0f, -1.0f};
   glm::vec3 _up = {0.0f, 1.0f, 0.0f};
 
@@ -105,9 +102,9 @@ class Camera {
 
   UniformBuffer<ShaderUtils::CameraBlock> _cameraUBO;
 
-  /*пересоздать матрицу вида*/
+  // Update view matrix
   void updateViewMat();
-  /*пересоздать матрицу проекции*/
+  // Update projection matrix
   void updateProjMat();
 
   void rotateCamera();

@@ -4,9 +4,9 @@
 
 #include "Render/RendererFactory.h"
 
-/*ctor*/
+// Constructor
 BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
-  /*обработка возможных ошибок*/
+  // Validate input parameters
   if (!pMesh) {
     std::cerr << "Mesh is nullptr! (source: " << __FUNCTION__ << ")"
               << std::endl;
@@ -26,26 +26,26 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
     return;
   }
 
-  /*название меша*/
+  // Store mesh name
   _nameMesh = pMesh->mName.C_Str();
 
-  /*передача параметров меша в рендер*/
+  // Create renderer for this mesh
   _renderer = Render::RendererFactory::CreateDefault3DModelRenderer();
 
-  /*позиции, текстурные координаты, нормали*/
+  // Process vertices: position, UV coordinates, and normals
   for (int i = 0; i < pMesh->mNumVertices; i++) {
-    /*позиция вершин*/
-    _renderer->verex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y,
-                      pMesh->mVertices[i].z);
-    /*текстурные координаты*/
+    // Add vertex position
+    _renderer->vertex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y,
+                        pMesh->mVertices[i].z);
+    // Add texture coordinates
     _renderer->vertexUV(pMesh->mTextureCoords[0][i].x,
                         pMesh->mTextureCoords[0][i].y);
-    /*нормали*/
-    _renderer->verex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y,
-                      pMesh->mNormals[i].z);
+    // Add normal
+    _renderer->vertex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y,
+                       pMesh->mNormals[i].z);
   }
 
-  /*indices для данного меша*/
+  // Extract indices for indexed rendering
   std::vector<GLuint> indices;
   for (int i = 0; i < pMesh->mNumFaces; i++) {
     auto face = pMesh->mFaces[i];
@@ -54,7 +54,7 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
   }
   _renderer->setIndices(indices);
 
-  /*сохраняю тип и номер текстур, принадлежащих данному мешу*/
+  // Process materials and textures associated with this mesh
   auto pMaterial = pScene->mMaterials[pMesh->mMaterialIndex];
   for (int i = aiTextureType_NONE; i <= AI_TEXTURE_TYPE_MAX; i++) {
     auto cnt = pMaterial->GetTextureCount(static_cast<aiTextureType>(i));
@@ -72,5 +72,5 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
   _renderer->upload();
 }
 
-/*отрисовка меша*/
+// Draw the mesh using indexed rendering
 void BaseMesh::drawMesh() { _renderer->drawElements(); }

@@ -4,7 +4,7 @@
 
 namespace Render {
 
-/*перевод из usage класса в usage OpenGL*/
+// Map custom Usage enum to OpenGL GLenum
 GLenum Render::VertexBuffer::getGLenum(const _e_Usage usage) {
   switch (usage) {
     case _e_Usage::Static:
@@ -14,21 +14,21 @@ GLenum Render::VertexBuffer::getGLenum(const _e_Usage usage) {
     case _e_Usage::Stream:
       return GL_STREAM_DRAW;
     default:
-      std::cerr << "Unknow usage (source: " << __FUNCTION__ << ")" << std::endl;
+      std::cerr << "Unknown usage (source: " << __FUNCTION__ << ")" << std::endl;
       return GL_STREAM_DRAW;
   }
 }
 
-/*освобождаем ресурсы OpenGL*/
+// Destructor: deletes the OpenGL buffer
 Render::VertexBuffer::~VertexBuffer() { glDeleteBuffers(1, &_id); }
 
-/*делаем буффер активным*/
+// Bind the vertex buffer
 void Render::VertexBuffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, _id); }
 
-/*деактивируем буффер*/
+// Unbind the vertex buffer
 void Render::VertexBuffer::unbind() { glBindBuffer(GL_ARRAY_BUFFER, 0); }
 
-/*выччисляем тип компоненат по встроенному типу*/
+// Get OpenGL component type based on custom DataType
 unsigned int Render::VertexBuffer::getComponentType(_e_DataType type) {
   switch (type) {
     case Render::VertexBuffer::_e_DataType::Float:
@@ -48,7 +48,7 @@ unsigned int Render::VertexBuffer::getComponentType(_e_DataType type) {
   }
 }
 
-/*вычисляем размер элемента по встроенному типу*/
+// Get the number of components for a given DataType
 unsigned int Render::VertexBuffer::getElementSize(_e_DataType type) {
   switch (type) {
     case Render::VertexBuffer::_e_DataType::Float:
@@ -70,6 +70,6 @@ unsigned int Render::VertexBuffer::getElementSize(_e_DataType type) {
   }
 }
 
-/*отдаем наружу смещение*/
+// Get the stride (size of a single vertex)
 size_t Render::VertexBuffer::getStride() { return _stride; }
 }  // namespace Render

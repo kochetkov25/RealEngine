@@ -1,14 +1,6 @@
-/*
-**  File        :	ResourceManager.h
-**  Authors     :   Kochetkov K.I.
-**  Created on  :   09.03.2024
-**  Modified on :   09.03.2024
-**  Description :
-*/
-
 #pragma once
-#include <assimp/texture.h>
 
+#include <assimp/texture.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -29,64 +21,67 @@ class AnimatedSprite;
 
 class ResourceManager {
  public:
-  /*конструктор, передаем директорию .exe файла приложения*/
+  // Constructor, takes the path to the executable to resolve relative paths
   ResourceManager(const std::string &executablePath);
 
-  /*загрузка шейдерной программы*/
-  std::shared_ptr<Render::ShaderProgram> loadShederProgram(
+  // Loads a shader program and stores it
+  std::shared_ptr<Render::ShaderProgram> loadShaderProgram(
       const std::string &shaderName, const std::string &vertexShaderPath,
-      const std::string fragmentShaderPath);
+      const std::string &fragmentShaderPath);
 
-  /*получить shared_ptr на шейдерную программу*/
-  std::shared_ptr<Render::ShaderProgram> getShaderProgram(
-      const std::string &shaderName);
+  // Retrieves a shared_ptr to a loaded shader program
+  [[nodiscard]] std::shared_ptr<Render::ShaderProgram> getShaderProgram(
+      const std::string &shaderName) const;
 
-  /*загрузка сырой 2D текстуры*/
+  // Loads a 2D texture from a file
   std::shared_ptr<Render::Texture2D> loadTexture2D(
       const std::string &textureName, const std::string &texturePath);
 
+  // Load 2D texture from memory (Assimp embedded texture)
   std::shared_ptr<Render::Texture2D> loadTexture2D_memory(
       const std::string &textureName, const aiTexture *rawData);
 
-  /*получить shared_ptr на 2D сырую текстуру*/
-  std::shared_ptr<Render::Texture2D> getTexture2D(
-      const std::string &texture2DName);
+  // Retrieves a shared_ptr to a loaded 2D texture
+  [[nodiscard]] std::shared_ptr<Render::Texture2D> getTexture2D(
+      const std::string &texture2DName) const;
 
-  /*загрузка спрайта*/
+  // Loads a sprite
   std::shared_ptr<Render::Sprite> loadSprite(
       const std::string &spriteName, const std::string &textureName,
       const std::string &shaderProgramName, const unsigned int spriteWidth,
       const unsigned int spriteHeight,
       const std::string &subTextureName = "default");
 
-  /*получить shared_ptr на спрайт*/
-  std::shared_ptr<Render::Sprite> getSprite(const std::string &spriteName);
+  // Retrieves a shared_ptr to a loaded sprite
+  [[nodiscard]] std::shared_ptr<Render::Sprite> getSprite(const std::string &spriteName) const;
 
-  /*загрузка текстурного атласа*/
-  std::shared_ptr<Render::Texture2D> loadTextureAthlas2D(
+  // Loads a texture atlas (2D texture with multiple sub-textures)
+  std::shared_ptr<Render::Texture2D> loadTextureAtlas2D(
       const std::string &texture2DName, const std::string &texturePath,
       std::vector<std::string> subTextureNames,
       const unsigned int subTextureWidth, const unsigned int subTextureHeight);
 
-  std::shared_ptr<ModelMesh> loadModelMesh(const std::string &modelname,
+  // Load 3D model mesh
+  std::shared_ptr<ModelMesh> loadModelMesh(const std::string &modelName,
                                            const std::string &modelPath);
 
-  /*ВРЕМЕННЫЙ метод*/
-  /*загрузка всех шейдерных программ*/
+  // Resource loading utilities
+  // Loads all predefined shaders
   void loadShaders();
 
  private:
-  /*чтение файла из исполнительной директории (где .exe файл)*/
-  std::string getFileString(const std::string &relativeFilePath);
+  // Reads a file into a string, resolving path relative to the executable
+  [[nodiscard]] std::string getFileString(const std::string &relativeFilePath) const;
 
-  std::string resolveShaderIncludes(const std::string &shaderSource);
+  // Resolves #include directives within a shader source string
+  [[nodiscard]] std::string resolveShaderIncludes(const std::string &shaderSource) const;
 
-  /*map для шейдерных программ*/
+  // Map for storing shader programs
   typedef std::map<const std::string, std::shared_ptr<Render::ShaderProgram>>
       ShaderProgramsMap;
   ShaderProgramsMap _shaderPrograms;
 
-  /*map для текстур*/
+  // Map for storing 2D textures
   typedef std::map<const std::string, std::shared_ptr<Render::Texture2D>>
       Texture2DMap;
   Texture2DMap _texture2DMaps;
@@ -94,11 +89,11 @@ class ResourceManager {
   typedef std::map<const std::string, std::shared_ptr<ModelMesh>> ModelMeshMap;
   ModelMeshMap _modelMeshMaps;
 
-  /*map для спрайтов*/
+  // Map for storing sprites
   typedef std::map<const std::string, std::shared_ptr<Render::Sprite>>
       SpriteMap;
   SpriteMap _spriteMaps;
 
-  /*путь до директории с .exe файлом приложения*/
+  // Path to the executable directory
   std::string _path;
 };

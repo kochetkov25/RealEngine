@@ -30,7 +30,7 @@ class ShaderProgram {
   void setArrayUniform(const std::string &name, const size_t size,
                        const float *arr);
 
-  GLuint getShaderProgramID() { return _ID; }
+  [[nodiscard]] GLuint getShaderProgramID() const { return _ID; }
 
  private:
   bool createShader(const std::string &shaderSource, const GLenum shaderType,

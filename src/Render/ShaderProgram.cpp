@@ -72,12 +72,11 @@ void ShaderProgram::setTexUniform(const std::string &textureName,
 
 void ShaderProgram::setMatrix4Uniform(const std::string &matrixName,
                                       const glm::mat4 &matrix) {
-  auto loc = glGetUniformLocation(_ID, matrixName.c_str());
+  const auto loc = glGetUniformLocation(_ID, matrixName.c_str());
   if (loc == -1) {
-    assert(false && "Cant find uniform location!");
+    assert(false && "Cannot find uniform location!");
   }
-  glUniformMatrix4fv(glGetUniformLocation(_ID, matrixName.c_str()), 1, GL_FALSE,
-                     glm::value_ptr(matrix));
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Render::ShaderProgram::setVec3Uniform(const std::string &vecName,
@@ -100,6 +99,6 @@ void Render::ShaderProgram::setArrayUniform(const std::string &name,
                                             const size_t size,
                                             const float *arr) {
   glUniform1fv(glGetUniformLocation(_ID, name.c_str()),
-               static_cast<float>(size), arr);
+               static_cast<GLsizei>(size), arr);
 }
 }  // namespace Render

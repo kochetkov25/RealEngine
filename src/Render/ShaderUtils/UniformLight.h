@@ -3,7 +3,7 @@
 #include "AlignUtils.h"
 
 namespace ShaderUtils {
-constexpr int kMaxLigtsCount = 100;
+constexpr int kMaxLightsCount = 100;
 
 struct alignas(16) LightData {
   LightData()
@@ -33,7 +33,7 @@ static_assert(sizeof(LightData) % 16 == 0);
 struct alignas(16) LightBlock {
   LightBlock() : _count(0) {}
 
-  LightData _data[kMaxLigtsCount];
+  LightData _data[kMaxLightsCount];
 
   STD140(int, _count);
 };

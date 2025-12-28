@@ -19,8 +19,8 @@ class Renderer {
   enum DataType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4 };
 
   // Appends a vertex (x, y, z) to the buffer
-  template <typename _T>
-  void verex3(_T x, _T y, _T z) {
+  template <typename T>
+  void vertex3(T x, T y, T z) {
     _elementsBuff.emplace_back(static_cast<float>(x));
     _elementsBuff.emplace_back(static_cast<float>(y));
     _elementsBuff.emplace_back(static_cast<float>(z));
@@ -28,7 +28,7 @@ class Renderer {
     _vertexCount++;
   }
 
-  // Adds RGBA vertex color (0–255 range) to the buffer
+  // Adds RGBA vertex color (0-255 range) to the buffer
   template <typename _T>
   void color4(_T r, _T g, _T b, _T a = 1.f) {
     _elementsBuff.emplace_back(static_cast<float>(r) / 255.f);
@@ -37,7 +37,7 @@ class Renderer {
     _elementsBuff.emplace_back(static_cast<float>(a));
   }
 
-  // Appends sprite UV coordinates (normalized 0–1) to the buffer
+  // Appends sprite UV coordinates (normalized 0-1) to the buffer
   template <typename _T>
   void vertexUV(_T U, _T V) {
     _elementsBuff.emplace_back(static_cast<float>(U));
@@ -63,7 +63,7 @@ class Renderer {
   void drawElements();
 
  private:
-  // ctor
+  // Constructor (only accessible by RendererFactory)
   explicit Renderer()
       : _drawMode(GL_TRIANGLES), _vertexCount(0), _indicesCount(0) {
     _elementsBuff.reserve(MAX_ELEMENTS);

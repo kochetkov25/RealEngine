@@ -58,7 +58,7 @@ std::shared_ptr<Renderer> RendererFactory::CreateDebugGridRenderer() {
 
   const size_t kNumVerts4Triangle = 3;
   for (auto numVert = 0; numVert < kNumVerts4Triangle; numVert++) {
-    renderer->verex3(0.f, 0.f, 0.f);
+    renderer->vertex3(0.f, 0.f, 0.f);
   }
 
   return renderer;

@@ -1,62 +1,59 @@
 #pragma once
 
 #include "../Event.h"
-#include "glm/vec2.hpp"
+#include <glm/vec2.hpp>
 
 namespace Render {
-/*обработка перемещения курсора*/
+
+// Event fired when mouse moves
 class MouseMovedEvent : public Event {
  public:
-  /*конструктор*/
   MouseMovedEvent(int x = 0, int y = 0)
       : Event("MOUSE MOVED EVENT", EventType::MOUSE_MOVED), _x(x), _y(y) {}
-  /*вывод информации о событии*/
-  std::string format() const override {
-    std::string formated = _name + ": " + "X = " + std::to_string(_x) +
-                           ", Y = " + std::to_string(_y);
-    return formated;
+
+  [[nodiscard]] std::string format() const override {
+    return _name + ": X = " + std::to_string(_x) + ", Y = " + std::to_string(_y);
   }
 
-  glm::vec2 getPosition() { return glm::vec2(_x, _y); }
+  [[nodiscard]] glm::vec2 getPosition() const { return glm::vec2(_x, _y); }
 
  private:
-  int _x;
-  int _y;
+  int _x{0};
+  int _y{0};
 };
 
-/*обработка нажатия кнопок мыши*/
+// Event fired when mouse button is pressed
 class MouseButtonPressed : public Event {
  public:
-  MouseButtonPressed(int button = 0)
+  explicit MouseButtonPressed(int button = 0)
       : Event("MOUSE BUTTON PRESSED", EventType::MOUSE_BUTTON_PRESSED),
         _button(button) {}
 
-  std::string format() const override {
-    std::string formated = _name + ": " + std::to_string(_button);
-    return formated;
+  [[nodiscard]] std::string format() const override {
+    return _name + ": " + std::to_string(_button);
   }
 
-  int getButton() { return _button; }
+  [[nodiscard]] int getButton() const { return _button; }
 
  private:
-  int _button = 0;
+  int _button{0};
 };
 
-/*обработка отжатия кнопок мыши*/
+// Event fired when mouse button is released
 class MouseButtonReleased : public Event {
  public:
-  MouseButtonReleased(int button = 0)
+  explicit MouseButtonReleased(int button = 0)
       : Event("MOUSE BUTTON RELEASED", EventType::MOUSE_BUTTON_RELEASED),
         _button(button) {}
 
-  std::string format() const override {
-    std::string formated = _name + ": " + std::to_string(_button);
-    return formated;
+  [[nodiscard]] std::string format() const override {
+    return _name + ": " + std::to_string(_button);
   }
 
-  int getButton() { return _button; }
+  [[nodiscard]] int getButton() const { return _button; }
 
  private:
-  int _button;
+  int _button{0};
 };
+
 }  // namespace Render

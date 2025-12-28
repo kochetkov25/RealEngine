@@ -6,11 +6,12 @@
 #include <unordered_map>
 
 #include "IndexBuffer.h"
+#include "VertexBuffer.h"
 
 namespace Render {
 namespace {
-std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType>
-    kRendered2VertexBuffer{
+const std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType>
+    kRendererToVertexBuffer{
         {Renderer::Float, VertexBuffer::_e_DataType::Float},
         {Renderer::Float2, VertexBuffer::_e_DataType::Float2},
         {Renderer::Float3, VertexBuffer::_e_DataType::Float3},
@@ -28,7 +29,7 @@ std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType>
 void Renderer::setLayout(const std::vector<DataType>& layout) {
   _layout.clear();
   std::transform(layout.begin(), layout.end(), std::back_inserter(_layout),
-                 [](auto elem) { return kRendered2VertexBuffer.at(elem); });
+                 [](auto elem) { return kRendererToVertexBuffer.at(elem); });
 }
 
 // This controls how the GPU interprets the vertex data during rendering.
@@ -56,21 +57,21 @@ void Renderer::setIndices(const std::vector<GLuint>& indices) {
 
 // This uses non-indexed rendering (glDrawArrays) and requires vertex data
 // to have been uploaded beforehand.
-void Render::Renderer::drawArrays() {
+void Renderer::drawArrays() {
   _VAO.bind();
-  glDrawArrays(_drawMode, 0, _vertexCount);
+  glDrawArrays(_drawMode, 0, static_cast<GLsizei>(_vertexCount));
   _VAO.unbind();
 }
 
 // This uses indexed rendering (glDrawElements), so make sure to call
 // setIndices() before this. Requires a valid layout and uploaded vertex data.
-void Render::Renderer::drawElements() {
+void Renderer::drawElements() {
   if (_indicesCount == 0) {
     assert(false &&
            "Cannot call drawElements(): index buffer has not been set.");
   }
   _VAO.bind();
-  glDrawElements(_drawMode, _indicesCount, GL_UNSIGNED_INT, 0);
+  glDrawElements(_drawMode, static_cast<GLsizei>(_indicesCount), GL_UNSIGNED_INT, nullptr);
   _VAO.unbind();
 }
 

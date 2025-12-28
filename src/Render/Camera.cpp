@@ -5,38 +5,34 @@
 #include "../Input/Input.h"
 
 namespace Render {
-/*============================================================*/
-/*установка near и far plane*/
+// Set near and far clipping planes
 void Camera::setPlane(const float near, const float far) {
   _nearPlane = near;
   _farPlane = far;
   updateProjMat();
 }
 
-/*============================================================*/
-/*установка размеров окна отрисовки*/
+// Set window size for projection matrix calculation
 void Camera::setWindowSize(const float height, const float width) {
   _windowHeight = height;
   _windowWidth = width;
+  updateProjMat();
 }
 
-/*============================================================*/
-/*позиция камеры в мировой СК*/
+// Set camera position
 void Camera::setPosition(const glm::vec3& position) {
   _position = position;
   updateViewMat();
 }
 
-/*============================================================*/
-/*поворот камеры*/
+// Set camera rotation
 void Camera::setRotation(const glm::vec3& rotation) {
   _rotation = rotation;
   rotateCamera();
   updateViewMat();
 }
 
-/*============================================================*/
-/*установка одновременно и позиции и поворта камеры*/
+// Set both position and rotation
 void Camera::setPositionRotation(const glm::vec3& position,
                                  const glm::vec3& rotation) {
   _position = position;
@@ -45,29 +41,24 @@ void Camera::setPositionRotation(const glm::vec3& position,
   updateViewMat();
 }
 
-/*============================================================*/
-/*установка типа камеры*/
+// Set projection mode
 void Camera::setProjectionMode(ProjectionMode mode) {
   _projectionMode = mode;
   updateProjMat();
 }
 
-/*============================================================*/
-/*матрица вида*/
-glm::mat4 Camera::getViewMat() { return _viewMat; }
+// Get view matrix
+glm::mat4 Camera::getViewMat() const { return _viewMat; }
 
-/*============================================================*/
-/*матрица проекции*/
-glm::mat4 Camera::getProjMat() { return _projMat; }
+// Get projection matrix
+glm::mat4 Camera::getProjMat() const { return _projMat; }
 
-/*============================================================*/
-/*пересоздать матрицу вида*/
+// Update the view matrix
 void Camera::updateViewMat() {
   _viewMat = glm::lookAt(_position, _position + _front, _up);
 }
 
-/*============================================================*/
-/*пересоздать матрицу проекции*/
+// Update the projection matrix
 void Camera::updateProjMat() {
   const float aspect = _windowWidth / _windowHeight;
   switch (_projectionMode) {
@@ -76,8 +67,8 @@ void Camera::updateProjMat() {
           glm::perspective(glm::radians(45.f), aspect, _nearPlane, _farPlane);
       break;
     case Render::Camera::ProjectionMode::ORTHOGRAPHIC_CENTER:
-      _projMat = glm::ortho(-_windowWidth / 2.f, _windowHeight / 2.f,
-                            -_windowHeight / 2.f, _windowWidth / 2.f,
+      _projMat = glm::ortho(-_windowWidth / 2.f, _windowWidth / 2.f,
+                            -_windowHeight / 2.f, _windowHeight / 2.f,
                             _nearPlane, _farPlane);
       break;
     case Render::Camera::ProjectionMode::ORTHOGRAPHIC_LEFT_BOT:
@@ -85,9 +76,7 @@ void Camera::updateProjMat() {
                             _farPlane);
       break;
     default:
-      const float aspect = _windowWidth / _windowHeight;
-      _projMat =
-          glm::perspective(glm::radians(45.f), aspect, _nearPlane, _farPlane);
+      _projMat = glm::perspective(glm::radians(45.f), aspect, _nearPlane, _farPlane);
       break;
   }
 }
@@ -151,7 +140,7 @@ void Camera::moveCamera(const float duration) {
   if (isUpdateViewMat) updateViewMat();
 }
 
-ShaderUtils::CameraBlock Camera::getCameraBlock() {
+ShaderUtils::CameraBlock Camera::getCameraBlock() const {
   return {getViewMat(), getProjMat(), getPosition()};
 }
 

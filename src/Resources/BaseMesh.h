@@ -15,29 +15,29 @@ class ShaderProgram;
 
 class BaseMesh {
  public:
-  /*ctor*/
+  // Constructor
   BaseMesh(const aiMesh* pMesh, const aiScene* pScene);
-  /*copy ctor*/
+  // Copy constructor
   BaseMesh(const BaseMesh&) = default;
-  /*move ctor*/
+  // Move constructor
   BaseMesh(BaseMesh&&) noexcept = default;
-  /*dtor*/
+  // Destructor
   ~BaseMesh() noexcept = default;
 
-  /*структура для сохранения текстур, принадлежащих мешу*/
+  // Structure to store texture information associated with the mesh
   struct Texture {
     Texture(unsigned int id, aiTextureType type) : _id(id), _type(type) {}
     unsigned int _id;
     aiTextureType _type;
   };
 
-  /*отрисовка меша*/
+  // Draw the mesh
   void drawMesh();
 
-  /*получить вектор текстур*/
+  // Get the list of textures associated with this mesh
   std::vector<Texture> getTexture() { return _vecTextures; }
 
-  /*получить название меша*/
+  // Get the name of the mesh
   std::string getMeshName() { return _nameMesh; }
 
  private:

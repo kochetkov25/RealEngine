@@ -1,15 +1,15 @@
 #pragma once
+
 #include <functional>
 #include <iostream>
 #include <map>
 #include <string>
-#include <vector>
 
 namespace Render {
-/*базовый класс для создания событий*/
+
+// Base class for all events
 class Event {
  public:
-  /*типы ивентов*/
   enum class EventType {
     MOUSE_MOVED = 1,
     WINDOW_CLOSED,
@@ -17,57 +17,51 @@ class Event {
     KEY_RELEASED,
     MOUSE_BUTTON_PRESSED,
     MOUSE_BUTTON_RELEASED,
-
     COUNT
   };
 
   virtual ~Event() = default;
 
-  /*имя события*/
-  inline std::string getName() const { return _name; }
+  [[nodiscard]] std::string getName() const { return _name; }
+  [[nodiscard]] EventType getType() const { return _type; }
 
-  /*тип события*/
-  inline EventType getType() const { return _type; }
-
-  /*чисто виртуальная функция для вывода информации о событии*/
+  // Format event as string for logging/debugging
   virtual std::string format() const = 0;
 
  protected:
   EventType _type;
   std::string _name;
 
-  Event(const std::string& name, const EventType type)
-      : _type(type), _name(name) {}
+  Event(std::string name, EventType type) : _type(type), _name(std::move(name)) {}
 };
 
-/*диспетчер событий*/
+// Dispatches events to registered listeners
 class EventDispatcher {
  public:
-  template <typename _typeEvent>
-  void addEventListner(std::function<void(_typeEvent&)> callBack) {
-    /*лямбда, которая принимает ссылку на базовый Event и даункастит до
-      ссылки на необходимый Event (для добавления коллбека в вектор)*/
-    auto base = [func = std::move(callBack)](Event& e) {
-      /*даункаст до ссылки на нужный объект*/
-      func(static_cast<_typeEvent&>(e));
+  template <typename TEvent>
+  void addEventListener(std::function<void(TEvent&)> callback) {
+    // Wrapper that converts base Event to specific TEvent
+    auto base = [func = std::move(callback)](Event& e) {
+      func(static_cast<TEvent&>(e));
     };
-    /*creating event to get event type*/
-    _typeEvent e;
-    _mapEventCallBacks.emplace(e.getType(), base);
+    // Create temporary event to get its type
+    TEvent tempEvent;
+    _eventCallbacks.emplace(tempEvent.getType(), base);
   }
 
-  /*вызов callback в соответствии с типои event*/
+  // Dispatch event to registered listeners
   void dispatch(Event& event) {
-    auto it = _mapEventCallBacks.find(event.getType());
-    if (it != _mapEventCallBacks.end())
+    const auto it = _eventCallbacks.find(event.getType());
+    if (it != _eventCallbacks.end()) {
       it->second(event);
-    else
+    } else {
       std::cerr << __FUNCTION__ << ": Event not set!" << std::endl;
+    }
   }
 
  private:
-  /*map для хранения callBack_ов*/
-  std::map<Event::EventType, std::function<void(Event&)>> _mapEventCallBacks;
+  // Map of event types to their callback functions
+  std::map<Event::EventType, std::function<void(Event&)>> _eventCallbacks;
 };
 
 }  // namespace Render

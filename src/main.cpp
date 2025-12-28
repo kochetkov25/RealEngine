@@ -1,11 +1,14 @@
 // clang-format off
 
-#include "Resources/ResourceManager.h"
+#include <cassert>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/vec3.hpp>
 
+#include "Resources/ResourceManager.h"
 #include "Render/ShaderProgram.h"
 #include "Render/Window.h"
 #include "Render/Camera.h"
-
+#include "Render/Light.h"
 #include "Modules/GUIModule.h"
 #include "Modules/Time.h"
 #include "Modules/Random.h"
@@ -14,6 +17,7 @@
 // clang-format on
 
 int main(int argc, char** argv) {
+  (void)argc;  // Unused parameter
   /*init RANDOM*/
   Core::Random::Init();
 
@@ -24,7 +28,7 @@ int main(int argc, char** argv) {
   Render::Window MainWindow;
   if (!MainWindow.init()) {
     assert(false && "Failed to init MainWindow! Critical!");
-  };
+  }
 
   MainWindow.setRenderMode(Render::Window::RenderMode::Fill);
 
