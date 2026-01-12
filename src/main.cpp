@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
 
   /*CUBE*/
   auto MeshDebugCube =
-      resourceManager.loadModelMesh("DebugCube", "res/models/CubeNormals.glb");
+      resourceManager.loadModelMesh("DebugCube", "res/models/m_2_4_0.glb");
 
   /*LIGHT*/
   Render::Light DebugLight;
@@ -131,7 +131,7 @@ int main(int argc, char** argv) {
 
     auto modelMatrix = glm::mat4(1.f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.f, 2.f, 2.f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f,0.05f, 0.05f));
 
     ///*TEXTURE*/
     // currTex->bindTexture2D(0);

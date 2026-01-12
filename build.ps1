@@ -51,12 +51,45 @@ Write-Host "Configuring CMake..." -ForegroundColor Cyan
 
 # Check if Ninja is available (preferred for compile_commands.json)
 $useNinja = $false
+$desiredGenerator = $null
 if (Get-Command ninja -ErrorAction SilentlyContinue) {
     $useNinja = $true
+    $desiredGenerator = "Ninja"
     Write-Host "Using Ninja generator (better for compile_commands.json)" -ForegroundColor Gray
 } else {
     Write-Host "Note: Ninja not found. Visual Studio generator will be used." -ForegroundColor Yellow
     Write-Host "      compile_commands.json may not be generated with Visual Studio generator." -ForegroundColor Yellow
+}
+
+# Check if build directory exists and has a different generator configured
+$cmakeCachePath = Join-Path $BUILD_DIR "CMakeCache.txt"
+$needsClean = $false
+if (Test-Path $cmakeCachePath) {
+    $cacheContent = Get-Content $cmakeCachePath -Raw
+    if ($useNinja -and $cacheContent -match 'CMAKE_GENERATOR:INTERNAL=(.+)') {
+        $previousGenerator = $matches[1].Trim()
+        if ($previousGenerator -ne "Ninja") {
+            Write-Host "Detected generator mismatch: Previous generator was '$previousGenerator', but Ninja is now available." -ForegroundColor Yellow
+            Write-Host "Automatically cleaning build directory to switch generators..." -ForegroundColor Yellow
+            $needsClean = $true
+        }
+    } elseif (-not $useNinja -and $cacheContent -match 'CMAKE_GENERATOR:INTERNAL=(.+)') {
+        $previousGenerator = $matches[1].Trim()
+        if ($previousGenerator -eq "Ninja") {
+            Write-Host "Detected generator mismatch: Previous generator was 'Ninja', but Ninja is no longer available." -ForegroundColor Yellow
+            Write-Host "Automatically cleaning build directory to switch generators..." -ForegroundColor Yellow
+            $needsClean = $true
+        }
+    }
+}
+
+# Clean if needed
+if ($needsClean) {
+    if (Test-Path $BUILD_DIR) {
+        Remove-Item -Recurse -Force $BUILD_DIR
+        Write-Host "Build directory cleaned." -ForegroundColor Green
+        Write-Host ""
+    }
 }
 
 $cmakeArgs = @(
@@ -77,7 +110,7 @@ $ErrorActionPreference = "Continue"
 
 try {
     # Run cmake and let output flow normally
-    & cmake @cmakeArgs
+    $cmakeOutput = & cmake @cmakeArgs 2>&1 | Tee-Object -Variable cmakeOutputVar
     $cmakeExitCode = $LASTEXITCODE
 } catch {
     # If an exception was thrown, it's likely just a warning
@@ -93,8 +126,33 @@ try {
 
 # Check exit code - only fail on actual errors, not warnings
 if ($cmakeExitCode -ne 0) {
-    Write-Host "CMake configuration failed with exit code $cmakeExitCode!" -ForegroundColor Red
-    exit $cmakeExitCode
+    # Check if it's a generator mismatch error that we didn't catch
+    $outputString = $cmakeOutputVar -join "`n"
+    if ($outputString -match "Does not match the generator used previously") {
+        Write-Host ""
+        Write-Host "Generator mismatch detected! Cleaning build directory and retrying..." -ForegroundColor Yellow
+        if (Test-Path $BUILD_DIR) {
+            Remove-Item -Recurse -Force $BUILD_DIR
+            Write-Host "Build directory cleaned. Retrying CMake configuration..." -ForegroundColor Green
+            Write-Host ""
+            
+            # Retry CMake configuration
+            try {
+                $cmakeOutput = & cmake @cmakeArgs 2>&1 | Tee-Object -Variable cmakeOutputVar
+                $cmakeExitCode = $LASTEXITCODE
+            } catch {
+                $cmakeExitCode = $LASTEXITCODE
+                if ($cmakeExitCode -eq 0) {
+                    $cmakeExitCode = 0
+                }
+            }
+        }
+    }
+    
+    if ($cmakeExitCode -ne 0) {
+        Write-Host "CMake configuration failed with exit code $cmakeExitCode!" -ForegroundColor Red
+        exit $cmakeExitCode
+    }
 }
 
 Write-Host "CMake configuration completed successfully." -ForegroundColor Green
