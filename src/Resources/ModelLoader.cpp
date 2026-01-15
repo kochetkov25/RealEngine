@@ -1,0 +1,208 @@
+#include "ModelLoader.h"
+
+#include "ModelLoadExceptions.h"
+#include "ModelLogger.h"
+#include <algorithm>
+#include <filesystem>
+#include <glm/glm.hpp>
+
+namespace Resources {
+
+const aiScene *ModelLoader::loadModel(const std::string &filePath) {
+  ModelLogger::info("ModelLoader", "Loading model: ", filePath);
+
+  // Validate file path
+  if (!validateFilePath(filePath)) {
+    ModelLogger::error("ModelLoader", "File not found: ", filePath);
+    throw ModelFileNotFoundException(filePath);
+  }
+
+  // Check file format
+  if (!isSupportedFormat(filePath)) {
+    ModelLogger::warning("ModelLoader", "Unsupported file format: ", filePath);
+  }
+
+  // Validate import flags
+  validateImportFlags();
+
+  // Import the model
+  const aiScene *scene =
+      importer_.ReadFile(filePath.c_str(), config_.assimpFlags);
+
+  // Check for import errors
+  if (!scene || hasError()) {
+    const std::string errorMsg = getLastError();
+    ModelLogger::error("ModelLoader", "Failed to import model: ", filePath,
+                       ". Error: ", errorMsg);
+    throw ModelImportException(filePath, errorMsg);
+  }
+
+  // Validate the imported scene
+  try {
+    validateScene(scene, filePath);
+  } catch (const ModelCorruptedException &e) {
+    ModelLogger::error("ModelLoader", "Scene validation failed: ", e.what());
+    throw;
+  }
+
+  ModelLogger::info("ModelLoader", "Successfully loaded model: ", filePath,
+                    " (Meshes: ", scene->mNumMeshes,
+                    ", Materials: ", scene->mNumMaterials, ")");
+
+  // Return the scene pointer. Note: The scene is owned by the importer_,
+  // so the ModelLoader instance must remain alive as long as the scene is
+  // needed.
+  return scene;
+}
+
+bool ModelLoader::validateFilePath(const std::string &filePath) noexcept {
+  try {
+    std::filesystem::path path(filePath);
+    return std::filesystem::exists(path) &&
+           std::filesystem::is_regular_file(path);
+  } catch (const std::exception &) {
+    return false;
+  }
+}
+
+ModelMetadata ModelLoader::extractMetadata(const aiScene *scene,
+                                           const std::string &filePath,
+                                           const std::string &modelName) {
+  ModelMetadata metadata;
+  metadata.sourceFilePath = filePath;
+  metadata.modelName = modelName;
+
+  if (!scene) {
+    return metadata;
+  }
+
+  // Collect all vertices for bounding box calculation
+  std::vector<glm::vec3> allVertices;
+
+  // Process all meshes
+  for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+    const aiMesh *mesh = scene->mMeshes[i];
+    if (!mesh) {
+      continue;
+    }
+
+    metadata.meshCount++;
+    metadata.totalVertices += mesh->mNumVertices;
+
+    // Count indices
+    for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
+      metadata.totalIndices += mesh->mFaces[j].mNumIndices;
+    }
+
+    // Collect vertices
+    for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+      allVertices.emplace_back(mesh->mVertices[j].x, mesh->mVertices[j].y,
+                               mesh->mVertices[j].z);
+    }
+
+    // Check for mesh features
+    if (mesh->HasBones()) {
+      metadata.hasBones = true;
+    }
+    if (mesh->HasTangentsAndBitangents()) {
+      metadata.hasTangents = true;
+      metadata.hasBitangents = true;
+    }
+  }
+
+  // Calculate bounding box
+  metadata.calculateBounds(allVertices);
+
+  // Check for animations
+  metadata.hasAnimations = scene->mNumAnimations > 0;
+
+  // Count textures
+  for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
+    const aiMaterial *material = scene->mMaterials[i];
+    if (!material) {
+      continue;
+    }
+
+    // Count textures of all types
+    for (int type = aiTextureType_NONE; type <= AI_TEXTURE_TYPE_MAX; ++type) {
+      metadata.textureCount +=
+          material->GetTextureCount(static_cast<aiTextureType>(type));
+    }
+  }
+
+  return metadata;
+}
+
+void ModelLoader::validateScene(const aiScene *scene,
+                                const std::string &filePath) {
+  if (!scene) {
+    throw ModelCorruptedException(filePath, "Scene is null");
+  }
+
+  if (!scene->mRootNode) {
+    throw ModelCorruptedException(filePath, "Scene has no root node");
+  }
+
+  // Validate meshes
+  if (scene->mNumMeshes == 0) {
+    throw ModelCorruptedException(filePath, "Scene contains no meshes");
+  }
+
+  // Validate each mesh
+  for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+    const aiMesh *mesh = scene->mMeshes[i];
+    if (!mesh) {
+      ModelLogger::warning("ModelLoader", "Mesh ", i, " is null");
+      continue;
+    }
+
+    // Check for required data
+    if (mesh->mNumVertices == 0) {
+      throw ModelCorruptedException(filePath, "Mesh " + std::to_string(i) +
+                                                  " has no vertices");
+    }
+
+    if (!mesh->HasPositions()) {
+      throw ModelCorruptedException(filePath, "Mesh " + std::to_string(i) +
+                                                  " has no positions");
+    }
+
+    // Note: Normals might be generated by Assimp, so we check after import
+    // If normals are required and not present, Assimp should have generated
+    // them with aiProcess_GenSmoothNormals flag
+  }
+
+  ModelLogger::debug("ModelLoader", "Scene validation passed for: ", filePath);
+}
+
+void ModelLoader::validateImportFlags() const {
+  // Basic validation - ensure essential flags are present
+  if ((config_.assimpFlags & aiProcess_Triangulate) == 0) {
+    ModelLogger::warning("ModelLoader",
+                         "aiProcess_Triangulate not set - non-triangular "
+                         "faces may cause issues");
+  }
+}
+
+bool ModelLoader::isSupportedFormat(const std::string &filePath) noexcept {
+  // Get file extension
+  std::filesystem::path path(filePath);
+  std::string extension = path.extension().string();
+  std::transform(extension.begin(), extension.end(), extension.begin(),
+                 ::tolower);
+
+  // Common 3D model formats supported by Assimp
+  const std::vector<std::string> supportedFormats = {
+      ".obj",  ".fbx",     ".dae", ".3ds",      ".blend",        ".x",
+      ".md2",  ".md3",     ".ply", ".dxf",      ".gltf",         ".glb",
+      ".x3d",  ".stl",     ".off", ".ac",       ".ifc",          ".nff",
+      ".bvh",  ".irrmesh", ".irr", ".q3d",      ".q3s",          ".ter",
+      ".raw",  ".mdl",     ".hmp", ".mesh.xml", ".skeleton.xml", ".material",
+      ".ms3d", ".lwo",     ".lws", ".lxo",      ".csm",          ".ply",
+      ".cob",  ".scn"};
+
+  return std::find(supportedFormats.begin(), supportedFormats.end(),
+                   extension) != supportedFormats.end();
+}
+
+} // namespace Resources

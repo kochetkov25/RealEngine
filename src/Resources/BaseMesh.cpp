@@ -4,9 +4,7 @@
 
 #include "Render/RendererFactory.h"
 
-// Constructor
-BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
-  // Validate input parameters
+BaseMesh::BaseMesh(const aiMesh *pMesh, const aiScene *pScene) {
   if (!pMesh) {
     std::cerr << "Mesh is nullptr! (source: " << __FUNCTION__ << ")"
               << std::endl;
@@ -26,7 +24,6 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
     return;
   }
 
-  // Store mesh name
   _nameMesh = pMesh->mName.C_Str();
 
   // Create renderer for this mesh
@@ -36,7 +33,7 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
   for (int i = 0; i < pMesh->mNumVertices; i++) {
     // Add vertex position
     _renderer->vertex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y,
-                        pMesh->mVertices[i].z);
+                       pMesh->mVertices[i].z);
     // Add texture coordinates
     _renderer->vertexUV(pMesh->mTextureCoords[0][i].x,
                         pMesh->mTextureCoords[0][i].y);
@@ -58,19 +55,41 @@ BaseMesh::BaseMesh(const aiMesh* pMesh, const aiScene* pScene) {
   auto pMaterial = pScene->mMaterials[pMesh->mMaterialIndex];
   for (int i = aiTextureType_NONE; i <= AI_TEXTURE_TYPE_MAX; i++) {
     auto cnt = pMaterial->GetTextureCount(static_cast<aiTextureType>(i));
-    std::cout << "NAME: " << _nameMesh << " CNT: " << cnt << std::endl;
     if (cnt > 0) {
       aiString path;
       pMaterial->GetTexture(static_cast<aiTextureType>(i), 0, &path);
-      unsigned int index = path.C_Str()[1] - '0';
+
+      // Extract texture index from path
+      // Embedded textures have paths like "*0", "*1", etc. where the number
+      // after '*' is the index into scene->mTextures array
+      unsigned int index = 0;
+      const char *pathStr = path.C_Str();
+
+      if (pathStr && pathStr[0] == '*') {
+        // Embedded texture - extract index from "*N" format
+        // Handle both single digit ("*0") and multi-digit ("*10") indices
+        if (pathStr[1] >= '0' && pathStr[1] <= '9') {
+          // Try to parse as integer (handles multi-digit)
+          index = static_cast<unsigned int>(std::atoi(pathStr + 1));
+        }
+      } else {
+        // File-based texture - for now use index 0
+        // In a full implementation, we'd match by filename
+        index = 0;
+      }
 
       _vecTextures.push_back(Texture(index, static_cast<aiTextureType>(i)));
     }
   }
-  std::cout << std::endl;
 
   _renderer->upload();
 }
 
-// Draw the mesh using indexed rendering
-void BaseMesh::drawMesh() { _renderer->drawElements(); }
+void BaseMesh::drawMesh() const {
+  if (!_renderer) {
+    std::cerr << "Renderer is null! (source: " << __FUNCTION__ << ")"
+              << std::endl;
+    return;
+  }
+  _renderer->drawElements();
+}

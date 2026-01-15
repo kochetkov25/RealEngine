@@ -1,7 +1,5 @@
 #include "Texture2D.h"
 
-#include <memory>
-
 namespace Render {
 
 // Creates a texture and uploads pixel data to OpenGL.
@@ -10,21 +8,31 @@ namespace Render {
 Texture2D::Texture2D(const GLuint width, const GLuint height,
                      const unsigned char *textureData,
                      const unsigned int channels, const GLenum filter,
-                     const GLenum wrapMode) {
-  _height = height;
-  _width = width;
-
+                     const GLenum wrapMode)
+    : _height(height), _width(width) {
   // Determine the number of color channels
+  GLenum internalFormat;
   switch (channels) {
-    case 4:
-      _mode = GL_RGBA;
-      break;
-    case 3:
-      _mode = GL_RGB;
-      break;
-    default:
-      _mode = GL_RGBA;
-      break;
+  case 4:
+    _mode = GL_RGBA;
+    internalFormat = GL_RGBA8;
+    break;
+  case 3:
+    _mode = GL_RGB;
+    internalFormat = GL_RGB8;
+    break;
+  case 2:
+    _mode = GL_RG;
+    internalFormat = GL_RG8;
+    break;
+  case 1:
+    _mode = GL_RED;
+    internalFormat = GL_R8;
+    break;
+  default:
+    _mode = GL_RGBA;
+    internalFormat = GL_RGBA8;
+    break;
   }
   // Generate texture ID
   glGenTextures(1, &_ID);
@@ -39,7 +47,7 @@ Texture2D::Texture2D(const GLuint width, const GLuint height,
    */
   glBindTexture(GL_TEXTURE_2D, _ID);
   // Upload pixel data to GPU
-  glTexImage2D(GL_TEXTURE_2D, 0, _mode, _width, _height, 0, _mode,
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, _mode,
                GL_UNSIGNED_BYTE, textureData);
   // Set texture parameters for texture wrapping
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
@@ -56,21 +64,31 @@ Texture2D::Texture2D(const GLuint width, const GLuint height,
 Render::Texture2D::Texture2D(const GLuint width, const GLuint height,
                              const float *textureData,
                              const unsigned int channels, const GLenum filter,
-                             const GLenum wrapMode) {
-  _height = height;
-  _width = width;
-
+                             const GLenum wrapMode)
+    : _height(height), _width(width) {
   // Determine the number of color channels
+  GLenum internalFormat;
   switch (channels) {
-    case 4:
-      _mode = GL_RGBA;
-      break;
-    case 3:
-      _mode = GL_RGB;
-      break;
-    default:
-      _mode = GL_RGBA;
-      break;
+  case 4:
+    _mode = GL_RGBA;
+    internalFormat = GL_RGBA32F;
+    break;
+  case 3:
+    _mode = GL_RGB;
+    internalFormat = GL_RGB32F;
+    break;
+  case 2:
+    _mode = GL_RG;
+    internalFormat = GL_RG32F;
+    break;
+  case 1:
+    _mode = GL_RED;
+    internalFormat = GL_R32F;
+    break;
+  default:
+    _mode = GL_RGBA;
+    internalFormat = GL_RGBA32F;
+    break;
   }
   // Generate texture ID
   glGenTextures(1, &_ID);
@@ -85,8 +103,8 @@ Render::Texture2D::Texture2D(const GLuint width, const GLuint height,
    */
   glBindTexture(GL_TEXTURE_2D, _ID);
   // Upload pixel data to GPU (using float format)
-  glTexImage2D(GL_TEXTURE_2D, 0, /*_mode*/ GL_RGBA32F, _width, _height, 0,
-               /*_mode*/ GL_RGBA, GL_FLOAT, textureData);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, _mode,
+               GL_FLOAT, textureData);
   // Set texture parameters for texture wrapping
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
@@ -121,8 +139,8 @@ void Texture2D::addSubTexture2D(std::string textureName,
  * If the texture is not found, returns
  * the default sub-texture coordinates
  */
-Texture2D::subTexture2D &Texture2D::getSubTexture2D(
-    const std::string &textureName) {
+Texture2D::subTexture2D &
+Texture2D::getSubTexture2D(const std::string &textureName) {
   auto it = _subTextures2Dmap.find(textureName);
   if (it != _subTextures2Dmap.end()) {
     return it->second;
@@ -132,4 +150,4 @@ Texture2D::subTexture2D &Texture2D::getSubTexture2D(
   return defTexture2D;
 }
 
-}  // namespace Render
+} // namespace Render

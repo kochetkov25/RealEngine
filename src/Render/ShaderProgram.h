@@ -7,7 +7,7 @@
 namespace Render {
 
 class ShaderProgram {
- public:
+public:
   ShaderProgram(const std::string &vertexShader,
                 const std::string &fragmentShader);
 
@@ -27,12 +27,16 @@ class ShaderProgram {
 
   void setFloatUniform(const std::string &name, const float value);
 
+  void setIntUniform(const std::string &name, const GLint value);
+
+  void setBoolUniform(const std::string &name, bool value);
+
   void setArrayUniform(const std::string &name, const size_t size,
                        const float *arr);
 
   [[nodiscard]] GLuint getShaderProgramID() const { return _ID; }
 
- private:
+private:
   bool createShader(const std::string &shaderSource, const GLenum shaderType,
                     GLuint &shaderID);
 
@@ -41,4 +45,4 @@ class ShaderProgram {
   GLuint _ID = 0;
 };
 
-}  // namespace Render
+} // namespace Render

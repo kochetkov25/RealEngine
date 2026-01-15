@@ -95,10 +95,21 @@ void Render::ShaderProgram::setFloatUniform(const std::string &name,
   glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);
 }
 
+void Render::ShaderProgram::setIntUniform(const std::string &name,
+                                          const GLint value) {
+  glUniform1i(glGetUniformLocation(_ID, name.c_str()), value);
+}
+
+void Render::ShaderProgram::setBoolUniform(const std::string &name,
+                                           bool value) {
+  // In GLSL, bool uniforms are set as integers (0 or 1)
+  glUniform1i(glGetUniformLocation(_ID, name.c_str()), value ? 1 : 0);
+}
+
 void Render::ShaderProgram::setArrayUniform(const std::string &name,
                                             const size_t size,
                                             const float *arr) {
   glUniform1fv(glGetUniformLocation(_ID, name.c_str()),
                static_cast<GLsizei>(size), arr);
 }
-}  // namespace Render
+} // namespace Render

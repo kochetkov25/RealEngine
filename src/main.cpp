@@ -16,8 +16,8 @@
 
 // clang-format on
 
-int main(int argc, char** argv) {
-  (void)argc;  // Unused parameter
+int main(int argc, char **argv) {
+  (void)argc; // Unused parameter
   /*init RANDOM*/
   Core::Random::Init();
 
@@ -56,16 +56,6 @@ int main(int argc, char** argv) {
   /*load SHADERS*/
   resourceManager.loadShaders();
 
-  /*load TEXTURES*/
-  // resourceManager.loadTexture2D("BOX_TEX",  "res/textures/body_lstr.png");
-  // resourceManager.loadTexture2D("SpecularMap",
-  // "res/textures/BOX_specularMap.png");
-  // resourceManager.loadTexture2D("EmissionMap",
-  // "res/textures/BOX_emissionMAP.png"); auto currTex =
-  // resourceManager.getTexture2D("BOX_TEX"); auto specularTex  =
-  // resourceManager.getTexture2D("SpecularMap"); auto emissionMap =
-  // resourceManager.getTexture2D("EmissionMap");
-
   /*init SHADERS*/
   auto pMainShader = resourceManager.getShaderProgram("MainShader");
   auto pLightShader = resourceManager.getShaderProgram("LightShader");
@@ -76,7 +66,7 @@ int main(int argc, char** argv) {
 
   /*CUBE*/
   auto MeshDebugCube =
-      resourceManager.loadModelMesh("DebugCube", "res/models/m_2_4_0.glb");
+      resourceManager.loadModelMesh("DebugCube", "res/models/sold.glb");
 
   /*LIGHT*/
   Render::Light DebugLight;
@@ -131,21 +121,9 @@ int main(int argc, char** argv) {
 
     auto modelMatrix = glm::mat4(1.f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(0.05f,0.05f, 0.05f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
-    ///*TEXTURE*/
-    // currTex->bindTexture2D(0);
-    // pShaderProg->setTexUniform("material.texture", 0);
-
-    ///*SPECULAT MAP*/
-    // specularTex->bindTexture2D(1);
-    // pShaderProg->setTexUniform("material.specularMap", 1);
-
-    ///*EMISSION MAP*/
-    // emissionMap->bindTexture2D(2);
-    // pShaderProg->setTexUniform("material.emissionMap", 2);
-
-    auto shininess = 32.f;
+    auto shininess = 64.f;
     pMainShader->setFloatUniform("material.shininess", shininess);
 
     pMainShader->setMatrix4Uniform("modelMatrix", modelMatrix);
