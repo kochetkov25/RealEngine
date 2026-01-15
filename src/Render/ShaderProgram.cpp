@@ -1,7 +1,8 @@
 #include "ShaderProgram.h"
 
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
+
+#include "../Modules/Logger.h"
 
 namespace Render {
 
@@ -9,15 +10,13 @@ ShaderProgram::ShaderProgram(const std::string &vertexShader,
                              const std::string &fragmentShader) {
   GLuint vertexShaderID;
   if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)) {
-    std::cerr << "Error compile VERTEX SHADER. (source: " << __FUNCTION__ << ")"
-              << std::endl;
+    Core::Logger::error("ShaderProgram", "Failed to compile vertex shader");
     return;
   }
 
   GLuint fragmentShaderID;
   if (!createShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentShaderID)) {
-    std::cerr << "Error compile FRAGMENT SHADER. (source: " << __FUNCTION__
-              << ")" << std::endl;
+    Core::Logger::error("ShaderProgram", "Failed to compile fragment shader");
     glDeleteShader(vertexShaderID);
     return;
   }
@@ -32,8 +31,8 @@ ShaderProgram::ShaderProgram(const std::string &vertexShader,
   if (!isSuccessLink) {
     GLchar infoLog[1024];
     glGetProgramInfoLog(_ID, 1024, nullptr, infoLog);
-    std::cerr << "Error link SHADER PROGRAM (source: " << __FUNCTION__ << ") \n"
-              << infoLog << std::endl;
+    Core::Logger::error("ShaderProgram",
+                        "Failed to link shader program. Error: ", infoLog);
   } else {
     _isCompiled = true;
   }
@@ -56,8 +55,8 @@ bool ShaderProgram::createShader(const std::string &shaderSource,
   if (!isSuccessCompile) {
     GLchar infoLog[1024];
     glGetShaderInfoLog(shaderID, 1024, nullptr, infoLog);
-    std::cerr << "Error compile shader (source: " << __FUNCTION__ << ") \n"
-              << infoLog << std::endl;
+    Core::Logger::error("ShaderProgram",
+                        "Failed to compile shader. Error: ", infoLog);
     return false;
   }
   return true;

@@ -13,11 +13,15 @@
 #include "Modules/Time.h"
 #include "Modules/Random.h"
 #include "Modules/GUIWidgets.h"
+#include "Modules/Logger.h"
 
 // clang-format on
 
 int main(int argc, char **argv) {
   (void)argc; // Unused parameter
+
+  Core::Logger::setLogLevel(Core::Logger::LogLevel::Debug);
+
   /*init RANDOM*/
   Core::Random::Init();
 

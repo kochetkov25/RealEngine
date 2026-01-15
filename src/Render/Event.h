@@ -1,15 +1,16 @@
 #pragma once
 
 #include <functional>
-#include <iostream>
 #include <map>
 #include <string>
+
+#include "../Modules/Logger.h"
 
 namespace Render {
 
 // Base class for all events
 class Event {
- public:
+public:
   enum class EventType {
     MOUSE_MOVED = 1,
     WINDOW_CLOSED,
@@ -28,21 +29,22 @@ class Event {
   // Format event as string for logging/debugging
   virtual std::string format() const = 0;
 
- protected:
+protected:
   EventType _type;
   std::string _name;
 
-  Event(std::string name, EventType type) : _type(type), _name(std::move(name)) {}
+  Event(std::string name, EventType type)
+      : _type(type), _name(std::move(name)) {}
 };
 
 // Dispatches events to registered listeners
 class EventDispatcher {
- public:
+public:
   template <typename TEvent>
-  void addEventListener(std::function<void(TEvent&)> callback) {
+  void addEventListener(std::function<void(TEvent &)> callback) {
     // Wrapper that converts base Event to specific TEvent
-    auto base = [func = std::move(callback)](Event& e) {
-      func(static_cast<TEvent&>(e));
+    auto base = [func = std::move(callback)](Event &e) {
+      func(static_cast<TEvent &>(e));
     };
     // Create temporary event to get its type
     TEvent tempEvent;
@@ -50,18 +52,19 @@ class EventDispatcher {
   }
 
   // Dispatch event to registered listeners
-  void dispatch(Event& event) {
+  void dispatch(Event &event) {
     const auto it = _eventCallbacks.find(event.getType());
     if (it != _eventCallbacks.end()) {
       it->second(event);
     } else {
-      std::cerr << __FUNCTION__ << ": Event not set!" << std::endl;
+      Core::Logger::debug("EventDispatcher",
+                          "Event not registered: ", event.getName());
     }
   }
 
- private:
+private:
   // Map of event types to their callback functions
-  std::map<Event::EventType, std::function<void(Event&)>> _eventCallbacks;
+  std::map<Event::EventType, std::function<void(Event &)>> _eventCallbacks;
 };
 
-}  // namespace Render
+} // namespace Render

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../Modules/Logger.h"
 #include "ModelLoadExceptions.h"
-#include "ModelLogger.h"
 #include "ModelMetadata.h"
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -48,12 +48,12 @@ class ModelLoader {
 public:
   /**
    * @brief Construct a ModelLoader with default configuration
+   *
+   * Note: Log level configuration is centralized in main.cpp
    */
   explicit ModelLoader(const ModelLoadConfig &config = ModelLoadConfig{})
       : config_(config) {
-    if (config.verboseLogging) {
-      ModelLogger::setLogLevel(ModelLogger::LogLevel::Debug);
-    }
+    // Log level is configured globally in main.cpp, not per-component
   }
 
   /**

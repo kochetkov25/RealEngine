@@ -4,18 +4,17 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <unordered_set>
 #include <vector>
 
+#include "../Modules/Logger.h"
 #include "../Render/ShaderProgram.h"
 #include "../Render/Sprite.h"
 #include "../Render/Texture2D.h"
 #include "ModelCache.h" // Used for cache operations
 #include "ModelLoadExceptions.h"
 #include "ModelLoader.h"
-#include "ModelLogger.h"
 #include "ModelMesh.h"
 #include "ModelMetadata.h"
 
@@ -59,8 +58,8 @@ ResourceManager::getFileString(const std::string &relativeFilePath) const {
   file.open(_path + "/" + relativeFilePath.c_str(),
             std::ios::in | std::ios::binary);
   if (!file.is_open()) {
-    std::cerr << "Failed open file (source: " << __FUNCTION__ << ") \n"
-              << relativeFilePath << std::endl;
+    Core::Logger::error("ResourceManager", "Failed to open file: ",
+                        relativeFilePath);
     return std::string();
   }
 
@@ -99,8 +98,8 @@ ResourceManager::resolveShaderIncludes(const std::string &shaderSource) const {
     issLine >> fileName;
 
     if (alreadyIncluded.count(fileName)) {
-      std::cerr << "Duplicate include! File: " << fileName
-                << ".(source: " << __FUNCTION__ << ")" << std::endl;
+      Core::Logger::error("ResourceManager",
+                          "Duplicate shader include detected: ", fileName);
       assert(false);
       continue;
     }
@@ -121,8 +120,8 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShaderProgram(
   std::string vertexString = getFileString(vertexShaderPathRelative);
   vertexString = resolveShaderIncludes(vertexString);
   if (vertexString.empty()) {
-    std::cerr << "Failed to load VERTEX SHADER. (source: " << __FUNCTION__
-              << ")" << std::endl;
+    Core::Logger::error("ResourceManager", "Failed to load vertex shader: ",
+                        vertexShaderPathRelative);
     assert(false);
     return nullptr;
   }
@@ -131,8 +130,8 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShaderProgram(
   std::string fragmentString = getFileString(fragmentShaderPathRelative);
   fragmentString = resolveShaderIncludes(fragmentString);
   if (fragmentString.empty()) {
-    std::cerr << "Failed to load FRAGMENT SHADER. (source: " << __FUNCTION__
-              << ")" << std::endl;
+    Core::Logger::error("ResourceManager", "Failed to load fragment shader: ",
+                        fragmentShaderPathRelative);
     assert(false);
     return nullptr;
   }
@@ -141,10 +140,10 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShaderProgram(
       std::make_shared<Render::ShaderProgram>(vertexString, fragmentString);
   // Check if shader program compiled successfully
   if (!pNewShaderProgram->isCompiled()) {
-    std::cerr << "Can not create new shader program. Path to shaders: \n"
-              << "Vertex shader: " << vertexShaderPathRelative << "\n"
-              << "Fragment shader: " << fragmentShaderPathRelative << "\n"
-              << "(source: " << __FUNCTION__ << ")" << std::endl;
+    Core::Logger::error("ResourceManager",
+                        "Failed to compile shader program. Vertex: ",
+                        vertexShaderPathRelative,
+                        ", Fragment: ", fragmentShaderPathRelative);
     assert(false);
     return nullptr;
   }
@@ -161,8 +160,8 @@ ResourceManager::getShaderProgram(const std::string &shaderName) const {
   if (it != _shaderPrograms.end()) {
     return it->second;
   }
-  std::cerr << "Cannot find shader program (source: " << __FUNCTION__ << ") "
-            << shaderName << std::endl;
+  Core::Logger::error("ResourceManager", "Shader program not found: ",
+                      shaderName);
   assert(false);
   return nullptr;
 }
@@ -182,8 +181,8 @@ ResourceManager::loadTexture2D(const std::string &textureName,
                 &height, &channels, 0);
 
   if (!pixelsArr) {
-    std::cerr << "Cannot load texture image (source: " << __FUNCTION__ << ") "
-              << texturePathRelative << std::endl;
+    Core::Logger::error("ResourceManager", "Failed to load texture image: ",
+                        texturePathRelative);
     assert(false);
     return nullptr;
   }
@@ -247,9 +246,9 @@ ResourceManager::loadTexture2D_memory(const std::string &textureName,
   }
 
   if (!pixelsArr) {
-    std::cerr << "Cannot load texture: " << textureName
-              << " (format hint: " << rawData->achFormatHint << ")"
-              << std::endl;
+    Core::Logger::error("ResourceManager",
+                        "Failed to load embedded texture: ", textureName,
+                        " (format hint: ", rawData->achFormatHint, ")");
     return nullptr;
   }
 
@@ -276,8 +275,8 @@ ResourceManager::getTexture2D(const std::string &texture2DName) const {
   if (it != _texture2DMaps.end()) {
     return it->second;
   }
-  std::cerr << "Cannot find texture 2D (source: " << __FUNCTION__ << ") "
-            << texture2DName << std::endl;
+  Core::Logger::error("ResourceManager", "Texture 2D not found: ",
+                      texture2DName);
   assert(false);
   return nullptr;
 }
@@ -289,15 +288,14 @@ std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
     const unsigned int spriteHeight, const std::string &subTextureName) {
   const auto pTexture = getTexture2D(textureName);
   if (!pTexture) {
-    std::cerr << "Texture with this name cannot be found (source: "
-              << __FUNCTION__ << ") " << textureName << std::endl;
+    Core::Logger::error("ResourceManager", "Texture not found: ", textureName);
     return nullptr;
   }
 
   const auto pShaderProgram = getShaderProgram(shaderProgramName);
   if (!pShaderProgram) {
-    std::cerr << "Shader program with this name cannot be found (source: "
-              << __FUNCTION__ << ") " << shaderProgramName << std::endl;
+    Core::Logger::error("ResourceManager", "Shader program not found: ",
+                        shaderProgramName);
     assert(false);
     return nullptr;
   }
@@ -316,8 +314,7 @@ ResourceManager::getSprite(const std::string &spriteName) const {
   if (it != _spriteMaps.end()) {
     return it->second;
   }
-  std::cerr << "Cannot find sprite (source: " << __FUNCTION__ << ") "
-            << spriteName << std::endl;
+  Core::Logger::error("ResourceManager", "Sprite not found: ", spriteName);
   assert(false);
   return nullptr;
 }
@@ -370,16 +367,15 @@ std::shared_ptr<ModelMesh>
 ResourceManager::loadModelMesh(const std::string &modelName,
                                const std::string &modelPath) {
   try {
-    Resources::ModelLogger::info("ResourceManager",
-                                 "Loading model: ", modelName,
-                                 " from path: ", modelPath);
+    Core::Logger::info("ResourceManager", "Loading model: ", modelName,
+                       " from path: ", modelPath);
 
     const std::string absolutePath = resolvePath(modelPath);
 
     auto cachedMesh = _modelCache->get(absolutePath);
     if (cachedMesh.has_value()) {
-      Resources::ModelLogger::info("ResourceManager",
-                                   "Model loaded from cache: ", modelName);
+      Core::Logger::debug("ResourceManager", "Model loaded from cache: ",
+                          modelName);
       // Store in name map for lookup by name
       _modelMeshMaps[modelName] = cachedMesh.value();
       return cachedMesh.value();
@@ -387,9 +383,9 @@ ResourceManager::loadModelMesh(const std::string &modelName,
 
     const auto existingIt = _modelMeshMaps.find(modelName);
     if (existingIt != _modelMeshMaps.end()) {
-      Resources::ModelLogger::warning(
-          "ResourceManager", "Model with name '", modelName,
-          "' already exists. Returning existing model.");
+      Core::Logger::warning("ResourceManager",
+                            "Model with name '", modelName,
+                            "' already exists. Returning existing model.");
       return existingIt->second;
     }
 
@@ -398,8 +394,8 @@ ResourceManager::loadModelMesh(const std::string &modelName,
     // process it immediately before the loader might be reused.
     const aiScene *scene = _modelLoader->loadModel(absolutePath);
     if (!scene) {
-      Resources::ModelLogger::error("ResourceManager",
-                                    "Failed to load model: ", modelName);
+      Core::Logger::error("ResourceManager", "Failed to load model: ",
+                          modelName);
       return nullptr;
     }
 
@@ -418,41 +414,36 @@ ResourceManager::loadModelMesh(const std::string &modelName,
     const auto [it, inserted] =
         _modelMeshMaps.emplace(modelName, pNewModelMesh);
     if (!inserted) {
-      Resources::ModelLogger::warning("ResourceManager",
-                                      "Model name collision: ", modelName);
+      Core::Logger::warning("ResourceManager", "Model name collision: ",
+                            modelName);
     }
 
-    Resources::ModelLogger::info("ResourceManager",
-                                 "Successfully loaded model: ", modelName,
-                                 " (Vertices: ", metadata.totalVertices,
-                                 ", Meshes: ", metadata.meshCount, ")");
+    Core::Logger::info("ResourceManager", "Successfully loaded model: ",
+                       modelName, " (Vertices: ", metadata.totalVertices,
+                       ", Meshes: ", metadata.meshCount, ")");
 
     return it->second;
 
   } catch (const Resources::ModelFileNotFoundException &e) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Model file not found: ", e.what());
+    Core::Logger::error("ResourceManager", "Model file not found: ", e.what());
     return nullptr;
   } catch (const Resources::ModelImportException &e) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Model import failed: ", e.what());
+    Core::Logger::error("ResourceManager", "Model import failed: ", e.what());
     return nullptr;
   } catch (const Resources::ModelCorruptedException &e) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Corrupted model: ", e.what());
+    Core::Logger::error("ResourceManager", "Corrupted model: ", e.what());
     return nullptr;
   } catch (const Resources::TextureLoadException &e) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Texture load failed: ", e.what());
+    Core::Logger::error("ResourceManager", "Texture load failed: ", e.what());
     // Continue with model loading even if textures fail
     // (model may still be usable without textures)
   } catch (const std::exception &e) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Unexpected error loading model: ", e.what());
+    Core::Logger::error("ResourceManager",
+                        "Unexpected error loading model: ", e.what());
     return nullptr;
   } catch (...) {
-    Resources::ModelLogger::error("ResourceManager",
-                                  "Unknown error loading model: ", modelName);
+    Core::Logger::error("ResourceManager",
+                        "Unknown error loading model: ", modelName);
     return nullptr;
   }
 
@@ -484,8 +475,7 @@ ResourceManager::loadEmbeddedTextures(const aiScene *scene) noexcept {
   for (unsigned int i = 0; i < scene->mNumTextures; ++i) {
     const aiTexture *aiTex = scene->mTextures[i];
     if (!aiTex) {
-      Resources::ModelLogger::warning("ResourceManager",
-                                      "Null texture at index: ", i);
+      Core::Logger::warning("ResourceManager", "Null texture at index: ", i);
       continue;
     }
 
@@ -499,8 +489,8 @@ ResourceManager::loadEmbeddedTextures(const aiScene *scene) noexcept {
       // Check if texture already loaded (check map directly to avoid assertion)
       const auto texIt = _texture2DMaps.find(textureName);
       if (texIt != _texture2DMaps.end()) {
-        Resources::ModelLogger::debug(
-            "ResourceManager", "Reusing existing texture: ", textureName);
+        Core::Logger::debug("ResourceManager", "Reusing existing texture: ",
+                            textureName);
         textures.emplace_back(textureName, texIt->second);
         continue;
       }
@@ -510,17 +500,16 @@ ResourceManager::loadEmbeddedTextures(const aiScene *scene) noexcept {
 
       if (texture) {
         textures.emplace_back(textureName, texture);
-        Resources::ModelLogger::debug("ResourceManager",
-                                      "Loaded embedded texture: ", textureName);
+        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ",
+                            textureName);
       } else {
-        Resources::ModelLogger::warning(
-            "ResourceManager",
-            "Failed to load embedded texture: ", textureName);
+        Core::Logger::warning("ResourceManager",
+                              "Failed to load embedded texture: ", textureName);
       }
     } catch (const std::exception &e) {
-      Resources::ModelLogger::error("ResourceManager",
-                                    "Exception loading texture: ", textureName,
-                                    ". Error: ", e.what());
+      Core::Logger::error("ResourceManager",
+                          "Exception loading texture: ", textureName,
+                          ". Error: ", e.what());
     }
   }
 
@@ -558,5 +547,5 @@ ResourceManager::getModelMetadata(const std::string &modelName) const noexcept {
 
 void ResourceManager::clearModelCache() noexcept {
   _modelCache->clear();
-  Resources::ModelLogger::info("ResourceManager", "Model cache cleared");
+  Core::Logger::info("ResourceManager", "Model cache cleared");
 }

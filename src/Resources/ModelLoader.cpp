@@ -1,7 +1,7 @@
 #include "ModelLoader.h"
 
+#include "../Modules/Logger.h"
 #include "ModelLoadExceptions.h"
-#include "ModelLogger.h"
 #include <algorithm>
 #include <filesystem>
 #include <glm/glm.hpp>
@@ -9,17 +9,17 @@
 namespace Resources {
 
 const aiScene *ModelLoader::loadModel(const std::string &filePath) {
-  ModelLogger::info("ModelLoader", "Loading model: ", filePath);
+  Core::Logger::info("ModelLoader", "Loading model: ", filePath);
 
   // Validate file path
   if (!validateFilePath(filePath)) {
-    ModelLogger::error("ModelLoader", "File not found: ", filePath);
+    Core::Logger::error("ModelLoader", "File not found: ", filePath);
     throw ModelFileNotFoundException(filePath);
   }
 
   // Check file format
   if (!isSupportedFormat(filePath)) {
-    ModelLogger::warning("ModelLoader", "Unsupported file format: ", filePath);
+    Core::Logger::warning("ModelLoader", "Unsupported file format: ", filePath);
   }
 
   // Validate import flags
@@ -32,8 +32,8 @@ const aiScene *ModelLoader::loadModel(const std::string &filePath) {
   // Check for import errors
   if (!scene || hasError()) {
     const std::string errorMsg = getLastError();
-    ModelLogger::error("ModelLoader", "Failed to import model: ", filePath,
-                       ". Error: ", errorMsg);
+    Core::Logger::error("ModelLoader", "Failed to import model: ", filePath,
+                        ". Error: ", errorMsg);
     throw ModelImportException(filePath, errorMsg);
   }
 
@@ -41,13 +41,13 @@ const aiScene *ModelLoader::loadModel(const std::string &filePath) {
   try {
     validateScene(scene, filePath);
   } catch (const ModelCorruptedException &e) {
-    ModelLogger::error("ModelLoader", "Scene validation failed: ", e.what());
+    Core::Logger::error("ModelLoader", "Scene validation failed: ", e.what());
     throw;
   }
 
-  ModelLogger::info("ModelLoader", "Successfully loaded model: ", filePath,
-                    " (Meshes: ", scene->mNumMeshes,
-                    ", Materials: ", scene->mNumMaterials, ")");
+  Core::Logger::info("ModelLoader", "Successfully loaded model: ", filePath,
+                     " (Meshes: ", scene->mNumMeshes,
+                     ", Materials: ", scene->mNumMaterials, ")");
 
   // Return the scene pointer. Note: The scene is owned by the importer_,
   // so the ModelLoader instance must remain alive as long as the scene is
@@ -152,7 +152,7 @@ void ModelLoader::validateScene(const aiScene *scene,
   for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
     const aiMesh *mesh = scene->mMeshes[i];
     if (!mesh) {
-      ModelLogger::warning("ModelLoader", "Mesh ", i, " is null");
+      Core::Logger::warning("ModelLoader", "Mesh ", i, " is null");
       continue;
     }
 
@@ -172,15 +172,15 @@ void ModelLoader::validateScene(const aiScene *scene,
     // them with aiProcess_GenSmoothNormals flag
   }
 
-  ModelLogger::debug("ModelLoader", "Scene validation passed for: ", filePath);
+  Core::Logger::debug("ModelLoader", "Scene validation passed for: ", filePath);
 }
 
 void ModelLoader::validateImportFlags() const {
   // Basic validation - ensure essential flags are present
   if ((config_.assimpFlags & aiProcess_Triangulate) == 0) {
-    ModelLogger::warning("ModelLoader",
-                         "aiProcess_Triangulate not set - non-triangular "
-                         "faces may cause issues");
+    Core::Logger::warning("ModelLoader",
+                          "aiProcess_Triangulate not set - non-triangular "
+                          "faces may cause issues");
   }
 }
 

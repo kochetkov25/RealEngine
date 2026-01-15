@@ -15,7 +15,7 @@ elseif(APPLE)
 endif()
 
 # C++ standard configuration (set globally, but also per-target for clarity)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -64,7 +64,7 @@ add_executable(RealEngine ${ENGINE_SOURCES})
 
 # Set C++ standard per target (explicit is better than implicit)
 set_target_properties(RealEngine PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )
@@ -156,7 +156,7 @@ target_link_libraries(ImGui PUBLIC glad glfw)
 
 # Set C++ standard for ImGui as well
 set_target_properties(ImGui PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
 )

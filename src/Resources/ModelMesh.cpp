@@ -4,9 +4,9 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "../Modules/Logger.h"
 #include "../Render/ShaderProgram.h"
 #include "../Render/Texture2D.h"
-#include "ModelLogger.h"
 
 #include <cassert>
 #include <unordered_map>
@@ -30,13 +30,12 @@ void ModelMesh::processNode(const aiNode *pNode, const aiScene *pScene) {
 void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
                      bool skipEmptyMeshes) const {
   if (!shader) {
-    Resources::ModelLogger::error("ModelMesh", "Cannot draw: shader is null");
+    Core::Logger::error("ModelMesh", "Cannot draw: shader is null");
     return;
   }
 
   if (_vecMeshes.empty()) {
-    Resources::ModelLogger::debug("ModelMesh",
-                                  "Attempting to draw empty model");
+    Core::Logger::debug("ModelMesh", "Attempting to draw empty model");
     return;
   }
 
@@ -56,16 +55,15 @@ void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
 
   for (const auto &mesh : _vecMeshes) {
     if (!mesh) {
-      Resources::ModelLogger::warning("ModelMesh",
-                                      "Null mesh encountered, skipping");
+      Core::Logger::warning("ModelMesh", "Null mesh encountered, skipping");
       continue;
     }
 
     const auto &meshTextures = mesh->getTextures();
 
     if (skipEmptyMeshes && meshTextures.empty()) {
-      Resources::ModelLogger::debug("ModelMesh", "Skipping mesh '",
-                                    mesh->getMeshName(), "' (no textures)");
+      Core::Logger::debug("ModelMesh", "Skipping mesh '",
+                          mesh->getMeshName(), "' (no textures)");
       continue;
     }
 
@@ -74,9 +72,8 @@ void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
     mesh->drawMesh();
 
     if (texturesBound == 0 && !meshTextures.empty()) {
-      Resources::ModelLogger::warning("ModelMesh", "Mesh '",
-                                      mesh->getMeshName(),
-                                      "' has textures but none were bound");
+      Core::Logger::warning("ModelMesh", "Mesh '", mesh->getMeshName(),
+                            "' has textures but none were bound");
     }
   }
 }
@@ -101,9 +98,8 @@ uint8_t ModelMesh::bindMeshTextures(
 
   for (const auto &meshTex : meshTextures) {
     if (meshTex._id >= _vecTexGL.size()) {
-      Resources::ModelLogger::warning("ModelMesh",
-                                      "Invalid texture index: ", meshTex._id,
-                                      " (max: ", _vecTexGL.size() - 1, ")");
+      Core::Logger::warning("ModelMesh", "Invalid texture index: ", meshTex._id,
+                            " (max: ", _vecTexGL.size() - 1, ")");
       continue;
     }
 
@@ -111,16 +107,14 @@ uint8_t ModelMesh::bindMeshTextures(
     const auto &texture = texturePair.second;
 
     if (!texture) {
-      Resources::ModelLogger::warning("ModelMesh",
-                                      "Null texture at index: ", meshTex._id,
-                                      " (name: ", texturePair.first, ")");
+      Core::Logger::warning("ModelMesh", "Null texture at index: ", meshTex._id,
+                            " (name: ", texturePair.first, ")");
       continue;
     }
 
-    Resources::ModelLogger::debug(
-        "ModelMesh", "Binding texture: ", texturePair.first,
-        " (index: ", meshTex._id, ", type: ", static_cast<int>(meshTex._type),
-        ")");
+    Core::Logger::trace("ModelMesh", "Binding texture: ", texturePair.first,
+                        " (index: ", meshTex._id,
+                        ", type: ", static_cast<int>(meshTex._type), ")");
 
     // Determine texture unit based on type (reuse same unit for same type)
     uint8_t textureUnit = 0;
@@ -132,9 +126,8 @@ uint8_t ModelMesh::bindMeshTextures(
     } else {
       // Assign new unit for this texture type
       if (nextAvailableUnit >= kMaxTextureUnits) {
-        Resources::ModelLogger::warning("ModelMesh", "Maximum texture units (",
-                                        kMaxTextureUnits,
-                                        ") reached, skipping texture");
+        Core::Logger::warning("ModelMesh", "Maximum texture units (",
+                              kMaxTextureUnits, ") reached, skipping texture");
         continue;
       }
       textureUnit = nextAvailableUnit++;

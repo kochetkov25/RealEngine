@@ -1,7 +1,6 @@
 #include "Sprite.h"
 
-#include <iostream>
-
+#include "../Modules/Logger.h"
 #include "ShaderProgram.h"
 #include "Texture2D.h"
 #include "VertexArray.h"
@@ -12,7 +11,7 @@ namespace Render {
 Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D,
                const std::string subTextureName,
                std::shared_ptr<ShaderProgram> pShaderProgram,
-               const glm::vec3& spritePosition, const glm::vec2& spriteSize,
+               const glm::vec3 &spritePosition, const glm::vec2 &spriteSize,
                const float rotation) {
   _pShaderProgram = std::move(pShaderProgram);
   _pTexture2D = std::move(pTexture2D);
@@ -58,14 +57,13 @@ Sprite::~Sprite() {}
 void Sprite::renderSprite(short frameId) {
   if (_lastFrameID != frameId) {
     if (frameId > _frameParams.size() || _frameParams.size() == 0) {
-      std::cerr << "Unknown frame ID! (source: " << __FUNCTION__ << ")"
-                << std::endl;
+      Core::Logger::warning("Sprite", "Unknown frame ID: ", frameId);
       return;
     }
 
     _lastFrameID = frameId;
 
-    const auto& currFramePars = _frameParams[frameId];
+    const auto &currFramePars = _frameParams[frameId];
     auto subTexture = _pTexture2D->getSubTexture2D(currFramePars._name);
 
     std::vector<GLfloat> textureVertexCoords(
@@ -108,31 +106,31 @@ void Sprite::renderSprite(short frameId) {
   _VAO.unbind();
 }
 
-void Sprite::setSpritePosition(const glm::vec3& spritePosition) {
+void Sprite::setSpritePosition(const glm::vec3 &spritePosition) {
   _position = spritePosition;
 }
 
-void Sprite::setSpriteSize(const glm::vec2& spriteSize) { _size = spriteSize; }
+void Sprite::setSpriteSize(const glm::vec2 &spriteSize) { _size = spriteSize; }
 
-void Sprite::setSpriteRotation(const float rotationAng, const glm::vec3& axis) {
+void Sprite::setSpriteRotation(const float rotationAng, const glm::vec3 &axis) {
   _rotation = rotationAng;
   _axis = axis;
 }
 
 uint64_t Sprite::getFrameDuration(const size_t frameID) const {
-  if (frameID < _frameParams.size()) return _frameParams[frameID]._duration;
+  if (frameID < _frameParams.size())
+    return _frameParams[frameID]._duration;
 
-  std::cerr << "sprite with this ID does not exist. (source: " << __FUNCTION__
-            << ")" << std::endl;
+  Core::Logger::warning("Sprite", "Frame ID does not exist: ", frameID);
   return 0;
 }
 
 size_t Sprite::getFramesCount() const { return _frameParams.size(); }
 
 void Sprite::setAnimParams(
-    std::vector<std::pair<std::string, uint64_t>>& framesDurations) {
-  for (auto& frame : framesDurations)
+    std::vector<std::pair<std::string, uint64_t>> &framesDurations) {
+  for (auto &frame : framesDurations)
     _frameParams.emplace_back(FramePars(frame.first, frame.second));
 }
 
-}  // namespace Render
+} // namespace Render

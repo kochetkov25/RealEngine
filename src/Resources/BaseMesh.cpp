@@ -1,26 +1,23 @@
 #include "BaseMesh.h"
 
-#include <iostream>
-
+#include "../Modules/Logger.h"
 #include "Render/RendererFactory.h"
 
 BaseMesh::BaseMesh(const aiMesh *pMesh, const aiScene *pScene) {
   if (!pMesh) {
-    std::cerr << "Mesh is nullptr! (source: " << __FUNCTION__ << ")"
-              << std::endl;
+    Core::Logger::error("BaseMesh", "Mesh is nullptr!");
     return;
   }
   if (!pScene) {
-    std::cerr << "Scene is nullptr! (source: " << __FUNCTION__ << ")"
-              << std::endl;
+    Core::Logger::error("BaseMesh", "Scene is nullptr!");
     return;
   }
   if (!pMesh->HasNormals()) {
-    std::cerr << "No normals! (source: " << __FUNCTION__ << ")" << std::endl;
+    Core::Logger::error("BaseMesh", "Mesh has no normals!");
     return;
   }
   if (!pMesh->HasPositions()) {
-    std::cerr << "No positions! (source: " << __FUNCTION__ << ")" << std::endl;
+    Core::Logger::error("BaseMesh", "Mesh has no positions!");
     return;
   }
 
@@ -87,8 +84,7 @@ BaseMesh::BaseMesh(const aiMesh *pMesh, const aiScene *pScene) {
 
 void BaseMesh::drawMesh() const {
   if (!_renderer) {
-    std::cerr << "Renderer is null! (source: " << __FUNCTION__ << ")"
-              << std::endl;
+    Core::Logger::error("BaseMesh", "Renderer is null!");
     return;
   }
   _renderer->drawElements();
