@@ -2,10 +2,11 @@
 
 #include <glad/glad.h>
 
-#include <string>
+#include <cstddef>
 #include <vector>
 
 #include "VertexArray.h"
+#include "VertexBuffer.h"
 
 namespace Render {
 static const size_t MAX_ELEMENTS = 1024 * 2;

@@ -58,8 +58,8 @@ ResourceManager::getFileString(const std::string &relativeFilePath) const {
   file.open(_path + "/" + relativeFilePath.c_str(),
             std::ios::in | std::ios::binary);
   if (!file.is_open()) {
-    Core::Logger::error("ResourceManager", "Failed to open file: ",
-                        relativeFilePath);
+    Core::Logger::error("ResourceManager",
+                        "Failed to open file: ", relativeFilePath);
     return std::string();
   }
 
@@ -140,10 +140,10 @@ std::shared_ptr<Render::ShaderProgram> ResourceManager::loadShaderProgram(
       std::make_shared<Render::ShaderProgram>(vertexString, fragmentString);
   // Check if shader program compiled successfully
   if (!pNewShaderProgram->isCompiled()) {
-    Core::Logger::error("ResourceManager",
-                        "Failed to compile shader program. Vertex: ",
-                        vertexShaderPathRelative,
-                        ", Fragment: ", fragmentShaderPathRelative);
+    Core::Logger::error(
+        "ResourceManager",
+        "Failed to compile shader program. Vertex: ", vertexShaderPathRelative,
+        ", Fragment: ", fragmentShaderPathRelative);
     assert(false);
     return nullptr;
   }
@@ -160,8 +160,8 @@ ResourceManager::getShaderProgram(const std::string &shaderName) const {
   if (it != _shaderPrograms.end()) {
     return it->second;
   }
-  Core::Logger::error("ResourceManager", "Shader program not found: ",
-                      shaderName);
+  Core::Logger::error("ResourceManager",
+                      "Shader program not found: ", shaderName);
   assert(false);
   return nullptr;
 }
@@ -181,8 +181,8 @@ ResourceManager::loadTexture2D(const std::string &textureName,
                 &height, &channels, 0);
 
   if (!pixelsArr) {
-    Core::Logger::error("ResourceManager", "Failed to load texture image: ",
-                        texturePathRelative);
+    Core::Logger::error("ResourceManager",
+                        "Failed to load texture image: ", texturePathRelative);
     assert(false);
     return nullptr;
   }
@@ -275,8 +275,8 @@ ResourceManager::getTexture2D(const std::string &texture2DName) const {
   if (it != _texture2DMaps.end()) {
     return it->second;
   }
-  Core::Logger::error("ResourceManager", "Texture 2D not found: ",
-                      texture2DName);
+  Core::Logger::error("ResourceManager",
+                      "Texture 2D not found: ", texture2DName);
   assert(false);
   return nullptr;
 }
@@ -294,8 +294,8 @@ std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
 
   const auto pShaderProgram = getShaderProgram(shaderProgramName);
   if (!pShaderProgram) {
-    Core::Logger::error("ResourceManager", "Shader program not found: ",
-                        shaderProgramName);
+    Core::Logger::error("ResourceManager",
+                        "Shader program not found: ", shaderProgramName);
     assert(false);
     return nullptr;
   }
@@ -374,8 +374,8 @@ ResourceManager::loadModelMesh(const std::string &modelName,
 
     auto cachedMesh = _modelCache->get(absolutePath);
     if (cachedMesh.has_value()) {
-      Core::Logger::debug("ResourceManager", "Model loaded from cache: ",
-                          modelName);
+      Core::Logger::debug("ResourceManager",
+                          "Model loaded from cache: ", modelName);
       // Store in name map for lookup by name
       _modelMeshMaps[modelName] = cachedMesh.value();
       return cachedMesh.value();
@@ -383,8 +383,7 @@ ResourceManager::loadModelMesh(const std::string &modelName,
 
     const auto existingIt = _modelMeshMaps.find(modelName);
     if (existingIt != _modelMeshMaps.end()) {
-      Core::Logger::warning("ResourceManager",
-                            "Model with name '", modelName,
+      Core::Logger::warning("ResourceManager", "Model with name '", modelName,
                             "' already exists. Returning existing model.");
       return existingIt->second;
     }
@@ -394,8 +393,8 @@ ResourceManager::loadModelMesh(const std::string &modelName,
     // process it immediately before the loader might be reused.
     const aiScene *scene = _modelLoader->loadModel(absolutePath);
     if (!scene) {
-      Core::Logger::error("ResourceManager", "Failed to load model: ",
-                          modelName);
+      Core::Logger::error("ResourceManager",
+                          "Failed to load model: ", modelName);
       return nullptr;
     }
 
@@ -414,12 +413,13 @@ ResourceManager::loadModelMesh(const std::string &modelName,
     const auto [it, inserted] =
         _modelMeshMaps.emplace(modelName, pNewModelMesh);
     if (!inserted) {
-      Core::Logger::warning("ResourceManager", "Model name collision: ",
-                            modelName);
+      Core::Logger::warning("ResourceManager",
+                            "Model name collision: ", modelName);
     }
 
-    Core::Logger::info("ResourceManager", "Successfully loaded model: ",
-                       modelName, " (Vertices: ", metadata.totalVertices,
+    Core::Logger::info("ResourceManager",
+                       "Successfully loaded model: ", modelName,
+                       " (Vertices: ", metadata.totalVertices,
                        ", Meshes: ", metadata.meshCount, ")");
 
     return it->second;
@@ -464,6 +464,9 @@ void ResourceManager::loadShaders() {
   // Shader for 3D debug grid
   loadShaderProgram("DebugGridShader", "res/shaders/debuGridVertexShader.vert",
                     "res/shaders/debuGridFragmentShader.frag");
+  // Shader for modern 2D animated sprites
+  loadShaderProgram("Sprite2DShader", "res/shaders/sprite2DVertexShader.vert",
+                    "res/shaders/sprite2DFragmentShader.frag");
 }
 
 std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>>
@@ -489,8 +492,8 @@ ResourceManager::loadEmbeddedTextures(const aiScene *scene) noexcept {
       // Check if texture already loaded (check map directly to avoid assertion)
       const auto texIt = _texture2DMaps.find(textureName);
       if (texIt != _texture2DMaps.end()) {
-        Core::Logger::debug("ResourceManager", "Reusing existing texture: ",
-                            textureName);
+        Core::Logger::debug("ResourceManager",
+                            "Reusing existing texture: ", textureName);
         textures.emplace_back(textureName, texIt->second);
         continue;
       }
@@ -500,8 +503,8 @@ ResourceManager::loadEmbeddedTextures(const aiScene *scene) noexcept {
 
       if (texture) {
         textures.emplace_back(textureName, texture);
-        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ",
-                            textureName);
+        Core::Logger::debug("ResourceManager",
+                            "Loaded embedded texture: ", textureName);
       } else {
         Core::Logger::warning("ResourceManager",
                               "Failed to load embedded texture: ", textureName);
