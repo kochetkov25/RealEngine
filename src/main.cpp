@@ -100,37 +100,37 @@ int main(int argc, char **argv) {
   /*2D ANIMATED SPRITE SETUP*/
   // Load texture atlas
   std::string atlasName = "AttackAtlas";
-  std::string atlasPath = "res/textures/attack.png";
-  unsigned int subTexWidth = 126;   // Width of each frame in atlas
-  unsigned int subTexHeight = 39;   // Height of each frame in atlas
-  
-  std::vector<std::string> frameNames = {
-      "attack_0", "attack_1", "attack_2", "attack_3",
-      "attack_4", "attack_5", "attack_6", "attack_7"
-  };
-  
+  std::string atlasPath = "res/textures/loading_3.png";
+
+  unsigned int subTexWidth = 256;  // Width of each frame in atlas
+  unsigned int subTexHeight = 256; // Height of each frame in atlas
+  unsigned int framesCount = 20;
+
+  std::vector<std::string> frameNames;
+  for (unsigned int spriteInd = 0; spriteInd < framesCount; ++spriteInd) {
+    frameNames.push_back("frame_" + std::to_string(spriteInd));
+  }
+
   auto pSpriteAtlas = resourceManager.loadTextureAtlas2D(
       atlasName, atlasPath, frameNames, subTexWidth, subTexHeight);
-  
+
   // Create animated sprite (scoped outside if for render loop access)
   std::unique_ptr<Render::AnimatedSprite2D> animatedSprite;
-  
-  if (pSpriteAtlas && pSprite2DShader) {
-    // Create animated sprite
-    glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f);  // Position in 3D space
-    glm::vec2 spriteSize(2.0f, 0.62f);  // World-space size (maintains aspect ratio)
-    
-    animatedSprite = std::make_unique<Render::AnimatedSprite2D>(
-        pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
-    
-    // Set animation parameters (frame names and durations)
-    std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
-    const auto frameDuration = std::chrono::milliseconds(100);  // 100ms per frame
-    for (const auto& frameName : frameNames) {
-      frameDurations.emplace_back(frameName, frameDuration);
-    }
-    animatedSprite->setAnimationParameters(frameDurations);
+
+  // Create animated sprite
+  glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f); // Position in 3D space
+  glm::vec2 spriteSize(1.0f, 1.0f); // World-space size (maintains aspect ratio)
+
+  animatedSprite = std::make_unique<Render::AnimatedSprite2D>(
+      pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
+
+  // Set animation parameters (frame names and durations)
+  std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
+  const auto frameDuration = std::chrono::milliseconds(50); // 100ms per frame
+  for (const auto &frameName : frameNames) {
+    frameDurations.emplace_back(frameName, frameDuration);
   }
+  animatedSprite->setAnimationParameters(frameDurations);
 
   /*GL CONTEXT*/
   /*enable Depth Buffer*/
@@ -178,13 +178,11 @@ int main(int argc, char **argv) {
     DebugGridRender->drawArrays();
 
     /*2D ANIMATED SPRITE*/
-    if (animatedSprite) {
-      // Update sprite animation using MainTimer deltaTime (in seconds)
-      animatedSprite->update(deltaTime);
-      
-      // Render sprite
-      animatedSprite->render();
-    }
+    // Update sprite animation using MainTimer deltaTime (in seconds)
+    animatedSprite->update(deltaTime);
+
+    // Render sprite
+    animatedSprite->render();
 
     /*UI*/
     Modules::GUIModule::GUIbegin();

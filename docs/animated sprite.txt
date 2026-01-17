@@ -1,96 +1,43 @@
-/*how to draw animated sprite*/
+  /*2D ANIMATED SPRITE SETUP*/
+  // Load texture atlas
+  std::string atlasName = "AttackAtlas";
+  std::string atlasPath = "res/textures/loading_3.png";
 
-1. load SpriteShader or DebugShader:
+  unsigned int subTexWidth = 256;  // Width of each frame in atlas
+  unsigned int subTexHeight = 256; // Height of each frame in atlas
+  unsigned int framesCount = 20;
 
+  std::vector<std::string> frameNames;
+  for (unsigned int spriteInd = 0; spriteInd < framesCount; ++spriteInd) {
+    frameNames.push_back("frame_" + std::to_string(spriteInd));
+  }
 
-resourceManager.loadShederProgram(
-					"SpriteShader",
-					"res/shaders/spriteVertexShader.txt",
-					"res/shaders/spriteFragmentShader.txt"
-				 );
+  auto pSpriteAtlas = resourceManager.loadTextureAtlas2D(
+      atlasName, atlasPath, frameNames, subTexWidth, subTexHeight);
 
-resourceManager.loadShederProgram(
-					"DebugShader",
-					"res/shaders/spriteVertexShader.txt",
-					"res/shaders/DebugFragmentShader.txt"
-				 );
+  // Create animated sprite (scoped outside if for render loop access)
+  std::unique_ptr<Render::AnimatedSprite2D> animatedSprite;
 
-2. load tex athlas:
+  // Create animated sprite
+  glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f); // Position in 3D space
+  glm::vec2 spriteSize(1.0f, 1.0f); // World-space size (maintains aspect ratio)
 
-std::string athlName = "defaultTextureAtlas";	  // name for tex athlas
-std::string athlPath = "res/textures/attack.png"; // path of tex athlas
+  animatedSprite = std::make_unique<Render::AnimatedSprite2D>(
+      pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
 
-unsigned int subTexWidth = 126;		// width of subtex
-unsigned int subTexHeight = 39; 	// height of subtex
+  // Set animation parameters (frame names and durations)
+  std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
+  const auto frameDuration = std::chrono::milliseconds(50); // 100ms per frame
+  for (const auto &frameName : frameNames) {
+    frameDurations.emplace_back(frameName, frameDuration);
+  }
+  animatedSprite->setAnimationParameters(frameDurations);
 
-std::vector<std::string> subTextNames = {	// names for every subtex
-						"attack_0",
-						"attack_1",
-						"attack_2",
-						"attack_3",
-						"attack_4",
-						"attack_5",
-						"attack_6",
-						"attack_7"
-				        };
+  ....
 
+  /*2D ANIMATED SPRITE*/
+  // Update sprite animation using MainTimer deltaTime (in seconds)
+  animatedSprite->update(deltaTime);
 
-/*load tex athlas into resourceManager*/
-resourceManager.loadTextureAthlas2D(
-					std::move(athlName),
-					std::move(athlPath),
-					std::move(subTextNames),
-					subTexWidth,
-					subTexHeight
-				   );
-
-3. load sprite into resource manager
-
-resourceManager.loadSprite(
-			 	"TestSprite", 
-				"defaultTextureAtlas", // name of tex athlas
-				shaderName,
-				250, 100 // width and height of sprite for rendering
-			  );
-
-4. set sprite params
-
-/*create vector which contains durations for EVERY frames (subtex) of anim*/
-std::vector<std::pair<std::string, uint64_t>> FramesDurations;
-for (auto& name : subTextNames)
-	FramesDurations.emplace_back(std::pair<std::string, uint64_t>(name, 100000000));
-
-auto TestSprite = resourceManager.getSprite("TestSprite");
-
-/*frame name - duration pairs*/
-TestSprite->setAnimParams(FramesDurations);
-
-TestSprite->setSpritePosition(glm::vec2(0, -300));
-
-5. create AnimatedSprite
-
-Render::AnimatedSprite TestAnim(TestSprite);
-
-6. create simple Timer and render sprite
-
-auto lastTime = std::chrono::high_resolution_clock::now();
-
-while(true)
-{
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	uint64_t duration = std::chrono::duration_cast<std::chrono::nanoseconds>(currentTime - lastTime).count();
-	lastTime = currentTime;
-
-	TestAnim.update(duration);
-	TestAnim.render();
-}
-
-
-WARNING: FOR SHADER PROGRAMM:
-
-	auto pShaderProg = resourceManager.getShaderProgram(shaderName);
-	pShaderProg->use();
-
-	pShaderProg->setTexUniform("tex", 0);
-
-	pShaderProg->setMatrix4Uniform("projectionMatrix", projectionMatrix);
+  // Render sprite
+  animatedSprite->render();
