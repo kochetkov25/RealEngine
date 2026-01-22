@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
 
+#include "Resources/FileManager.h"
 #include "Resources/ResourceManager.h"
 #include "Render/ShaderProgram.h"
 #include "Render/Window.h"
@@ -15,11 +16,14 @@
 #include "Modules/Random.h"
 #include "Modules/GUIWidgets.h"
 #include "Modules/Logger.h"
+#include "Resources/ShaderManager.h"
 
 // clang-format on
 
 int main(int argc, char **argv) {
-  (void)argc; // Unused parameter
+  (void)argc;  // Unused parameter
+
+  Resources::FileManager::instance().initialize(argv[0]);
 
   Core::Logger::setLogLevel(Core::Logger::LogLevel::Debug);
 
@@ -56,29 +60,24 @@ int main(int argc, char **argv) {
   MainCamera.setProjectionMode(Render::Camera::ProjectionMode::PERSPECTIVE);
 
   /*init RESOURCE MANAGER*/
-  ResourceManager resourceManager(argv[0]);
-
-  /*load SHADERS*/
-  resourceManager.loadShaders();
+  ResourceManager resourceManager;
 
   /*init SHADERS*/
-  auto pMainShader = resourceManager.getShaderProgram("MainShader");
-  auto pLightShader = resourceManager.getShaderProgram("LightShader");
-  auto pDebugGridShader = resourceManager.getShaderProgram("DebugGridShader");
-  auto pSprite2DShader = resourceManager.getShaderProgram("Sprite2DShader");
+  auto pMainShader = resourceManager.getShaderProgram(Resources::ShaderType::Mesh);
+  auto pLightShader = resourceManager.getShaderProgram(Resources::ShaderType::Light);
+  auto pDebugGridShader = resourceManager.getShaderProgram(Resources::ShaderType::DebugGrid);
+  auto pSprite2DShader = resourceManager.getShaderProgram(Resources::ShaderType::Sprite2D);
 
   /*init DEBUG GRID*/
   auto DebugGridRender = Render::RendererFactory::CreateDebugGridRenderer();
 
   /*CUBE*/
-  auto MeshDebugCube =
-      resourceManager.loadModelMesh("DebugCube", "res/models/sold.glb");
+  auto MeshDebugCube = resourceManager.loadModelMesh("DebugCube", "res/models/sold.glb");
 
   /*LIGHT*/
   Render::Light DebugLight;
 
-  auto MeshDebugLight = resourceManager.loadModelMesh(
-      "DebugLight", "res/models/light-sphere.glb");
+  auto MeshDebugLight = resourceManager.loadModelMesh("DebugLight", "res/models/light-sphere.glb");
 
   Render::Light::LightObject lightObject_1{
       "light_1",
@@ -102,8 +101,8 @@ int main(int argc, char **argv) {
   std::string atlasName = "AttackAtlas";
   std::string atlasPath = "res/textures/loading_3.png";
 
-  unsigned int subTexWidth = 256;  // Width of each frame in atlas
-  unsigned int subTexHeight = 256; // Height of each frame in atlas
+  unsigned int subTexWidth = 256;   // Width of each frame in atlas
+  unsigned int subTexHeight = 256;  // Height of each frame in atlas
   unsigned int framesCount = 20;
 
   std::vector<std::string> frameNames;
@@ -111,22 +110,21 @@ int main(int argc, char **argv) {
     frameNames.push_back("frame_" + std::to_string(spriteInd));
   }
 
-  auto pSpriteAtlas = resourceManager.loadTextureAtlas2D(
-      atlasName, atlasPath, frameNames, subTexWidth, subTexHeight);
+  auto pSpriteAtlas = resourceManager.loadTextureAtlas2D(atlasName, atlasPath, frameNames, subTexWidth, subTexHeight);
 
   // Create animated sprite (scoped outside if for render loop access)
   std::unique_ptr<Render::AnimatedSprite2D> animatedSprite;
 
   // Create animated sprite
-  glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f); // Position in 3D space
-  glm::vec2 spriteSize(1.0f, 1.0f); // World-space size (maintains aspect ratio)
+  glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f);  // Position in 3D space
+  glm::vec2 spriteSize(1.0f, 1.0f);             // World-space size (maintains aspect ratio)
 
-  animatedSprite = std::make_unique<Render::AnimatedSprite2D>(
-      pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
+  animatedSprite =
+      std::make_unique<Render::AnimatedSprite2D>(pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
 
   // Set animation parameters (frame names and durations)
   std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
-  const auto frameDuration = std::chrono::milliseconds(50); // 100ms per frame
+  const auto frameDuration = std::chrono::milliseconds(50);
   for (const auto &frameName : frameNames) {
     frameDurations.emplace_back(frameName, frameDuration);
   }
@@ -173,8 +171,7 @@ int main(int argc, char **argv) {
 
     /*DEBUG GRID*/
     pDebugGridShader->use();
-    pDebugGridShader->setVec2Uniform("uViewportSize",
-                                     {windowWidth, windowHeight});
+    pDebugGridShader->setVec2Uniform("uViewportSize", {windowWidth, windowHeight});
     DebugGridRender->drawArrays();
 
     /*2D ANIMATED SPRITE*/
