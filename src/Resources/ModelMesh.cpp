@@ -10,38 +10,10 @@
 #include "../Modules/Logger.h"
 #include "../Render/ShaderProgram.h"
 #include "../Render/Texture2D.h"
-#include "ParseUtils.h"
 
 
 ModelMesh::ModelMesh(const aiScene *pScene, VecTexGL vecTexGL) {
   _vecTexGL = vecTexGL;
-
-  auto skeleton = Resources::parseSkeleton(pScene);
-
-  std::cout << "Total bones: " << skeleton->getBones().size() << std::endl;
-  for (const auto &bone : skeleton->getBones()) {
-    std::cout << "----------------------" << std::endl;
-    std::cout << "Bone Name: " << bone.name << std::endl;
-    std::cout << "Bone ID: " << bone.id << std::endl;
-    if (bone.parentId) {
-      std::cout << "Bone ParentID: " << bone.parentId.value() << std::endl;
-    } else {
-      std::cout << "Bone ParentID: Root" << std::endl;
-    }
-    std::cout << "----------------------" << std::endl;
-    std::cout << std::endl;
-  }
-
-  std::cout << std::endl;
-  std::cout << std::endl;
-
-  for (unsigned int i = 0; i < pScene->mNumAnimations; i++) {
-    auto animation = Resources::parseAnimation(pScene->mAnimations[i], *skeleton);
-    std::cout << "Animation Name: " << animation->name << std::endl;
-    std::cout << "Animation Duration: " << animation->durationInSeconds << std::endl;
-    std::cout << "Animation Channels: " << animation->channels.size() << std::endl;
-  }
-
   processNode(pScene->mRootNode, pScene);
 }
 
