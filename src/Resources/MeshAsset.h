@@ -1,6 +1,5 @@
 #pragma once
 
-#include "assimp/material.h"
 #include <array>
 #include <cstddef>
 #include <glm/glm.hpp>
@@ -8,10 +7,11 @@
 #include <string>
 #include <vector>
 
-namespace Resources {
+#include "assimp/material.h"
 
+namespace Resources {
 class MeshAsset {
-public:
+ public:
   static constexpr size_t kMaxBonePerVertex = 4;
 
   struct VertexBoneData {
@@ -29,7 +29,6 @@ public:
     aiTextureType type;
   };
 
-
   MeshAsset() = default;
   MeshAsset(const MeshAsset &) = default;
   MeshAsset(MeshAsset &&) noexcept = default;
@@ -41,40 +40,23 @@ public:
   // Getters for mesh data
   [[nodiscard]] const std::string &getName() const noexcept { return name_; }
 
-  [[nodiscard]] const std::vector<glm::vec3> &getVertices() const noexcept {
-    return vertices_;
-  }
+  [[nodiscard]] const std::vector<glm::vec3> &getVertices() const noexcept { return vertices_; }
 
-  [[nodiscard]] const std::vector<glm::vec3> &getNormals() const noexcept {
-    return normals_;
-  }
+  [[nodiscard]] const std::vector<glm::vec3> &getNormals() const noexcept { return normals_; }
 
-  [[nodiscard]] const std::vector<glm::vec2> &getTexCoords() const noexcept {
-    return texCoords_;
-  }
+  [[nodiscard]] const std::vector<glm::vec2> &getTexCoords() const noexcept { return texCoords_; }
 
-  [[nodiscard]] const std::vector<unsigned int> &getIndices() const noexcept {
-    return indices_;
-  }
+  [[nodiscard]] const std::vector<unsigned int> &getIndices() const noexcept { return indices_; }
 
-  [[nodiscard]] const std::vector<Texture> &getTextures() const noexcept {
-    return textures_;
-  }
+  [[nodiscard]] const std::vector<Texture> &getTextures() const noexcept { return textures_; }
 
-  [[nodiscard]] const std::optional<std::vector<VertexBoneData>> &
-  getBoneData() const noexcept {
-    return boneData_;
-  }
+  [[nodiscard]] const std::optional<std::vector<VertexBoneData>> &getBoneData() const noexcept { return boneData_; }
 
-  [[nodiscard]] bool hasBoneData() const noexcept {
-    return boneData_.has_value();
-  }
+  [[nodiscard]] bool hasBoneData() const noexcept { return boneData_.has_value(); }
 
   [[nodiscard]] bool isValid() const noexcept { return !vertices_.empty(); }
 
-  [[nodiscard]] size_t getVertexCount() const noexcept {
-    return vertices_.size();
-  }
+  [[nodiscard]] size_t getVertexCount() const noexcept { return vertices_.size(); }
 
   void setName(const std::string &name) { name_ = name; }
   void setName(std::string &&name) { name_ = std::move(name); }
@@ -86,32 +68,21 @@ public:
   void addTexCoord(const glm::vec2 &texCoord) { texCoords_.push_back(texCoord); }
 
   void addTexture(const Texture &texture) { textures_.push_back(texture); }
-  void addTexture(Texture &&texture) {
-    textures_.push_back(std::move(texture));
-  }
+  void addTexture(Texture &&texture) { textures_.push_back(std::move(texture)); }
 
   void reserveVertices(size_t count) { vertices_.reserve(count); }
 
-  void setIndices(std::vector<unsigned int> &&indices) {
-    indices_ = std::move(indices);
-  }
+  void setIndices(std::vector<unsigned int> &&indices) { indices_ = std::move(indices); }
 
   void addIndex(unsigned int index) { indices_.push_back(index); }
 
-  void setBoneData(std::vector<VertexBoneData> &&boneData) {
-    boneData_ = std::move(boneData);
-  }
+  void setBoneData(std::vector<VertexBoneData> &&boneData) { boneData_ = std::move(boneData); }
 
-  void initializeBoneData(size_t vertexCount) {
-    boneData_ = std::vector<VertexBoneData>(vertexCount);
-  }
+  void initializeBoneData(size_t vertexCount) { boneData_ = std::vector<VertexBoneData>(vertexCount); }
 
-  [[nodiscard]] std::optional<std::vector<VertexBoneData>> &
-  getBoneDataMutable() {
-    return boneData_;
-  }
+  [[nodiscard]] std::optional<std::vector<VertexBoneData>> &getBoneDataMutable() { return boneData_; }
 
-private:
+ private:
   std::string name_;
   std::vector<glm::vec3> vertices_;
   std::vector<glm::vec3> normals_;
@@ -120,5 +91,4 @@ private:
   std::vector<Texture> textures_;
   std::optional<std::vector<VertexBoneData>> boneData_;
 };
-
-} // namespace Resources
+}  // namespace Resources

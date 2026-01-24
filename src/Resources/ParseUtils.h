@@ -2,10 +2,11 @@
 
 #include <memory>
 
+#include "MeshAsset.h"
+#include "SkeletonAsset.h"
 #include "assimp/material.h"
 #include "assimp/mesh.h"
-
-#include "MeshAsset.h"
+#include "assimp/scene.h"
 
 namespace Resources {
 
@@ -33,7 +34,8 @@ namespace Resources {
  * @note Bone data is only parsed if the mesh has bones. The bone data is
  * stored in an optional that will be empty if no bones are present.
  */
-[[nodiscard]] std::shared_ptr<MeshAsset>
-parseMesh(const aiMesh *mesh, const aiMaterial *material);
+[[nodiscard]] std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh, const aiMaterial *material);
 
-} // namespace Resources
+[[nodiscard]] std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene, const aiMesh *mesh);
+
+}  // namespace Resources

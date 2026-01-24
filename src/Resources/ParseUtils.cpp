@@ -1,7 +1,12 @@
 #include "ParseUtils.h"
 
-#include "../Modules/Logger.h"
 #include <cstdlib>
+#include <optional>
+
+#include "../Modules/Logger.h"
+#include "glm/ext/quaternion_common.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/matrix.hpp"
 
 namespace Resources {
 
@@ -86,8 +91,7 @@ void parseTextures(const aiMaterial *material, MeshAsset &meshAsset) {
   // Iterate through all possible texture types
   for (int type = aiTextureType_NONE; type <= AI_TEXTURE_TYPE_MAX; ++type) {
     const aiTextureType textureType = static_cast<aiTextureType>(type);
-    const unsigned int textureCount =
-        material->GetTextureCount(textureType);
+    const unsigned int textureCount = material->GetTextureCount(textureType);
 
     if (textureCount == 0) {
       continue;
@@ -105,8 +109,7 @@ void parseIndices(const aiMesh *mesh, MeshAsset &meshAsset) {
   std::vector<unsigned int> indices;
   for (int i = 0; i < mesh->mNumFaces; i++) {
     auto face = mesh->mFaces[i];
-    for (int j = 0; j < face.mNumIndices; j++)
-      indices.push_back(face.mIndices[j]);
+    for (int j = 0; j < face.mNumIndices; j++) indices.push_back(face.mIndices[j]);
   }
   meshAsset.setIndices(std::move(indices));
 }
@@ -134,16 +137,13 @@ void parseBones(const aiMesh *mesh, MeshAsset &meshAsset) {
     }
 
     // Process each weight for this bone
-    for (unsigned int weightIdx = 0; weightIdx < bone->mNumWeights;
-         ++weightIdx) {
+    for (unsigned int weightIdx = 0; weightIdx < bone->mNumWeights; ++weightIdx) {
       const aiVertexWeight &weight = bone->mWeights[weightIdx];
       const unsigned int vertexId = weight.mVertexId;
 
       // Validate vertex ID
       if (vertexId >= vertexCount) {
-        Core::Logger::warning("ParseUtils",
-                              "Bone weight references invalid vertex: ",
-                              vertexId);
+        Core::Logger::warning("ParseUtils", "Bone weight references invalid vertex: ", vertexId);
         continue;
       }
 
@@ -161,20 +161,35 @@ void parseBones(const aiMesh *mesh, MeshAsset &meshAsset) {
       }
 
       if (!slotFound) {
-        Core::Logger::warning(
-            "ParseUtils",
-            "Vertex ", vertexId,
-            " has more than ", MeshAsset::kMaxBonePerVertex,
-            " bone influences. Some weights will be ignored.");
+        Core::Logger::warning("ParseUtils", "Vertex ", vertexId, " has more than ", MeshAsset::kMaxBonePerVertex,
+                              " bone influences. Some weights will be ignored.");
       }
     }
   }
 }
 
-} // anonymous namespace
+void parseNodeHierarchy(const aiNode *node, std::optional<unsigned int> parentId, SkeletonAsset &skeleton) {
+  std::string nodeName = node->mName.data;
 
-std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh,
-                                     const aiMaterial *material) {
+  auto it = skeleton.getBoneNameToId().find(nodeName);
+  auto currentId = parentId;
+
+  auto &bones = skeleton.getBones();
+  if (it != skeleton.getBoneNameToId().end()) {
+    currentId = it->second;
+
+    bones[currentId.value()].parentId = parentId;
+    bones[currentId.value()].restTransform = glm::transpose(glm::make_mat4(&node->mTransformation.a1));
+  }
+
+  for (unsigned int childId = 0; childId < node->mNumChildren; ++childId) {
+    parseNodeHierarchy(node->mChildren[childId], currentId, skeleton);
+  }
+}
+
+}  // anonymous namespace
+
+std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh, const aiMaterial *material) {
   if (!mesh) {
     Core::Logger::error("ParseUtils", "Mesh is nullptr");
     return nullptr;
@@ -209,4 +224,31 @@ std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh,
   return meshAsset;
 }
 
-} // namespace Resources
+std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene, const aiMesh *mesh) {
+  auto skeleton = std::make_shared<SkeletonAsset>();
+
+  std::vector<SkeletonAsset::Bone> bones;
+  std::unordered_map<std::string, unsigned int> boneNameToId;
+  for (unsigned int boneId = 0; boneId < mesh->mNumBones; ++boneId) {
+    auto pBone = mesh->mBones[boneId];
+    bones.push_back(SkeletonAsset::Bone{
+        .name = pBone->mName.C_Str(),
+        .id = boneId,
+        .offsetMatrix = glm::transpose(glm::make_mat4(&pBone->mOffsetMatrix.a1)),
+    });
+
+    boneNameToId[pBone->mName.C_Str()] = boneId;
+  }
+
+  skeleton->setBones(std::move(bones));
+  skeleton->setBoneNameToId(std::move(boneNameToId));
+
+  parseNodeHierarchy(scene->mRootNode, std::nullopt, *skeleton);
+
+  skeleton->setGlobalInverseTransform(
+      glm::inverse(glm::transpose(glm::make_mat4(&scene->mRootNode->mTransformation.a1))));
+
+  return skeleton;
+}
+
+}  // namespace Resources
