@@ -1,18 +1,47 @@
 #include "ModelMesh.h"
 
-#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+
+#include <assimp/Importer.hpp>
+#include <cassert>
+#include <unordered_map>
 
 #include "../Modules/Logger.h"
 #include "../Render/ShaderProgram.h"
 #include "../Render/Texture2D.h"
+#include "ParseUtils.h"
 
-#include <cassert>
-#include <unordered_map>
 
 ModelMesh::ModelMesh(const aiScene *pScene, VecTexGL vecTexGL) {
   _vecTexGL = vecTexGL;
+
+  auto skeleton = Resources::parseSkeleton(pScene);
+
+  std::cout << "Total bones: " << skeleton->getBones().size() << std::endl;
+  for (const auto &bone : skeleton->getBones()) {
+    std::cout << "----------------------" << std::endl;
+    std::cout << "Bone Name: " << bone.name << std::endl;
+    std::cout << "Bone ID: " << bone.id << std::endl;
+    if (bone.parentId) {
+      std::cout << "Bone ParentID: " << bone.parentId.value() << std::endl;
+    } else {
+      std::cout << "Bone ParentID: Root" << std::endl;
+    }
+    std::cout << "----------------------" << std::endl;
+    std::cout << std::endl;
+  }
+
+  std::cout << std::endl;
+  std::cout << std::endl;
+
+  for (unsigned int i = 0; i < pScene->mNumAnimations; i++) {
+    auto animation = Resources::parseAnimation(pScene->mAnimations[i], *skeleton);
+    std::cout << "Animation Name: " << animation->name << std::endl;
+    std::cout << "Animation Duration: " << animation->durationInSeconds << std::endl;
+    std::cout << "Animation Channels: " << animation->channels.size() << std::endl;
+  }
+
   processNode(pScene->mRootNode, pScene);
 }
 
@@ -27,8 +56,7 @@ void ModelMesh::processNode(const aiNode *pNode, const aiScene *pScene) {
   }
 }
 
-void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
-                     bool skipEmptyMeshes) const {
+void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader, bool skipEmptyMeshes) const {
   if (!shader) {
     Core::Logger::error("ModelMesh", "Cannot draw: shader is null");
     return;
@@ -62,8 +90,7 @@ void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
     const auto &meshTextures = mesh->getTextures();
 
     if (skipEmptyMeshes && meshTextures.empty()) {
-      Core::Logger::debug("ModelMesh", "Skipping mesh '",
-                          mesh->getMeshName(), "' (no textures)");
+      Core::Logger::debug("ModelMesh", "Skipping mesh '", mesh->getMeshName(), "' (no textures)");
       continue;
     }
 
@@ -72,15 +99,13 @@ void ModelMesh::draw(std::shared_ptr<Render::ShaderProgram> shader,
     mesh->drawMesh();
 
     if (texturesBound == 0 && !meshTextures.empty()) {
-      Core::Logger::warning("ModelMesh", "Mesh '", mesh->getMeshName(),
-                            "' has textures but none were bound");
+      Core::Logger::warning("ModelMesh", "Mesh '", mesh->getMeshName(), "' has textures but none were bound");
     }
   }
 }
 
-uint8_t ModelMesh::bindMeshTextures(
-    const std::vector<BaseMesh::Texture> &meshTextures,
-    std::shared_ptr<Render::ShaderProgram> shader) const {
+uint8_t ModelMesh::bindMeshTextures(const std::vector<BaseMesh::Texture> &meshTextures,
+                                    std::shared_ptr<Render::ShaderProgram> shader) const {
   if (meshTextures.empty() || !shader) {
     return 0;
   }
@@ -94,12 +119,11 @@ uint8_t ModelMesh::bindMeshTextures(
   uint8_t nextAvailableUnit = 0;
 
   // Standard texture type to unit mapping (PBR-compatible)
-  constexpr uint8_t kMaxTextureUnits = 16; // Conservative limit
+  constexpr uint8_t kMaxTextureUnits = 16;  // Conservative limit
 
   for (const auto &meshTex : meshTextures) {
     if (meshTex._id >= _vecTexGL.size()) {
-      Core::Logger::warning("ModelMesh", "Invalid texture index: ", meshTex._id,
-                            " (max: ", _vecTexGL.size() - 1, ")");
+      Core::Logger::warning("ModelMesh", "Invalid texture index: ", meshTex._id, " (max: ", _vecTexGL.size() - 1, ")");
       continue;
     }
 
@@ -107,13 +131,11 @@ uint8_t ModelMesh::bindMeshTextures(
     const auto &texture = texturePair.second;
 
     if (!texture) {
-      Core::Logger::warning("ModelMesh", "Null texture at index: ", meshTex._id,
-                            " (name: ", texturePair.first, ")");
+      Core::Logger::warning("ModelMesh", "Null texture at index: ", meshTex._id, " (name: ", texturePair.first, ")");
       continue;
     }
 
-    Core::Logger::trace("ModelMesh", "Binding texture: ", texturePair.first,
-                        " (index: ", meshTex._id,
+    Core::Logger::trace("ModelMesh", "Binding texture: ", texturePair.first, " (index: ", meshTex._id,
                         ", type: ", static_cast<int>(meshTex._type), ")");
 
     // Determine texture unit based on type (reuse same unit for same type)
@@ -126,8 +148,7 @@ uint8_t ModelMesh::bindMeshTextures(
     } else {
       // Assign new unit for this texture type
       if (nextAvailableUnit >= kMaxTextureUnits) {
-        Core::Logger::warning("ModelMesh", "Maximum texture units (",
-                              kMaxTextureUnits, ") reached, skipping texture");
+        Core::Logger::warning("ModelMesh", "Maximum texture units (", kMaxTextureUnits, ") reached, skipping texture");
         continue;
       }
       textureUnit = nextAvailableUnit++;
@@ -140,60 +161,57 @@ uint8_t ModelMesh::bindMeshTextures(
     std::string flagName = "";
 
     switch (meshTex._type) {
-    case aiTextureType_DIFFUSE:
-    case aiTextureType_BASE_COLOR:
-      uniformName = "material.diffuse";
-      flagName = "hasMaterialDiffuse";
-      // Set legacy uniform for backward compatibility
-      shader->setTexUniform("material.texture",
-                            static_cast<GLint>(textureUnit));
-      shader->setBoolUniform("hasMaterialTexture", true);
-      break;
-    case aiTextureType_SPECULAR:
-      uniformName = "material.specular";
-      flagName = "hasMaterialSpecular";
-      // Set legacy uniform
-      shader->setTexUniform("material.specularMap",
-                            static_cast<GLint>(textureUnit));
-      shader->setBoolUniform("hasMaterialSpecularMap", true);
-      break;
-    case aiTextureType_NORMALS:
-    case aiTextureType_NORMAL_CAMERA:
-      uniformName = "material.normal";
-      flagName = "hasMaterialNormal";
-      shader->setBoolUniform("useNormalMapping", true);
-      break;
-    case aiTextureType_HEIGHT:
-    case aiTextureType_DISPLACEMENT:
-      uniformName = "material.height";
-      flagName = "hasMaterialHeight";
-      break;
-    case aiTextureType_AMBIENT:
-    case aiTextureType_AMBIENT_OCCLUSION:
-      uniformName = "material.ambient";
-      flagName = "hasMaterialAmbient";
-      break;
-    case aiTextureType_EMISSIVE:
-      uniformName = "material.emissive";
-      flagName = "hasMaterialEmissive";
-      // Set legacy uniform
-      shader->setTexUniform("material.emissionMap",
-                            static_cast<GLint>(textureUnit));
-      shader->setBoolUniform("hasMaterialEmissionMap", true);
-      break;
-    case aiTextureType_METALNESS:
-      uniformName = "material.metallic";
-      flagName = "hasMaterialMetallic";
-      break;
-    case aiTextureType_DIFFUSE_ROUGHNESS:
-      uniformName = "material.roughness";
-      flagName = "hasMaterialRoughness";
-      break;
-    default:
-      // Fallback to generic texture uniform
-      uniformName = "material.texture";
-      flagName = "hasMaterialTexture";
-      break;
+      case aiTextureType_DIFFUSE:
+      case aiTextureType_BASE_COLOR:
+        uniformName = "material.diffuse";
+        flagName = "hasMaterialDiffuse";
+        // Set legacy uniform for backward compatibility
+        shader->setTexUniform("material.texture", static_cast<GLint>(textureUnit));
+        shader->setBoolUniform("hasMaterialTexture", true);
+        break;
+      case aiTextureType_SPECULAR:
+        uniformName = "material.specular";
+        flagName = "hasMaterialSpecular";
+        // Set legacy uniform
+        shader->setTexUniform("material.specularMap", static_cast<GLint>(textureUnit));
+        shader->setBoolUniform("hasMaterialSpecularMap", true);
+        break;
+      case aiTextureType_NORMALS:
+      case aiTextureType_NORMAL_CAMERA:
+        uniformName = "material.normal";
+        flagName = "hasMaterialNormal";
+        shader->setBoolUniform("useNormalMapping", true);
+        break;
+      case aiTextureType_HEIGHT:
+      case aiTextureType_DISPLACEMENT:
+        uniformName = "material.height";
+        flagName = "hasMaterialHeight";
+        break;
+      case aiTextureType_AMBIENT:
+      case aiTextureType_AMBIENT_OCCLUSION:
+        uniformName = "material.ambient";
+        flagName = "hasMaterialAmbient";
+        break;
+      case aiTextureType_EMISSIVE:
+        uniformName = "material.emissive";
+        flagName = "hasMaterialEmissive";
+        // Set legacy uniform
+        shader->setTexUniform("material.emissionMap", static_cast<GLint>(textureUnit));
+        shader->setBoolUniform("hasMaterialEmissionMap", true);
+        break;
+      case aiTextureType_METALNESS:
+        uniformName = "material.metallic";
+        flagName = "hasMaterialMetallic";
+        break;
+      case aiTextureType_DIFFUSE_ROUGHNESS:
+        uniformName = "material.roughness";
+        flagName = "hasMaterialRoughness";
+        break;
+      default:
+        // Fallback to generic texture uniform
+        uniformName = "material.texture";
+        flagName = "hasMaterialTexture";
+        break;
     }
 
     shader->setTexUniform(uniformName, static_cast<GLint>(textureUnit));

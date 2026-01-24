@@ -1,6 +1,7 @@
 #include "ParseUtils.h"
 
 #include <cstdlib>
+#include <functional>
 #include <optional>
 
 #include "../Modules/Logger.h"
@@ -224,31 +225,107 @@ std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh, const aiMaterial *mater
   return meshAsset;
 }
 
-std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene, const aiMesh *mesh) {
+std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene) {
   auto skeleton = std::make_shared<SkeletonAsset>();
 
-  std::vector<SkeletonAsset::Bone> bones;
-  std::unordered_map<std::string, unsigned int> boneNameToId;
-  for (unsigned int boneId = 0; boneId < mesh->mNumBones; ++boneId) {
-    auto pBone = mesh->mBones[boneId];
-    bones.push_back(SkeletonAsset::Bone{
-        .name = pBone->mName.C_Str(),
-        .id = boneId,
-        .offsetMatrix = glm::transpose(glm::make_mat4(&pBone->mOffsetMatrix.a1)),
-    });
+  std::unordered_map<std::string, glm::mat4> tempOffsetMatrices;
 
-    boneNameToId[pBone->mName.C_Str()] = boneId;
+  for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex) {
+    const aiMesh *mesh = scene->mMeshes[meshIndex];
+    for (unsigned int boneId = 0; boneId < mesh->mNumBones; ++boneId) {
+      const aiBone *pBone = mesh->mBones[boneId];
+      std::string boneName = pBone->mName.C_Str();
+
+      tempOffsetMatrices[boneName] = glm::transpose(glm::make_mat4(&pBone->mOffsetMatrix.a1));
+    }
   }
 
-  skeleton->setBones(std::move(bones));
-  skeleton->setBoneNameToId(std::move(boneNameToId));
+  std::vector<SkeletonAsset::Bone> finalBones;
+  std::unordered_map<std::string, unsigned int> boneNameToId;
 
-  parseNodeHierarchy(scene->mRootNode, std::nullopt, *skeleton);
+  std::function<void(const aiNode *, std::optional<unsigned int>)> traverseNodes;
+  traverseNodes = [&](const aiNode *node, std::optional<unsigned int> parentId) {
+    std::string nodeName = node->mName.data;
+    std::optional<unsigned int> currentBoneId = parentId;
+
+    auto offsetIt = tempOffsetMatrices.find(nodeName);
+    if (offsetIt != tempOffsetMatrices.end()) {
+      unsigned int newId = finalBones.size();
+      currentBoneId = newId;
+
+      finalBones.push_back(
+          SkeletonAsset::Bone{.name = nodeName,
+                              .id = newId,
+                              .parentId = parentId,
+                              .offsetMatrix = offsetIt->second,
+                              .restTransform = glm::transpose(glm::make_mat4(&node->mTransformation.a1))});
+
+      boneNameToId[nodeName] = newId;
+    }
+
+    for (unsigned int i = 0; i < node->mNumChildren; ++i) {
+      traverseNodes(node->mChildren[i], currentBoneId);
+    }
+  };
+
+  traverseNodes(scene->mRootNode, std::nullopt);
+
+  skeleton->setBones(std::move(finalBones));
+  skeleton->setBoneNameToId(std::move(boneNameToId));
 
   skeleton->setGlobalInverseTransform(
       glm::inverse(glm::transpose(glm::make_mat4(&scene->mRootNode->mTransformation.a1))));
 
   return skeleton;
+}
+
+std::shared_ptr<AnimationAsset> parseAnimation(const aiAnimation *animation, const SkeletonAsset &skeleton) {
+  auto animAsset = std::make_shared<AnimationAsset>();
+  animAsset->name = animation->mName.data;
+
+  float ticksPerSecond = static_cast<float>(animation->mTicksPerSecond != 0 ? animation->mTicksPerSecond : 25.0f);
+  animAsset->durationInSeconds = static_cast<float>(animation->mDuration) / ticksPerSecond;
+
+  animAsset->channels.resize(animation->mNumChannels);
+
+  for (uint32_t i = 0; i < animation->mNumChannels; ++i) {
+    aiNodeAnim *aiChannel = animation->mChannels[i];
+    std::string boneName = aiChannel->mNodeName.data;
+
+    auto it = skeleton.getBoneNameToId().find(boneName);
+    if (it == skeleton.getBoneNameToId().end()) {
+      continue;
+    }
+
+    AnimationChannel &myChannel = animAsset->channels[i];
+    myChannel.boneId = it->second;
+
+    auto getTimeInSeconds = [ticksPerSecond](double timeInTicks) {
+      return static_cast<float>(timeInTicks) / ticksPerSecond;
+    };
+
+    myChannel.positionKeys.reserve(aiChannel->mNumPositionKeys);
+    for (uint32_t k = 0; k < aiChannel->mNumPositionKeys; ++k) {
+      const auto &key = aiChannel->mPositionKeys[k];
+      myChannel.positionKeys.push_back(
+          {getTimeInSeconds(key.mTime), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)});
+    }
+
+    myChannel.rotationKeys.reserve(aiChannel->mNumRotationKeys);
+    for (uint32_t k = 0; k < aiChannel->mNumRotationKeys; ++k) {
+      const auto &key = aiChannel->mRotationKeys[k];
+      myChannel.rotationKeys.push_back(
+          {getTimeInSeconds(key.mTime), glm::quat(key.mValue.w, key.mValue.x, key.mValue.y, key.mValue.z)});
+    }
+
+    myChannel.scaleKeys.reserve(aiChannel->mNumScalingKeys);
+    for (uint32_t k = 0; k < aiChannel->mNumScalingKeys; ++k) {
+      const auto &key = aiChannel->mScalingKeys[k];
+      myChannel.scaleKeys.push_back({getTimeInSeconds(key.mTime), glm::vec3(key.mValue.x, key.mValue.y, key.mValue.z)});
+    }
+  }
+
+  return animAsset;
 }
 
 }  // namespace Resources
