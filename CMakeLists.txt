@@ -62,6 +62,13 @@ endforeach()
 # Create the main executable
 add_executable(RealEngine ${ENGINE_SOURCES})
 
+# Set optimization level for stb_image_impl.cpp
+if(MSVC)
+    set_source_files_properties(src/Resources/stb_image_impl.cpp PROPERTIES COMPILE_OPTIONS "/O2")
+else()
+    set_source_files_properties(src/Resources/stb_image_impl.cpp PROPERTIES COMPILE_OPTIONS "-O3")
+endif()
+
 # Set C++ standard per target (explicit is better than implicit)
 set_target_properties(RealEngine PROPERTIES
     CXX_STANDARD 20

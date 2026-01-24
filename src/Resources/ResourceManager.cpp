@@ -1,5 +1,9 @@
 #include "ResourceManager.h"
 
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+
+#include <assimp/Importer.hpp>
 #include <cassert>
 #include <cstdlib>
 #include <vector>
@@ -14,15 +18,21 @@
 #include "ModelLoader.h"
 #include "ModelMesh.h"
 #include "ModelMetadata.h"
-
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#include <assimp/postprocess.h>
-#include <assimp/scene.h>
-
-#include <assimp/Importer.hpp>
-
 #include "stb_image.h"
+
+namespace {
+struct PixelDeleter {
+  bool isCompressed;
+  void operator()(unsigned char *ptr) const {
+    if (ptr) {
+      if (isCompressed)
+        stbi_image_free(ptr);
+      else
+        free(ptr);
+    }
+  }
+};
+}  // namespace
 
 // Constructor, takes the path to the executable to resolve relative paths
 ResourceManager::ResourceManager() {
@@ -89,41 +99,34 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D_memory(const s
     return it->second;
   }
 
-  int channels = 0;
-  int width = 0;
-  int height = 0;
-  unsigned char *pixelsArr = nullptr;
+  int width = 0, height = 0, channels = 4;  // aiTexture/stbi GL formats expect 4 channels
 
-  // Flip textures vertically on load to match OpenGL's coordinate system
-  stbi_set_flip_vertically_on_load(true);
+  std::unique_ptr<unsigned char, PixelDeleter> pixelsArr(nullptr, {rawData->mHeight == 0});
 
-  // Check if texture is compressed (mHeight == 0) or uncompressed
   if (rawData->mHeight == 0) {
-    // Compressed texture - load from memory
-    pixelsArr = stbi_load_from_memory(reinterpret_cast<const unsigned char *>(rawData->pcData),
-                                      rawData->mWidth,  // Size in bytes for compressed data
-                                      &width, &height, &channels, STBI_rgb_alpha);
-
-    // STBI_rgb_alpha always returns 4 channels, regardless of original format
-    channels = 4;
-
+    int actualChannels = 0;
+    unsigned char *loadedPixels =
+        stbi_load_from_memory(reinterpret_cast<const unsigned char *>(rawData->pcData), rawData->mWidth, &width,
+                              &height, &actualChannels, STBI_rgb_alpha);
+    pixelsArr.reset(loadedPixels);
   } else {
-    // Uncompressed texture - data is already in ARGB8888 format
     width = rawData->mWidth;
     height = rawData->mHeight;
-    channels = 4;  // aiTexture always uses ARGB8888
 
-    // Convert ARGB to RGBA for OpenGL
     size_t dataSize = width * height * 4;
-    pixelsArr = static_cast<unsigned char *>(malloc(dataSize));
+    unsigned char *convertedPixels = static_cast<unsigned char *>(malloc(dataSize));
 
-    const aiTexel *srcData = rawData->pcData;
-    for (size_t i = 0; i < width * height; ++i) {
-      pixelsArr[i * 4 + 0] = srcData[i].r;
-      pixelsArr[i * 4 + 1] = srcData[i].g;
-      pixelsArr[i * 4 + 2] = srcData[i].b;
-      pixelsArr[i * 4 + 3] = srcData[i].a;
+    if (convertedPixels) {
+      const aiTexel *srcData = rawData->pcData;
+
+      for (size_t i = 0; i < width * height; ++i) {
+        convertedPixels[i * 4 + 0] = srcData[i].r;
+        convertedPixels[i * 4 + 1] = srcData[i].g;
+        convertedPixels[i * 4 + 2] = srcData[i].b;
+        convertedPixels[i * 4 + 3] = srcData[i].a;
+      }
     }
+    pixelsArr.reset(convertedPixels);
   }
 
   if (!pixelsArr) {
@@ -133,18 +136,9 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTexture2D_memory(const s
   }
 
   auto pNewTexture2D =
-      std::make_shared<Render::Texture2D>(width, height, pixelsArr, channels, GL_NEAREST, GL_CLAMP_TO_EDGE);
+      std::make_shared<Render::Texture2D>(width, height, pixelsArr.get(), channels, GL_NEAREST, GL_CLAMP_TO_EDGE);
 
   auto result = _texture2DMaps.emplace(textureName, pNewTexture2D);
-
-  if (rawData->mHeight == 0) {
-    // Compressed texture - allocated by stb_image
-    stbi_image_free(pixelsArr);
-  } else {
-    // Uncompressed texture - allocated by malloc
-    free(pixelsArr);
-  }
-
   return result.first->second;
 }
 
