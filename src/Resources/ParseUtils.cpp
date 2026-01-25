@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <functional>
+#include <numeric>
 #include <optional>
 
 #include "../Modules/Logger.h"
@@ -115,6 +116,23 @@ void parseIndices(const aiMesh *mesh, MeshAsset &meshAsset) {
   meshAsset.setIndices(std::move(indices));
 }
 
+void normalizeVertexWeights(MeshAsset::VertexBoneData &vertex) {
+  float totalWeight = std::accumulate(vertex.boneWeights.begin(), vertex.boneWeights.end(), 0.0f);
+
+  if (totalWeight <= 0.0f) {
+    return;
+  }
+
+  if (std::abs(totalWeight - 1.0f) < 1e-6f) {
+    return;
+  }
+
+  float invTotalWeight = 1.0f / totalWeight;
+  for (auto &weight : vertex.boneWeights) {
+    weight *= invTotalWeight;
+  }
+}
+
 void parseBones(const aiMesh *mesh, MeshAsset &meshAsset) {
   if (!mesh->HasBones() || mesh->mNumBones == 0) {
     return;
@@ -166,6 +184,10 @@ void parseBones(const aiMesh *mesh, MeshAsset &meshAsset) {
                               " bone influences. Some weights will be ignored.");
       }
     }
+  }
+
+  for (auto &bone : *boneData) {
+    normalizeVertexWeights(bone);
   }
 }
 
