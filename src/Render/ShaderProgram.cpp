@@ -2,12 +2,11 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 
 namespace Render {
 
-ShaderProgram::ShaderProgram(const std::string &vertexShader,
-                             const std::string &fragmentShader) {
+ShaderProgram::ShaderProgram(const std::string &vertexShader, const std::string &fragmentShader) {
   GLuint vertexShaderID;
   if (!createShader(vertexShader, GL_VERTEX_SHADER, vertexShaderID)) {
     Core::Logger::error("ShaderProgram", "Failed to compile vertex shader");
@@ -31,8 +30,7 @@ ShaderProgram::ShaderProgram(const std::string &vertexShader,
   if (!isSuccessLink) {
     GLchar infoLog[1024];
     glGetProgramInfoLog(_ID, 1024, nullptr, infoLog);
-    Core::Logger::error("ShaderProgram",
-                        "Failed to link shader program. Error: ", infoLog);
+    Core::Logger::error("ShaderProgram", "Failed to link shader program. Error: ", infoLog);
   } else {
     _isCompiled = true;
   }
@@ -43,8 +41,7 @@ ShaderProgram::ShaderProgram(const std::string &vertexShader,
 
 ShaderProgram::~ShaderProgram() { glDeleteProgram(_ID); }
 
-bool ShaderProgram::createShader(const std::string &shaderSource,
-                                 const GLenum shaderType, GLuint &shaderID) {
+bool ShaderProgram::createShader(const std::string &shaderSource, const GLenum shaderType, GLuint &shaderID) {
   shaderID = glCreateShader(shaderType);
   const char *code = shaderSource.c_str();
   glShaderSource(shaderID, 1, &code, nullptr);
@@ -55,8 +52,7 @@ bool ShaderProgram::createShader(const std::string &shaderSource,
   if (!isSuccessCompile) {
     GLchar infoLog[1024];
     glGetShaderInfoLog(shaderID, 1024, nullptr, infoLog);
-    Core::Logger::error("ShaderProgram",
-                        "Failed to compile shader. Error: ", infoLog);
+    Core::Logger::error("ShaderProgram", "Failed to compile shader. Error: ", infoLog);
     return false;
   }
   return true;
@@ -64,13 +60,11 @@ bool ShaderProgram::createShader(const std::string &shaderSource,
 
 void ShaderProgram::use() const { glUseProgram(_ID); }
 
-void ShaderProgram::setTexUniform(const std::string &textureName,
-                                  const GLint value) {
+void ShaderProgram::setTexUniform(const std::string &textureName, const GLint value) {
   glUniform1i(glGetUniformLocation(_ID, textureName.c_str()), value);
 }
 
-void ShaderProgram::setMatrix4Uniform(const std::string &matrixName,
-                                      const glm::mat4 &matrix) {
+void ShaderProgram::setMatrix4Uniform(const std::string &matrixName, const glm::mat4 &matrix) {
   const auto loc = glGetUniformLocation(_ID, matrixName.c_str());
   if (loc == -1) {
     assert(false && "Cannot find uniform location!");
@@ -78,37 +72,28 @@ void ShaderProgram::setMatrix4Uniform(const std::string &matrixName,
   glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Render::ShaderProgram::setVec3Uniform(const std::string &vecName,
-                                           const glm::vec3 &vec3) {
-  glUniform3f(glGetUniformLocation(_ID, vecName.c_str()), vec3.x, vec3.y,
-              vec3.z);
+void Render::ShaderProgram::setVec3Uniform(const std::string &vecName, const glm::vec3 &vec3) {
+  glUniform3f(glGetUniformLocation(_ID, vecName.c_str()), vec3.x, vec3.y, vec3.z);
 }
 
-void Render::ShaderProgram::setVec2Uniform(const std::string &vecName,
-                                           const glm::vec2 &vec2) {
+void Render::ShaderProgram::setVec2Uniform(const std::string &vecName, const glm::vec2 &vec2) {
   glUniform2f(glGetUniformLocation(_ID, vecName.c_str()), vec2.x, vec2.y);
 }
 
-void Render::ShaderProgram::setFloatUniform(const std::string &name,
-                                            const float value) {
+void Render::ShaderProgram::setFloatUniform(const std::string &name, const float value) {
   glUniform1f(glGetUniformLocation(_ID, name.c_str()), value);
 }
 
-void Render::ShaderProgram::setIntUniform(const std::string &name,
-                                          const GLint value) {
+void Render::ShaderProgram::setIntUniform(const std::string &name, const GLint value) {
   glUniform1i(glGetUniformLocation(_ID, name.c_str()), value);
 }
 
-void Render::ShaderProgram::setBoolUniform(const std::string &name,
-                                           bool value) {
+void Render::ShaderProgram::setBoolUniform(const std::string &name, bool value) {
   // In GLSL, bool uniforms are set as integers (0 or 1)
   glUniform1i(glGetUniformLocation(_ID, name.c_str()), value ? 1 : 0);
 }
 
-void Render::ShaderProgram::setArrayUniform(const std::string &name,
-                                            const size_t size,
-                                            const float *arr) {
-  glUniform1fv(glGetUniformLocation(_ID, name.c_str()),
-               static_cast<GLsizei>(size), arr);
+void Render::ShaderProgram::setArrayUniform(const std::string &name, const size_t size, const float *arr) {
+  glUniform1fv(glGetUniformLocation(_ID, name.c_str()), static_cast<GLsizei>(size), arr);
 }
-} // namespace Render
+}  // namespace Render

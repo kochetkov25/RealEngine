@@ -1,6 +1,6 @@
 #include "Sprite.h"
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 #include "ShaderProgram.h"
 #include "Texture2D.h"
 #include "VertexArray.h"
@@ -8,11 +8,9 @@
 
 namespace Render {
 
-Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D,
-               const std::string subTextureName,
-               std::shared_ptr<ShaderProgram> pShaderProgram,
-               const glm::vec3 &spritePosition, const glm::vec2 &spriteSize,
-               const float rotation) {
+Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D, const std::string subTextureName,
+               std::shared_ptr<ShaderProgram> pShaderProgram, const glm::vec3 &spritePosition,
+               const glm::vec2 &spriteSize, const float rotation) {
   _pShaderProgram = std::move(pShaderProgram);
   _pTexture2D = std::move(pTexture2D);
   _position = spritePosition;
@@ -21,34 +19,27 @@ Sprite::Sprite(std::shared_ptr<Texture2D> pTexture2D,
   _lastFrameID = -1;
   _axis = glm::vec3(0.f, 0.f, 1.f);
 
-  std::vector<GLfloat> spriteVertexCoords(
-      {//  2--3    1
-       //  | /   / |
-       //  1    3--2
+  std::vector<GLfloat> spriteVertexCoords({//  2--3    1
+                                           //  | /   / |
+                                           //  1    3--2
 
-       0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f});
+                                           0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 0.f, 0.f, 0.f});
 
   auto subTexture = _pTexture2D->getSubTexture2D(subTextureName);
 
   std::vector<GLfloat> textureVertexCoords(
-      {subTexture._leftBottomUV.x, subTexture._leftBottomUV.y,
-       subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
+      {subTexture._leftBottomUV.x, subTexture._leftBottomUV.y, subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
        subTexture._rightTopUV.x, subTexture._rightTopUV.y,
 
-       subTexture._rightTopUV.x, subTexture._rightTopUV.y,
-       subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
+       subTexture._rightTopUV.x, subTexture._rightTopUV.y, subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
        subTexture._leftBottomUV.x, subTexture._leftBottomUV.y});
 
-  std::vector<VertexBuffer::BufferElement> elementsSprite{
-      Render::VertexBuffer::_e_DataType::Float2};
-  VertexBuffer spriteCoordsVBO(spriteVertexCoords, elementsSprite,
-                               VertexBuffer::_e_Usage::Static);
+  std::vector<VertexBuffer::BufferElement> elementsSprite{Render::VertexBuffer::_e_DataType::Float2};
+  VertexBuffer spriteCoordsVBO(spriteVertexCoords, elementsSprite, VertexBuffer::_e_Usage::Static);
   _VAO.addBuffer(spriteCoordsVBO);
 
-  std::vector<VertexBuffer::BufferElement> elementsTex{
-      Render::VertexBuffer::_e_DataType::Float2};
-  _pTexVertexVBO = std::make_shared<VertexBuffer>(
-      textureVertexCoords, elementsTex, VertexBuffer::_e_Usage::Static);
+  std::vector<VertexBuffer::BufferElement> elementsTex{Render::VertexBuffer::_e_DataType::Float2};
+  _pTexVertexVBO = std::make_shared<VertexBuffer>(textureVertexCoords, elementsTex, VertexBuffer::_e_Usage::Static);
   _VAO.addBuffer(*_pTexVertexVBO.get());
 }
 
@@ -67,12 +58,10 @@ void Sprite::renderSprite(short frameId) {
     auto subTexture = _pTexture2D->getSubTexture2D(currFramePars._name);
 
     std::vector<GLfloat> textureVertexCoords(
-        {subTexture._leftBottomUV.x, subTexture._leftBottomUV.y,
-         subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
+        {subTexture._leftBottomUV.x, subTexture._leftBottomUV.y, subTexture._leftBottomUV.x, subTexture._rightTopUV.y,
          subTexture._rightTopUV.x, subTexture._rightTopUV.y,
 
-         subTexture._rightTopUV.x, subTexture._rightTopUV.y,
-         subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
+         subTexture._rightTopUV.x, subTexture._rightTopUV.y, subTexture._rightTopUV.x, subTexture._leftBottomUV.y,
          subTexture._leftBottomUV.x, subTexture._leftBottomUV.y});
     _pTexVertexVBO->updateData(textureVertexCoords);
   }
@@ -81,12 +70,10 @@ void Sprite::renderSprite(short frameId) {
 
   glm::mat4 modelMatrix(1.f);
   modelMatrix = glm::translate(modelMatrix, _position);
-  modelMatrix = glm::translate(modelMatrix,
-                               glm::vec3(0.5f * _size.x, 0.5 * _size.y, 0.f));
+  modelMatrix = glm::translate(modelMatrix, glm::vec3(0.5f * _size.x, 0.5 * _size.y, 0.f));
   modelMatrix = glm::rotate(modelMatrix, glm::radians(_rotation), _axis);
 
-  modelMatrix = glm::translate(modelMatrix,
-                               glm::vec3(-0.5f * _size.x, -0.5 * _size.y, 0.f));
+  modelMatrix = glm::translate(modelMatrix, glm::vec3(-0.5f * _size.x, -0.5 * _size.y, 0.f));
 
   modelMatrix = glm::scale(modelMatrix, glm::vec3(_size, 1.f));
 
@@ -106,9 +93,7 @@ void Sprite::renderSprite(short frameId) {
   _VAO.unbind();
 }
 
-void Sprite::setSpritePosition(const glm::vec3 &spritePosition) {
-  _position = spritePosition;
-}
+void Sprite::setSpritePosition(const glm::vec3 &spritePosition) { _position = spritePosition; }
 
 void Sprite::setSpriteSize(const glm::vec2 &spriteSize) { _size = spriteSize; }
 
@@ -118,8 +103,7 @@ void Sprite::setSpriteRotation(const float rotationAng, const glm::vec3 &axis) {
 }
 
 uint64_t Sprite::getFrameDuration(const size_t frameID) const {
-  if (frameID < _frameParams.size())
-    return _frameParams[frameID]._duration;
+  if (frameID < _frameParams.size()) return _frameParams[frameID]._duration;
 
   Core::Logger::warning("Sprite", "Frame ID does not exist: ", frameID);
   return 0;
@@ -127,10 +111,8 @@ uint64_t Sprite::getFrameDuration(const size_t frameID) const {
 
 size_t Sprite::getFramesCount() const { return _frameParams.size(); }
 
-void Sprite::setAnimParams(
-    std::vector<std::pair<std::string, uint64_t>> &framesDurations) {
-  for (auto &frame : framesDurations)
-    _frameParams.emplace_back(FramePars(frame.first, frame.second));
+void Sprite::setAnimParams(std::vector<std::pair<std::string, uint64_t>> &framesDurations) {
+  for (auto &frame : framesDurations) _frameParams.emplace_back(FramePars(frame.first, frame.second));
 }
 
-} // namespace Render
+}  // namespace Render

@@ -12,22 +12,19 @@ class ShaderProgram;
 class Texture2D;
 
 class AnimatedSprite2D {
-public:
+ public:
   struct FrameData {
     std::string subTextureName;
     std::chrono::nanoseconds duration;
     glm::vec2 uvMin;
     glm::vec2 uvMax;
 
-    FrameData(const std::string &name, std::chrono::nanoseconds dur,
-              const glm::vec2 &minUV, const glm::vec2 &maxUV)
+    FrameData(const std::string &name, std::chrono::nanoseconds dur, const glm::vec2 &minUV, const glm::vec2 &maxUV)
         : subTextureName(name), duration(dur), uvMin(minUV), uvMax(maxUV) {}
   };
 
-  AnimatedSprite2D(std::shared_ptr<Texture2D> pTexture2D,
-                   std::shared_ptr<ShaderProgram> pShaderProgram,
-                   const glm::vec3 &position = glm::vec3(0.0f),
-                   const glm::vec2 &size = glm::vec2(100.0f),
+  AnimatedSprite2D(std::shared_ptr<Texture2D> pTexture2D, std::shared_ptr<ShaderProgram> pShaderProgram,
+                   const glm::vec3 &position = glm::vec3(0.0f), const glm::vec2 &size = glm::vec2(100.0f),
                    float rotation = 0.0f);
 
   ~AnimatedSprite2D() = default;
@@ -37,9 +34,7 @@ public:
   AnimatedSprite2D(AnimatedSprite2D &&) noexcept = default;
   AnimatedSprite2D &operator=(AnimatedSprite2D &&) noexcept = default;
 
-  void setAnimationParameters(
-      const std::vector<std::pair<std::string, std::chrono::nanoseconds>>
-          &framesDurations);
+  void setAnimationParameters(const std::vector<std::pair<std::string, std::chrono::nanoseconds>> &framesDurations);
 
   void update(std::chrono::nanoseconds deltaTime);
   void update(float deltaTimeSeconds);
@@ -47,8 +42,7 @@ public:
 
   void setPosition(const glm::vec3 &position) { _position = position; }
   void setSize(const glm::vec2 &size) { _size = size; }
-  void setRotation(float rotation,
-                   const glm::vec3 &axis = glm::vec3(0.0f, 0.0f, 1.0f)) {
+  void setRotation(float rotation, const glm::vec3 &axis = glm::vec3(0.0f, 0.0f, 1.0f)) {
     _rotation = rotation;
     _rotationAxis = axis;
   }
@@ -62,7 +56,7 @@ public:
   void resetAnimation();
   void setPlaybackSpeed(float speed) { _playbackSpeed = std::max(0.0f, speed); }
 
-private:
+ private:
   [[nodiscard]] glm::mat4 buildModelMatrix() const;
   void updateCurrentFrame();
 
@@ -85,4 +79,4 @@ private:
   void initializeRenderer() const;
 };
 
-} // namespace Render
+}  // namespace Render

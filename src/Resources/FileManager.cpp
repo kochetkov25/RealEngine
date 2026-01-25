@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 
 namespace Resources {
 void FileManager::initialize(const char* argv0) {

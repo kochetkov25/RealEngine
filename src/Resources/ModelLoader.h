@@ -1,15 +1,18 @@
 #pragma once
 
-#include "../Modules/Logger.h"
-#include "ModelLoadExceptions.h"
-#include "ModelMetadata.h"
-#include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+
+#include <assimp/Importer.hpp>
 #include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
+
+#include "ModelLoadExceptions.h"
+#include "ModelMetadata.h"
+#include "Modules/Logger.h"
+
 
 namespace Resources {
 
@@ -18,15 +21,13 @@ namespace Resources {
  */
 struct ModelLoadConfig {
   // Assimp post-processing flags
-  unsigned int assimpFlags =
-      aiProcess_Triangulate | aiProcess_GenSmoothNormals |
-      aiProcess_JoinIdenticalVertices | aiProcess_CalcTangentSpace |
-      aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph;
+  unsigned int assimpFlags = aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_JoinIdenticalVertices |
+                             aiProcess_CalcTangentSpace | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph;
 
   // Validation options
   bool requireNormals = true;
   bool requirePositions = true;
-  bool requireTextureCoords = false; // Optional, some meshes may not have UVs
+  bool requireTextureCoords = false;  // Optional, some meshes may not have UVs
 
   // Optimization options
   bool optimizeMeshes = true;
@@ -45,14 +46,13 @@ struct ModelLoadConfig {
  * a clean interface for the ResourceManager.
  */
 class ModelLoader {
-public:
+ public:
   /**
    * @brief Construct a ModelLoader with default configuration
    *
    * Note: Log level configuration is centralized in main.cpp
    */
-  explicit ModelLoader(const ModelLoadConfig &config = ModelLoadConfig{})
-      : config_(config) {
+  explicit ModelLoader(const ModelLoadConfig &config = ModelLoadConfig{}) : config_(config) {
     // Log level is configured globally in main.cpp, not per-component
   }
 
@@ -78,9 +78,7 @@ public:
   /**
    * @brief Extract metadata from an imported scene
    */
-  static ModelMetadata extractMetadata(const aiScene *scene,
-                                       const std::string &filePath,
-                                       const std::string &modelName);
+  static ModelMetadata extractMetadata(const aiScene *scene, const std::string &filePath, const std::string &modelName);
 
   /**
    * @brief Validate an imported scene for required data
@@ -90,18 +88,14 @@ public:
   /**
    * @brief Get the last error message from Assimp
    */
-  std::string getLastError() const noexcept {
-    return importer_.GetErrorString();
-  }
+  std::string getLastError() const noexcept { return importer_.GetErrorString(); }
 
   /**
    * @brief Check if the importer has an error
    */
-  bool hasError() const noexcept {
-    return std::string(importer_.GetErrorString()).length() > 0;
-  }
+  bool hasError() const noexcept { return std::string(importer_.GetErrorString()).length() > 0; }
 
-private:
+ private:
   Assimp::Importer importer_;
   ModelLoadConfig config_;
 
@@ -116,4 +110,4 @@ private:
   static bool isSupportedFormat(const std::string &filePath) noexcept;
 };
 
-} // namespace Resources
+}  // namespace Resources

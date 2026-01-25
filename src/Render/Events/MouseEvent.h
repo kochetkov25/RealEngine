@@ -1,15 +1,16 @@
 #pragma once
 
-#include "../Event.h"
 #include <glm/vec2.hpp>
+
+#include "Render/Event.h"
+
 
 namespace Render {
 
 // Event fired when mouse moves
 class MouseMovedEvent : public Event {
  public:
-  MouseMovedEvent(int x = 0, int y = 0)
-      : Event("MOUSE MOVED EVENT", EventType::MOUSE_MOVED), _x(x), _y(y) {}
+  MouseMovedEvent(int x = 0, int y = 0) : Event("MOUSE MOVED EVENT", EventType::MOUSE_MOVED), _x(x), _y(y) {}
 
   [[nodiscard]] std::string format() const override {
     return _name + ": X = " + std::to_string(_x) + ", Y = " + std::to_string(_y);
@@ -26,12 +27,9 @@ class MouseMovedEvent : public Event {
 class MouseButtonPressed : public Event {
  public:
   explicit MouseButtonPressed(int button = 0)
-      : Event("MOUSE BUTTON PRESSED", EventType::MOUSE_BUTTON_PRESSED),
-        _button(button) {}
+      : Event("MOUSE BUTTON PRESSED", EventType::MOUSE_BUTTON_PRESSED), _button(button) {}
 
-  [[nodiscard]] std::string format() const override {
-    return _name + ": " + std::to_string(_button);
-  }
+  [[nodiscard]] std::string format() const override { return _name + ": " + std::to_string(_button); }
 
   [[nodiscard]] int getButton() const { return _button; }
 
@@ -43,12 +41,9 @@ class MouseButtonPressed : public Event {
 class MouseButtonReleased : public Event {
  public:
   explicit MouseButtonReleased(int button = 0)
-      : Event("MOUSE BUTTON RELEASED", EventType::MOUSE_BUTTON_RELEASED),
-        _button(button) {}
+      : Event("MOUSE BUTTON RELEASED", EventType::MOUSE_BUTTON_RELEASED), _button(button) {}
 
-  [[nodiscard]] std::string format() const override {
-    return _name + ": " + std::to_string(_button);
-  }
+  [[nodiscard]] std::string format() const override { return _name + ": " + std::to_string(_button); }
 
   [[nodiscard]] int getButton() const { return _button; }
 

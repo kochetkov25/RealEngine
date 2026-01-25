@@ -1,6 +1,6 @@
 #include "BaseMesh.h"
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 #include "Render/RendererFactory.h"
 
 BaseMesh::BaseMesh(const aiMesh *pMesh, const aiScene *pScene) {
@@ -29,22 +29,18 @@ BaseMesh::BaseMesh(const aiMesh *pMesh, const aiScene *pScene) {
   // Process vertices: position, UV coordinates, and normals
   for (int i = 0; i < pMesh->mNumVertices; i++) {
     // Add vertex position
-    _renderer->vertex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y,
-                       pMesh->mVertices[i].z);
+    _renderer->vertex3(pMesh->mVertices[i].x, pMesh->mVertices[i].y, pMesh->mVertices[i].z);
     // Add texture coordinates
-    _renderer->vertexUV(pMesh->mTextureCoords[0][i].x,
-                        pMesh->mTextureCoords[0][i].y);
+    _renderer->vertexUV(pMesh->mTextureCoords[0][i].x, pMesh->mTextureCoords[0][i].y);
     // Add normal
-    _renderer->vertex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y,
-                       pMesh->mNormals[i].z);
+    _renderer->vertex3(pMesh->mNormals[i].x, pMesh->mNormals[i].y, pMesh->mNormals[i].z);
   }
 
   // Extract indices for indexed rendering
   std::vector<GLuint> indices;
   for (int i = 0; i < pMesh->mNumFaces; i++) {
     auto face = pMesh->mFaces[i];
-    for (int j = 0; j < face.mNumIndices; j++)
-      indices.push_back(face.mIndices[j]);
+    for (int j = 0; j < face.mNumIndices; j++) indices.push_back(face.mIndices[j]);
   }
   _renderer->setIndices(indices);
 

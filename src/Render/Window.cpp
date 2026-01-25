@@ -2,12 +2,13 @@
 
 #include <cassert>
 
-#include "../Input/Input.h"
-#include "../Modules/GUIModule.h"
-#include "../Modules/Logger.h"
 #include "Events/KeyboardEvent.h"
 #include "Events/MouseEvent.h"
 #include "Events/WindowEvent.h"
+#include "Input/Input.h"
+#include "Modules/GUIModule.h"
+#include "Modules/Logger.h"
+
 
 namespace Render {
 
@@ -17,23 +18,21 @@ Render::Window::Window() : _windowName("mainWindow"), _pWindow(nullptr) {
 
 void Window::setRenderMode(RenderMode mode) {
   switch (mode) {
-  case RenderMode::Fill:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    break;
-  case RenderMode::Wireframe:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    break;
-  case RenderMode::Point:
-    glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-    break;
-  default:
-    assert(false && "Unknown RenderMode!");
+    case RenderMode::Fill:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+      break;
+    case RenderMode::Wireframe:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+      break;
+    case RenderMode::Point:
+      glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+      break;
+    default:
+      assert(false && "Unknown RenderMode!");
   }
 }
 
-bool Window::windowShouldClose() const {
-  return glfwWindowShouldClose(_pWindow);
-}
+bool Window::windowShouldClose() const { return glfwWindowShouldClose(_pWindow); }
 
 bool Render::Window::init_GLFW() {
   if (!glfwInit()) {
@@ -49,16 +48,14 @@ bool Render::Window::init_GLAD() {
     return false;
   } else {
     Core::Logger::info("Window", "Renderer: ", glGetString(GL_RENDERER));
-    Core::Logger::info("Window", "OpenGL: ", GLVersion.major, ".",
-                       GLVersion.minor);
+    Core::Logger::info("Window", "OpenGL: ", GLVersion.major, ".", GLVersion.minor);
   }
   return true;
 }
 
 void Render::Window::initEvents() {
-  _dispatcher.addEventListener<MouseMovedEvent>([](MouseMovedEvent &e) {
-    Core::Input::setMousePosition(e.getPosition());
-  });
+  _dispatcher.addEventListener<MouseMovedEvent>(
+      [](MouseMovedEvent &e) { Core::Input::setMousePosition(e.getPosition()); });
 
   _dispatcher.addEventListener<MouseButtonPressed>([](MouseButtonPressed &e) {
     Core::Logger::debug("Window", e.format());
@@ -98,8 +95,7 @@ bool Render::Window::init() {
   glfwWindowHint(GLFW_SAMPLES, 8);
 
   if (!_pWindow) {
-    _pWindow =
-        glfwCreateWindow(_width, _height, _windowName.c_str(), NULL, NULL);
+    _pWindow = glfwCreateWindow(_width, _height, _windowName.c_str(), NULL, NULL);
     if (!_pWindow) {
       Core::Logger::error("Window", "Failed to create window: ", _windowName);
       glfwTerminate();
@@ -116,8 +112,7 @@ bool Render::Window::init() {
   glfwSetKeyCallback(_pWindow, keyCallback);
   glfwSetMouseButtonCallback(_pWindow, mouseButtonCallback);
 
-  if (!init_GLAD())
-    return false;
+  if (!init_GLAD()) return false;
 
   Core::Logger::info("Window", "Window initialized successfully!");
   _init = true;
@@ -150,32 +145,30 @@ void Render::Window::windowClosedCallback(GLFWwindow *window) {
   handle._eventCallback(event);
 }
 
-void Render::Window::keyCallback(GLFWwindow *window, int key, int scancode,
-                                 int action, int mods) {
-  (void)scancode; // Unused parameter
-  (void)mods;     // Unused parameter
+void Render::Window::keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+  (void)scancode;  // Unused parameter
+  (void)mods;      // Unused parameter
 
   auto &handle = *static_cast<Window *>(glfwGetWindowUserPointer(window));
 
   switch (action) {
-  case GLFW_PRESS: {
-    KeyPressedEvent eventPressed(key);
-    handle._eventCallback(eventPressed);
-    break;
-  }
-  case GLFW_RELEASE: {
-    KeyReleasedEvent eventReleased(key);
-    handle._eventCallback(eventReleased);
-    break;
-  }
-  default:
-    break;
+    case GLFW_PRESS: {
+      KeyPressedEvent eventPressed(key);
+      handle._eventCallback(eventPressed);
+      break;
+    }
+    case GLFW_RELEASE: {
+      KeyReleasedEvent eventReleased(key);
+      handle._eventCallback(eventReleased);
+      break;
+    }
+    default:
+      break;
   }
 }
 
-void Window::mouseButtonCallback(GLFWwindow *window, int button, int action,
-                                 int mods) {
-  (void)mods; // Unused parameter
+void Window::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+  (void)mods;  // Unused parameter
 
   auto &handle = *static_cast<Window *>(glfwGetWindowUserPointer(window));
   if (action == GLFW_PRESS) {
@@ -186,4 +179,4 @@ void Window::mouseButtonCallback(GLFWwindow *window, int button, int action,
     handle._eventCallback(eventMouseReleased);
   }
 }
-} // namespace Render
+}  // namespace Render

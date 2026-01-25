@@ -1,6 +1,6 @@
 #include "VertexBuffer.h"
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 
 namespace Render {
 

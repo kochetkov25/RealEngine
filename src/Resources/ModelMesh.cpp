@@ -7,10 +7,9 @@
 #include <cassert>
 #include <unordered_map>
 
-#include "../Modules/Logger.h"
-#include "../Render/ShaderProgram.h"
-#include "../Render/Texture2D.h"
-
+#include "Modules/Logger.h"
+#include "Render/ShaderProgram.h"
+#include "Render/Texture2D.h"
 
 ModelMesh::ModelMesh(const aiScene *pScene, VecTexGL vecTexGL) {
   _vecTexGL = vecTexGL;

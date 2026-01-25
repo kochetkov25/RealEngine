@@ -1,17 +1,14 @@
 #pragma once
 
-#include "../Event.h"
+#include "Render/Event.h"
 
 namespace Render {
 
 class WindowClosedEvent : public Event {
  public:
-  WindowClosedEvent()
-      : Event("Window Closed Event", Event::EventType::WINDOW_CLOSED) {}
+  WindowClosedEvent() : Event("Window Closed Event", Event::EventType::WINDOW_CLOSED) {}
 
-  [[nodiscard]] std::string format() const override {
-    return _name + "!";
-  }
+  [[nodiscard]] std::string format() const override { return _name + "!"; }
 };
 
 }  // namespace Render

@@ -5,7 +5,7 @@
 #include <numeric>
 #include <optional>
 
-#include "../Modules/Logger.h"
+#include "Modules/Logger.h"
 #include "glm/ext/quaternion_common.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/matrix.hpp"

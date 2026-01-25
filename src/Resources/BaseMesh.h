@@ -7,14 +7,14 @@
 #include <memory>
 #include <string>
 
-#include "../Render/RendererFactory.h"
+#include "Render/RendererFactory.h"
 
 namespace Render {
 class ShaderProgram;
 }
 
 class BaseMesh {
-public:
+ public:
   BaseMesh(const aiMesh *pMesh, const aiScene *pScene);
   BaseMesh(const BaseMesh &) = default;
   BaseMesh(BaseMesh &&) noexcept = default;
@@ -28,15 +28,13 @@ public:
 
   void drawMesh() const;
 
-  [[nodiscard]] const std::vector<Texture> &getTextures() const noexcept {
-    return _vecTextures;
-  }
+  [[nodiscard]] const std::vector<Texture> &getTextures() const noexcept { return _vecTextures; }
 
   [[nodiscard]] std::vector<Texture> getTexture() const { return _vecTextures; }
 
   std::string getMeshName() { return _nameMesh; }
 
-private:
+ private:
   std::shared_ptr<Render::Renderer> _renderer;
   std::string _nameMesh;
 

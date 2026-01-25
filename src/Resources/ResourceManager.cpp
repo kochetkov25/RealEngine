@@ -8,17 +8,18 @@
 #include <cstdlib>
 #include <vector>
 
-#include "../Modules/Logger.h"
-#include "../Render/ShaderProgram.h"
-#include "../Render/Sprite.h"
-#include "../Render/Texture2D.h"
 #include "FileManager.h"
 #include "ModelCache.h"
 #include "ModelLoadExceptions.h"
 #include "ModelLoader.h"
 #include "ModelMesh.h"
 #include "ModelMetadata.h"
+#include "Modules/Logger.h"
+#include "Render/ShaderProgram.h"
+#include "Render/Sprite.h"
+#include "Render/Texture2D.h"
 #include "stb_image.h"
+
 
 namespace {
 struct PixelDeleter {
