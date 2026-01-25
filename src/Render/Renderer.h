@@ -17,7 +17,7 @@ class Renderer {
   friend class RendererFactory;
 
  public:
-  enum DataType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4 };
+  enum DataType { Float, Float2, Float3, Float4, Int, Int2, Int3, Int4, UInt4 };
 
   // Appends a vertex (x, y, z) to the buffer
   template <typename T>

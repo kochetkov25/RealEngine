@@ -23,7 +23,8 @@ public:
     Int,
     Int2,
     Int3,
-    Int4
+    Int4,
+    UInt4,
   };
 
   // Structure to describe a single element within the vertex buffer (e.g.,

@@ -10,17 +10,13 @@
 
 namespace Render {
 namespace {
-const std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType>
-    kRendererToVertexBuffer{
-        {Renderer::Float, VertexBuffer::_e_DataType::Float},
-        {Renderer::Float2, VertexBuffer::_e_DataType::Float2},
-        {Renderer::Float3, VertexBuffer::_e_DataType::Float3},
-        {Renderer::Float4, VertexBuffer::_e_DataType::Float4},
-        {Renderer::Int, VertexBuffer::_e_DataType::Int},
-        {Renderer::Int2, VertexBuffer::_e_DataType::Int2},
-        {Renderer::Int3, VertexBuffer::_e_DataType::Int3},
-        {Renderer::Int4, VertexBuffer::_e_DataType::Int4},
-    };
+const std::unordered_map<Renderer::DataType, VertexBuffer::_e_DataType> kRendererToVertexBuffer{
+    {Renderer::Float, VertexBuffer::_e_DataType::Float},   {Renderer::Float2, VertexBuffer::_e_DataType::Float2},
+    {Renderer::Float3, VertexBuffer::_e_DataType::Float3}, {Renderer::Float4, VertexBuffer::_e_DataType::Float4},
+    {Renderer::Int, VertexBuffer::_e_DataType::Int},       {Renderer::Int2, VertexBuffer::_e_DataType::Int2},
+    {Renderer::Int3, VertexBuffer::_e_DataType::Int3},     {Renderer::Int4, VertexBuffer::_e_DataType::Int4},
+    {Renderer::UInt4, VertexBuffer::_e_DataType::UInt4},
+};
 }
 
 // This must be called before upload(). The layout determines how the buffer
@@ -67,8 +63,7 @@ void Renderer::drawArrays() {
 // setIndices() before this. Requires a valid layout and uploaded vertex data.
 void Renderer::drawElements() {
   if (_indicesCount == 0) {
-    assert(false &&
-           "Cannot call drawElements(): index buffer has not been set.");
+    assert(false && "Cannot call drawElements(): index buffer has not been set.");
   }
   _VAO.bind();
   glDrawElements(_drawMode, static_cast<GLsizei>(_indicesCount), GL_UNSIGNED_INT, nullptr);
