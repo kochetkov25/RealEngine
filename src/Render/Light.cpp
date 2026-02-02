@@ -16,7 +16,7 @@ void Render::Light::addLight(const LightObject& light) {
     assert(false && "Light array overflow!");
   }
 
-  _lightMeshes.push_back(light.mesh);
+  _lightModels.push_back(light.model);
   _name2uid[light.name] = _lightBlock._count;
 
   _lightBlock._data[_lightBlock._count] = light.data;
@@ -54,6 +54,6 @@ void Render::Light::draw(std::shared_ptr<Render::ShaderProgram> shader) {
     shader->setMatrix4Uniform("modelMatrix", modelMatrix);
     shader->setVec3Uniform("lightColor", _lightBlock._data[uid]._lightColor);
 
-    _lightMeshes.at(uid)->draw(shader);
+    _lightModels.at(uid)->draw(shader);
   }
 }

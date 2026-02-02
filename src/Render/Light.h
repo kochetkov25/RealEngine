@@ -4,7 +4,7 @@
 
 #include "Render/ShaderUtils/UniformLight.h"
 #include "Render/UniformBuffer.h"
-#include "Resources/ModelMesh.h"
+#include "Render/Model.h"
 
 namespace Render {
 
@@ -14,7 +14,7 @@ class Light {
     std::string name;
 
     ShaderUtils::LightData data;
-    std::shared_ptr<ModelMesh> mesh;
+    std::shared_ptr<Model> model;
   };
 
   Light();
@@ -30,7 +30,7 @@ class Light {
 
  private:
   std::unordered_map<std::string, uint16_t> _name2uid;
-  std::vector<std::shared_ptr<ModelMesh>> _lightMeshes;
+  std::vector<std::shared_ptr<Model>> _lightModels;
 
   ShaderUtils::LightBlock _lightBlock;
   UniformBuffer<ShaderUtils::LightBlock> _lightUBO;

@@ -88,21 +88,22 @@ int main(int argc, char **argv) {
   /*LIGHT*/
   Render::Light DebugLight;
 
-  auto MeshDebugLight = resourceManager.loadModelMesh("DebugLight", "res/models/light-sphere.glb");
+  // auto MeshDebugLight = resourceManager.loadModelMesh("DebugLight", "res/models/light-sphere.glb");
+  auto ModelDebugLight = resourceManager.loadModel("DebugLight", "res/models/light-sphere.glb");
 
   Render::Light::LightObject lightObject_1{
       "light_1",
       {},
-      MeshDebugLight,
+      ModelDebugLight,
   };
-  lightObject_1.data._lightPosition = {0.f, 5.f, 0.f};
+  lightObject_1.data._lightPosition = {2.f, 7.f, 0.f};
 
   Render::Light::LightObject lightObject_2{
       "light_2",
       {},
-      MeshDebugLight,
+      ModelDebugLight,
   };
-  lightObject_2.data._lightPosition = {0.f, 3.f, 0.f};
+  lightObject_2.data._lightPosition = {-2.f, 5.f, 0.f};
 
   DebugLight.addLight(lightObject_1);
   DebugLight.addLight(lightObject_2);
