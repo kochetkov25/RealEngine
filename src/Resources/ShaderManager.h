@@ -2,6 +2,8 @@
 
 #include <cstdint>
 #include <functional>
+#include <memory>
+#include <unordered_map>
 
 namespace Render {
 class ShaderProgram;
@@ -63,4 +65,4 @@ class ShaderManager {
 
   std::unordered_map<ShaderKey, std::shared_ptr<Render::ShaderProgram>, ShaderKeyHash> _shaderPrograms;
 };
-};  // namespace Resources
+}  // namespace Resources

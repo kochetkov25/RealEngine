@@ -1,6 +1,7 @@
 #include "FileManager.h"
 
 #include <fstream>
+#include <sstream>
 
 #include "Modules/Logger.h"
 

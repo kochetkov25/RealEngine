@@ -1,12 +1,13 @@
 #include "ModelLoader.h"
 
+#include <assimp/scene.h>
+
 #include <algorithm>
 #include <filesystem>
 #include <glm/glm.hpp>
 
 #include "ModelLoadExceptions.h"
 #include "Modules/Logger.h"
-
 
 namespace Resources {
 
@@ -61,71 +62,6 @@ bool ModelLoader::validateFilePath(const std::string &filePath) noexcept {
   } catch (const std::exception &) {
     return false;
   }
-}
-
-ModelMetadata ModelLoader::extractMetadata(const aiScene *scene, const std::string &filePath,
-                                           const std::string &modelName) {
-  ModelMetadata metadata;
-  metadata.sourceFilePath = filePath;
-  metadata.modelName = modelName;
-
-  if (!scene) {
-    return metadata;
-  }
-
-  // Collect all vertices for bounding box calculation
-  std::vector<glm::vec3> allVertices;
-
-  // Process all meshes
-  for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-    const aiMesh *mesh = scene->mMeshes[i];
-    if (!mesh) {
-      continue;
-    }
-
-    metadata.meshCount++;
-    metadata.totalVertices += mesh->mNumVertices;
-
-    // Count indices
-    for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
-      metadata.totalIndices += mesh->mFaces[j].mNumIndices;
-    }
-
-    // Collect vertices
-    for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
-      allVertices.emplace_back(mesh->mVertices[j].x, mesh->mVertices[j].y, mesh->mVertices[j].z);
-    }
-
-    // Check for mesh features
-    if (mesh->HasBones()) {
-      metadata.hasBones = true;
-    }
-    if (mesh->HasTangentsAndBitangents()) {
-      metadata.hasTangents = true;
-      metadata.hasBitangents = true;
-    }
-  }
-
-  // Calculate bounding box
-  metadata.calculateBounds(allVertices);
-
-  // Check for animations
-  metadata.hasAnimations = scene->mNumAnimations > 0;
-
-  // Count textures
-  for (unsigned int i = 0; i < scene->mNumMaterials; ++i) {
-    const aiMaterial *material = scene->mMaterials[i];
-    if (!material) {
-      continue;
-    }
-
-    // Count textures of all types
-    for (int type = aiTextureType_NONE; type <= AI_TEXTURE_TYPE_MAX; ++type) {
-      metadata.textureCount += material->GetTextureCount(static_cast<aiTextureType>(type));
-    }
-  }
-
-  return metadata;
 }
 
 void ModelLoader::validateScene(const aiScene *scene, const std::string &filePath) {

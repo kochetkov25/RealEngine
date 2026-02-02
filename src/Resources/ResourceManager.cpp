@@ -1,20 +1,15 @@
 #include "ResourceManager.h"
 
-#include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#include <assimp/Importer.hpp>
 #include <cassert>
 #include <cstdlib>
 #include <memory>
 #include <vector>
 
 #include "FileManager.h"
-#include "ModelCache.h"
 #include "ModelLoadExceptions.h"
 #include "ModelLoader.h"
-#include "ModelMesh.h"
-#include "ModelMetadata.h"
 #include "Modules/Logger.h"
 #include "Modules/Random.h"
 #include "ParseUtils.h"
@@ -26,6 +21,7 @@
 #include "Render/StaticMeshComponent.h"
 #include "Render/Texture2D.h"
 #include "SkeletonAnimator.h"
+#include "TextureAsset.h"
 #include "stb_image.h"
 
 namespace {
@@ -51,7 +47,6 @@ ResourceManager::ResourceManager() {
   Resources::ModelLoadConfig config;
   config.verboseLogging = false;  // Set to true for debug builds
   _modelLoader = std::make_unique<Resources::ModelLoader>(config);
-  _modelCache = std::make_unique<Resources::ModelCache>();
 
   _shaderManager = std::make_unique<Resources::ShaderManager>();
 }
@@ -239,81 +234,6 @@ std::shared_ptr<Render::Texture2D> ResourceManager::loadTextureAtlas2D(const std
   return pTexture;
 }
 
-std::shared_ptr<ModelMesh> ResourceManager::loadModelMesh(const std::string &modelName, const std::string &modelPath) {
-  try {
-    Core::Logger::info("ResourceManager", "Loading model: ", modelName, " from path: ", modelPath);
-
-    // const std::string absolutePath = resolvePath(modelPath);
-    const std::string absolutePath = Resources::FileManager::instance().getAbsolutePath(modelPath);
-
-    auto cachedMesh = _modelCache->get(absolutePath);
-    if (cachedMesh.has_value()) {
-      Core::Logger::debug("ResourceManager", "Model loaded from cache: ", modelName);
-      // Store in name map for lookup by name
-      _modelMeshMaps[modelName] = cachedMesh.value();
-      return cachedMesh.value();
-    }
-
-    const auto existingIt = _modelMeshMaps.find(modelName);
-    if (existingIt != _modelMeshMaps.end()) {
-      Core::Logger::warning("ResourceManager", "Model with name '", modelName,
-                            "' already exists. Returning existing model.");
-      return existingIt->second;
-    }
-
-    // Load the model using ModelLoader
-    // Note: The scene is owned by the importer in ModelLoader, so we must
-    // process it immediately before the loader might be reused.
-    const aiScene *scene = _modelLoader->loadModel(absolutePath);
-    if (!scene) {
-      Core::Logger::error("ResourceManager", "Failed to load model: ", modelName);
-      return nullptr;
-    }
-
-    auto metadata = Resources::ModelLoader::extractMetadata(scene, absolutePath, modelName);
-
-    auto textures = loadEmbeddedTextures(scene);
-
-    // Create ModelMesh (this processes the scene immediately, so we don't need
-    // to keep the scene pointer alive after this)
-    auto pNewModelMesh = std::make_shared<ModelMesh>(scene, std::move(textures));
-
-    _modelCache->put(absolutePath, pNewModelMesh, metadata);
-
-    const auto [it, inserted] = _modelMeshMaps.emplace(modelName, pNewModelMesh);
-    if (!inserted) {
-      Core::Logger::warning("ResourceManager", "Model name collision: ", modelName);
-    }
-
-    Core::Logger::info("ResourceManager", "Successfully loaded model: ", modelName,
-                       " (Vertices: ", metadata.totalVertices, ", Meshes: ", metadata.meshCount, ")");
-
-    return it->second;
-
-  } catch (const Resources::ModelFileNotFoundException &e) {
-    Core::Logger::error("ResourceManager", "Model file not found: ", e.what());
-    return nullptr;
-  } catch (const Resources::ModelImportException &e) {
-    Core::Logger::error("ResourceManager", "Model import failed: ", e.what());
-    return nullptr;
-  } catch (const Resources::ModelCorruptedException &e) {
-    Core::Logger::error("ResourceManager", "Corrupted model: ", e.what());
-    return nullptr;
-  } catch (const Resources::TextureLoadException &e) {
-    Core::Logger::error("ResourceManager", "Texture load failed: ", e.what());
-    // Continue with model loading even if textures fail
-    // (model may still be usable without textures)
-  } catch (const std::exception &e) {
-    Core::Logger::error("ResourceManager", "Unexpected error loading model: ", e.what());
-    return nullptr;
-  } catch (...) {
-    Core::Logger::error("ResourceManager", "Unknown error loading model: ", modelName);
-    return nullptr;
-  }
-
-  return nullptr;
-}
-
 std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &modelName,
                                                           const std::string &modelRelativePath) {
   try {
@@ -412,53 +332,6 @@ std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &mod
   return nullptr;
 }
 
-std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>> ResourceManager::loadEmbeddedTextures(
-    const aiScene *scene) noexcept {
-  ModelMesh::VecTexGL textures;
-  textures.reserve(scene->mNumTextures);
-
-  // Process each embedded texture
-  for (unsigned int i = 0; i < scene->mNumTextures; ++i) {
-    const aiTexture *aiTex = scene->mTextures[i];
-    if (!aiTex) {
-      Core::Logger::warning("ResourceManager", "Null texture at index: ", i);
-      continue;
-    }
-
-    // Generate unique texture name
-    std::string textureName = aiTex->mFilename.C_Str();
-    if (textureName.empty()) {
-      textureName = "embedded_texture_" + std::to_string(i);
-    }
-
-    try {
-      // Check if texture already loaded (check map directly to avoid assertion)
-      const auto texIt = _texture2DMaps.find(textureName);
-      if (texIt != _texture2DMaps.end()) {
-        Core::Logger::debug("ResourceManager", "Reusing existing texture: ", textureName);
-        textures.emplace_back(textureName, texIt->second);
-        continue;
-      }
-
-      // Load texture from memory
-      auto texture = loadTexture2D_memory(textureName, aiTex);
-
-      if (texture) {
-        textures.emplace_back(textureName, texture);
-        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ", textureName,
-                            " size: ", texture->getHeight(), " x ", texture->getWidth());
-      } else {
-        Core::Logger::warning("ResourceManager", "Failed to load embedded texture: ", textureName);
-      }
-    } catch (const std::exception &e) {
-      Core::Logger::error("ResourceManager", "Exception loading texture: ", textureName, ". Error: ", e.what());
-    }
-  }
-
-  return textures;
-}
-
-// TODO: delete loadEmbeddedTextures function
 std::vector<std::shared_ptr<Resources::TextureAsset>> ResourceManager::loadAssimpEmbeddedTextures(
     const aiScene *scene) noexcept {
   std::vector<std::shared_ptr<Resources::TextureAsset>> textures;
@@ -473,7 +346,7 @@ std::vector<std::shared_ptr<Resources::TextureAsset>> ResourceManager::loadAssim
 
     // Generate unique texture name
     std::string textureName = aiTex->mFilename.C_Str();
-    textureName += "_embedded_texture_" + Core::Random::generate();
+    textureName += "_embed_tex_" + Core::Random::generate();
 
     try {
       auto texture = loadTexture2D_memory(textureName, aiTex);
@@ -491,21 +364,4 @@ std::vector<std::shared_ptr<Resources::TextureAsset>> ResourceManager::loadAssim
   }
 
   return textures;
-}
-
-std::optional<Resources::ModelMetadata> ResourceManager::getModelMetadata(const std::string &modelName) const noexcept {
-  const auto it = _modelMeshMaps.find(modelName);
-  if (it != _modelMeshMaps.end()) {
-    // Try to find metadata in cache by searching for the model
-    // Note: This is a simplified approach. In production, we might want
-    // to store metadata alongside the model in the name map.
-    return std::nullopt;  // Would need to track metadata separately
-  }
-
-  return std::nullopt;
-}
-
-void ResourceManager::clearModelCache() noexcept {
-  _modelCache->clear();
-  Core::Logger::info("ResourceManager", "Model cache cleared");
 }

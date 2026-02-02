@@ -1,7 +1,6 @@
 #pragma once
 
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
 
 #include <assimp/Importer.hpp>
 #include <filesystem>
@@ -9,10 +8,7 @@
 #include <optional>
 #include <string>
 
-#include "ModelLoadExceptions.h"
-#include "ModelMetadata.h"
-#include "Modules/Logger.h"
-
+struct aiScene;
 
 namespace Resources {
 
@@ -74,11 +70,6 @@ class ModelLoader {
    * @brief Validate that a file path exists and is readable
    */
   static bool validateFilePath(const std::string &filePath) noexcept;
-
-  /**
-   * @brief Extract metadata from an imported scene
-   */
-  static ModelMetadata extractMetadata(const aiScene *scene, const std::string &filePath, const std::string &modelName);
 
   /**
    * @brief Validate an imported scene for required data

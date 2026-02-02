@@ -5,11 +5,11 @@
 #include <string>
 #include <string_view>
 #include <unordered_set>
+#include <vector>
 
 #include "FileManager.h"
 #include "Modules/Logger.h"
 #include "Render/ShaderProgram.h"
-
 
 namespace {
 constexpr std::string_view kIncludeToken = "#include";

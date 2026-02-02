@@ -2,14 +2,16 @@
 
 #include <memory>
 
-#include "AnimationAsset.h"
-#include "MeshAsset.h"
-#include "SkeletonAsset.h"
-#include "assimp/material.h"
-#include "assimp/mesh.h"
-#include "assimp/scene.h"
+struct aiAnimation;
+struct aiMaterial;
+struct aiMesh;
+struct aiScene;
 
 namespace Resources {
+class AnimationAsset;
+class MeshAsset;
+class SkeletonAsset;
+
 [[nodiscard]] std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh, const aiMaterial *material);
 
 [[nodiscard]] std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene);

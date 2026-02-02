@@ -1,9 +1,9 @@
 #pragma once
+
 #include <memory>
 #include <string>
 
 #include "Render/Texture2D.h"
-
 
 namespace Resources {
 struct TextureAsset {

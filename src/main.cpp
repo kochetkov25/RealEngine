@@ -11,6 +11,7 @@
 #include "Render/Camera.h"
 #include "Render/Light.h"
 #include "Render/AnimatedSprite2D.h"
+#include "Render/RendererFactory.h"
 #include "Modules/GUIModule.h"
 #include "Modules/Time.h"
 #include "Modules/Random.h"
@@ -88,7 +89,6 @@ int main(int argc, char **argv) {
   /*LIGHT*/
   Render::Light DebugLight;
 
-  // auto MeshDebugLight = resourceManager.loadModelMesh("DebugLight", "res/models/light-sphere.glb");
   auto ModelDebugLight = resourceManager.loadModel("DebugLight", "res/models/light-sphere.glb");
 
   Render::Light::LightObject lightObject_1{
@@ -109,7 +109,6 @@ int main(int argc, char **argv) {
   DebugLight.addLight(lightObject_2);
 
   /*2D ANIMATED SPRITE SETUP*/
-  // Load texture atlas
   std::string atlasName = "AttackAtlas";
   std::string atlasPath = "res/textures/loading_3.png";
 
@@ -125,17 +124,14 @@ int main(int argc, char **argv) {
 
   auto pSpriteAtlas = resourceManager.loadTextureAtlas2D(atlasName, atlasPath, frameNames, subTexWidth, subTexHeight);
 
-  // Create animated sprite (scoped outside if for render loop access)
   std::unique_ptr<Render::AnimatedSprite2D> animatedSprite;
 
-  // Create animated sprite
   glm::vec3 spritePosition(-3.0f, 0.0f, 0.0f);  // Position in 3D space
   glm::vec2 spriteSize(1.0f, 1.0f);             // World-space size (maintains aspect ratio)
 
   animatedSprite =
       std::make_unique<Render::AnimatedSprite2D>(pSpriteAtlas, pSprite2DShader, spritePosition, spriteSize, 0.0f);
 
-  // Set animation parameters (frame names and durations)
   std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
   const auto frameDuration = std::chrono::milliseconds(50);
   for (const auto &frameName : frameNames) {
@@ -167,20 +163,6 @@ int main(int argc, char **argv) {
     DebugLight.rewriteLightData("light_2", lightObject_2.data);
 
     DebugLight.draw(pLightShader);
-
-    /*DRAWING CUBE*/
-    // pMainShader->use();
-
-    // auto modelMatrix = glm::mat4(1.f);
-    // modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
-    // modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
-
-    // auto shininess = 64.f;
-    // pMainShader->setFloatUniform("material.shininess", shininess);
-
-    // pMainShader->setMatrix4Uniform("modelMatrix", modelMatrix);
-
-    // MeshDebugCube->draw(pMainShader);
 
     /*SKINNED MODEL 1*/
     pSkinnedMeshShader->use();

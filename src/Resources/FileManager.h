@@ -2,6 +2,8 @@
 
 #include <filesystem>
 #include <optional>
+#include <string>
+
 namespace Resources {
 class FileManager {
  public:

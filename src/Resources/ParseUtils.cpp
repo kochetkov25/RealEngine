@@ -5,7 +5,13 @@
 #include <numeric>
 #include <optional>
 
+#include "AnimationAsset.h"
+#include "MeshAsset.h"
 #include "Modules/Logger.h"
+#include "SkeletonAsset.h"
+#include "assimp/material.h"
+#include "assimp/mesh.h"
+#include "assimp/scene.h"
 #include "glm/ext/quaternion_common.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/matrix.hpp"
