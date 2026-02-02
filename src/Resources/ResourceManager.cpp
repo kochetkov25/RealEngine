@@ -6,6 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <cassert>
 #include <cstdlib>
+#include <memory>
 #include <vector>
 
 #include "FileManager.h"
@@ -15,11 +16,17 @@
 #include "ModelMesh.h"
 #include "ModelMetadata.h"
 #include "Modules/Logger.h"
+#include "Modules/Random.h"
+#include "ParseUtils.h"
+#include "Render/MeshComponent.h"
+#include "Render/Model.h"
 #include "Render/ShaderProgram.h"
+#include "Render/SkinnedMeshComponent.h"
 #include "Render/Sprite.h"
+#include "Render/StaticMeshComponent.h"
 #include "Render/Texture2D.h"
+#include "SkeletonAnimator.h"
 #include "stb_image.h"
-
 
 namespace {
 struct PixelDeleter {
@@ -154,7 +161,7 @@ std::shared_ptr<Render::Texture2D> ResourceManager::getTexture2D(const std::stri
   return nullptr;
 }
 
-// TODO: NEEF REFACTORING
+// TODO: NEED REFACTORING
 std::shared_ptr<Render::Sprite> ResourceManager::loadSprite(
     const std::string &spriteName, const std::string &textureName, const std::string &shaderProgramName,
     const unsigned int spriteWidth, const unsigned int spriteHeight, const std::string &subTextureName) {
@@ -307,6 +314,104 @@ std::shared_ptr<ModelMesh> ResourceManager::loadModelMesh(const std::string &mod
   return nullptr;
 }
 
+std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &modelName,
+                                                          const std::string &modelRelativePath) {
+  try {
+    Core::Logger::info("ResourceManager", "Loading model: ", modelName, " from path: ", modelRelativePath);
+
+    const auto absolutePath = Resources::FileManager::instance().getAbsolutePath(modelRelativePath);
+
+    // TODO: load form cache by absolutePath (good)
+
+    const auto existingIt = _modelMaps.find(modelName);
+    if (existingIt != _modelMaps.end()) {
+      Core::Logger::warning("ResourceManager", "Model with name '", modelName,
+                            "' already exists. Returning existing model.");
+      return existingIt->second;
+    }
+
+    const auto pScene = _modelLoader->loadModel(absolutePath);
+    if (!pScene) {
+      Core::Logger::error("ResourceManager", "Failed to load model: ", modelName);
+      return nullptr;
+    }
+
+    auto model = std::make_shared<Render::Model>();
+
+    model->setTextureAssets(std::move(loadAssimpEmbeddedTextures(pScene)));
+
+    auto skeleton = Resources::parseSkeleton(pScene);
+    if (skeleton) {
+      model->setSkeletonAsset(skeleton);
+
+      if (pScene->mNumAnimations > 0) {
+        for (unsigned int animId = 0; animId < pScene->mNumAnimations; ++animId) {
+          auto animationAsset = Resources::parseAnimation(pScene->mAnimations[animId], *skeleton);
+          model->addAnimationAsset(animationAsset);
+        }
+
+        model->setSkeletonAnimator(std::make_shared<Resources::SkeletonAnimator>(skeleton));
+      }
+    }
+
+    std::function<void(const aiNode *, const aiScene *)> processNode;
+    processNode = [&](const aiNode *pNode, const aiScene *pScene) {
+      for (unsigned int meshId = 0; meshId < pNode->mNumMeshes; meshId++) {
+        auto mesh = pScene->mMeshes[pNode->mMeshes[meshId]];
+        auto material = pScene->mMaterials[mesh->mMaterialIndex];
+
+        auto meshAsset = Resources::parseMesh(mesh, material);
+
+        std::shared_ptr<Render::MeshComponent> meshComponent;
+        if (meshAsset->hasBoneData()) {
+          meshComponent = std::make_shared<Render::SkinnedMeshComponent>(meshId);
+        } else {
+          meshComponent = std::make_shared<Render::StaticMeshComponent>(meshId);
+        }
+        meshComponent->upload(meshAsset);
+
+        model->addMeshComponent(meshComponent);
+        model->addMeshAsset(meshAsset);
+      }
+
+      for (unsigned int childId = 0; childId < pNode->mNumChildren; childId++) {
+        processNode(pNode->mChildren[childId], pScene);
+      }
+    };
+    processNode(pScene->mRootNode, pScene);
+
+    const auto [it, inserted] = _modelMaps.emplace(modelName, model);
+    if (!inserted) {
+      Core::Logger::warning("ResourceManager", "Model name collision: ", modelName);
+    }
+
+    Core::Logger::info("ResourceManager", "Successfully loaded model [NEW]: ", modelName);
+
+    return it->second;
+  } catch (const Resources::ModelFileNotFoundException &e) {
+    Core::Logger::error("ResourceManager", "Model file not found: ", e.what());
+    return nullptr;
+  } catch (const Resources::ModelImportException &e) {
+    Core::Logger::error("ResourceManager", "Model import failed: ", e.what());
+    return nullptr;
+  } catch (const Resources::ModelCorruptedException &e) {
+    Core::Logger::error("ResourceManager", "Corrupted model: ", e.what());
+    return nullptr;
+  } catch (const Resources::TextureLoadException &e) {
+    Core::Logger::error("ResourceManager", "Texture load failed: ", e.what());
+    // Continue with model loading even if textures fail
+    // (model may still be usable without textures)
+  } catch (const std::exception &e) {
+    Core::Logger::error("ResourceManager", "Unexpected error loading model: ", e.what());
+    return nullptr;
+  } catch (...) {
+    Core::Logger::error("ResourceManager", "Unknown error loading model: ", modelName);
+    return nullptr;
+  }
+
+  return nullptr;
+}
+
 std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>> ResourceManager::loadEmbeddedTextures(
     const aiScene *scene) noexcept {
   ModelMesh::VecTexGL textures;
@@ -340,7 +445,43 @@ std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>> Resource
 
       if (texture) {
         textures.emplace_back(textureName, texture);
-        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ", textureName);
+        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ", textureName,
+                            " size: ", texture->getHeight(), " x ", texture->getWidth());
+      } else {
+        Core::Logger::warning("ResourceManager", "Failed to load embedded texture: ", textureName);
+      }
+    } catch (const std::exception &e) {
+      Core::Logger::error("ResourceManager", "Exception loading texture: ", textureName, ". Error: ", e.what());
+    }
+  }
+
+  return textures;
+}
+
+// TODO: delete loadEmbeddedTextures function
+std::vector<std::shared_ptr<Resources::TextureAsset>> ResourceManager::loadAssimpEmbeddedTextures(
+    const aiScene *scene) noexcept {
+  std::vector<std::shared_ptr<Resources::TextureAsset>> textures;
+  textures.reserve(scene->mNumTextures);
+
+  for (unsigned int i = 0; i < scene->mNumTextures; ++i) {
+    const aiTexture *aiTex = scene->mTextures[i];
+    if (!aiTex) {
+      Core::Logger::warning("ResourceManager", "Null texture at index: ", i);
+      continue;
+    }
+
+    // Generate unique texture name
+    std::string textureName = aiTex->mFilename.C_Str();
+    textureName += "_embedded_texture_" + Core::Random::generate();
+
+    try {
+      auto texture = loadTexture2D_memory(textureName, aiTex);
+
+      if (texture) {
+        textures.emplace_back(std::make_shared<Resources::TextureAsset>(textureName, texture));
+        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ", textureName,
+                            " size: ", texture->getHeight(), " x ", texture->getWidth());
       } else {
         Core::Logger::warning("ResourceManager", "Failed to load embedded texture: ", textureName);
       }

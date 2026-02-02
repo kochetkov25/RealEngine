@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ShaderManager.h"
+#include "TextureAsset.h"
 
 namespace Resources {
 class ModelLoader;
@@ -23,6 +24,7 @@ class ShaderProgram;
 class Texture2D;
 class Sprite;
 class AnimatedSprite;
+class Model;
 }  // namespace Render
 
 class ResourceManager {
@@ -77,6 +79,9 @@ class ResourceManager {
    */
   std::shared_ptr<ModelMesh> loadModelMesh(const std::string &modelName, const std::string &modelPath);
 
+  [[nodiscard]] std::shared_ptr<Render::Model> loadModel(const std::string &modelName,
+                                                         const std::string &modelRelativePath);
+
   /**
    * @brief Get metadata for a loaded model
    * @param modelName The name of the model
@@ -101,6 +106,9 @@ class ResourceManager {
   typedef std::map<const std::string, std::shared_ptr<Render::Sprite>> SpriteMap;
   SpriteMap _spriteMaps;
 
+  typedef std::map<const std::string, std::shared_ptr<Render::Model>> ModelMap;
+  ModelMap _modelMaps;
+
   // Path to the executable directory
   std::string _path;
 
@@ -117,4 +125,6 @@ class ResourceManager {
    */
   std::vector<std::pair<std::string, std::shared_ptr<Render::Texture2D>>> loadEmbeddedTextures(
       const aiScene *scene) noexcept;
+
+  std::vector<std::shared_ptr<Resources::TextureAsset>> loadAssimpEmbeddedTextures(const aiScene *scene) noexcept;
 };

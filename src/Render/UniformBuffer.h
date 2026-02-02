@@ -4,6 +4,11 @@
 
 namespace Render {
 
+/*
+ * 1. put data to buffer: set()
+ * 2. bind buffer: bind() (connect buffer to binding point)
+ * 3. call draw func
+ */
 template <typename T>
 class UniformBuffer {
  public:
@@ -31,17 +36,15 @@ class UniformBuffer {
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
 
+  void bind() { glBindBufferBase(GL_UNIFORM_BUFFER, _binding, _ubo); }
+
  private:
-  UniformBuffer(size_t size, GLuint bindingIndex)
-      : _size(size), _binding(bindingIndex) {
+  UniformBuffer(size_t size, GLuint bindingIndex) : _size(size), _binding(bindingIndex) {
     glGenBuffers(1, &_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
-    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_STATIC_DRAW);
-    glBindBufferBase(GL_UNIFORM_BUFFER, _binding, _ubo);
+    glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
   }
-
-  void bind() { glBindBufferBase(GL_UNIFORM_BUFFER, _binding, _ubo); }
 
   GLuint _ubo = 0;
   GLuint _binding = 0;

@@ -10,6 +10,9 @@ class RendererFactory {
   // minimum for draw 3D models
   static std::shared_ptr<Renderer> CreateDefault3DModelRenderer();
 
+  // minimum for draw skinned 3D models
+  static std::shared_ptr<Renderer> CreateSkinned3DModelRenderer();
+
   // minimum for draw textures
   static std::shared_ptr<Renderer> CreateTextureRenderer();
 

@@ -17,6 +17,9 @@
 #include "Modules/GUIWidgets.h"
 #include "Modules/Logger.h"
 #include "Resources/ShaderManager.h"
+#include "Render/Model.h"
+#include "glm/ext/matrix_float4x4.hpp"
+#include "glm/ext/matrix_transform.hpp"
 
 // clang-format on
 
@@ -62,8 +65,10 @@ int main(int argc, char **argv) {
   /*init RESOURCE MANAGER*/
   ResourceManager resourceManager;
 
-  /*init SHADERS*/
-  auto pMainShader = resourceManager.getShaderProgram(Resources::ShaderType::Mesh);
+  /*get SHADERS*/
+  auto pMeshShader = resourceManager.getShaderProgram(Resources::ShaderType::Mesh);
+  auto pSkinnedMeshShader =
+      resourceManager.getShaderProgram(Resources::ShaderType::Mesh, Resources::ShaderFeatures::Skinned);
   auto pLightShader = resourceManager.getShaderProgram(Resources::ShaderType::Light);
   auto pDebugGridShader = resourceManager.getShaderProgram(Resources::ShaderType::DebugGrid);
   auto pSprite2DShader = resourceManager.getShaderProgram(Resources::ShaderType::Sprite2D);
@@ -71,8 +76,14 @@ int main(int argc, char **argv) {
   /*init DEBUG GRID*/
   auto DebugGridRender = Render::RendererFactory::CreateDebugGridRenderer();
 
-  /*CUBE*/
-  auto MeshDebugCube = resourceManager.loadModelMesh("DebugCube", "res/models/sold.glb");
+  /*3D MODELS*/
+  auto model_anim_1 = resourceManager.loadModel("Medic", "res/models/nono.glb");
+  model_anim_1->setAnimation(model_anim_1->getAnimations().front());
+
+  auto model_anim_2 = resourceManager.loadModel("Neiro", "res/models/neiro.glb");
+  model_anim_2->setAnimation(model_anim_2->getAnimations().front());
+
+  auto model_stat_1 = resourceManager.loadModel("Cube", "res/models/CubeNormals.glb");
 
   /*LIGHT*/
   Render::Light DebugLight;
@@ -101,8 +112,9 @@ int main(int argc, char **argv) {
   std::string atlasName = "AttackAtlas";
   std::string atlasPath = "res/textures/loading_3.png";
 
-  unsigned int subTexWidth = 256;   // Width of each frame in atlas
-  unsigned int subTexHeight = 256;  // Height of each frame in atlas
+  unsigned int subTexWidth = 256;
+  unsigned int subTexHeight = 256;
+
   unsigned int framesCount = 20;
 
   std::vector<std::string> frameNames;
@@ -156,18 +168,55 @@ int main(int argc, char **argv) {
     DebugLight.draw(pLightShader);
 
     /*DRAWING CUBE*/
-    pMainShader->use();
+    // pMainShader->use();
+
+    // auto modelMatrix = glm::mat4(1.f);
+    // modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
+    // modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
+
+    // auto shininess = 64.f;
+    // pMainShader->setFloatUniform("material.shininess", shininess);
+
+    // pMainShader->setMatrix4Uniform("modelMatrix", modelMatrix);
+
+    // MeshDebugCube->draw(pMainShader);
+
+    /*SKINNED MODEL 1*/
+    pSkinnedMeshShader->use();
 
     auto modelMatrix = glm::mat4(1.f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(0.f, 0.f, 0.f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.f, 2.f, 2.f));
+
+    auto shininess = 128.f;
+    pSkinnedMeshShader->setFloatUniform("material.shininess", shininess);
+    pSkinnedMeshShader->setMatrix4Uniform("modelMatrix", modelMatrix);
+
+    model_anim_1->update(deltaTime);
+    model_anim_1->draw(pSkinnedMeshShader);
+
+    /*SKINNED MODEL 2*/
+    modelMatrix = glm::mat4(1.f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(5.f, 0.f, 0.f));
+    modelMatrix = glm::scale(modelMatrix, glm::vec3(2.f, 2.f, 2.f));
+
+    pSkinnedMeshShader->setFloatUniform("material.shininess", shininess);
+    pSkinnedMeshShader->setMatrix4Uniform("modelMatrix", modelMatrix);
+
+    model_anim_2->update(deltaTime);
+    model_anim_2->draw(pSkinnedMeshShader);
+
+    /*STATIC MODEL 1*/
+    pMeshShader->use();
+
+    modelMatrix = glm::mat4(1.f);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(-5.f, 0.f, 0.f));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(1.f, 1.f, 1.f));
 
-    auto shininess = 64.f;
-    pMainShader->setFloatUniform("material.shininess", shininess);
+    pMeshShader->setFloatUniform("material.shininess", shininess);
+    pMeshShader->setMatrix4Uniform("modelMatrix", modelMatrix);
 
-    pMainShader->setMatrix4Uniform("modelMatrix", modelMatrix);
-
-    MeshDebugCube->draw(pMainShader);
+    model_stat_1->draw(pMeshShader);
 
     /*DEBUG GRID*/
     pDebugGridShader->use();
@@ -175,10 +224,7 @@ int main(int argc, char **argv) {
     DebugGridRender->drawArrays();
 
     /*2D ANIMATED SPRITE*/
-    // Update sprite animation using MainTimer deltaTime (in seconds)
     animatedSprite->update(deltaTime);
-
-    // Render sprite
     animatedSprite->render();
 
     /*UI*/

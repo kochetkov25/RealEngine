@@ -1,8 +1,11 @@
+#pragma once
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <string>
 #include <vector>
 
+namespace Resources {
 struct VectorKey {
   float timestamp;
   glm::vec3 value;
@@ -26,3 +29,4 @@ class AnimationAsset {
   float durationInSeconds;
   std::vector<AnimationChannel> channels;
 };
+}  // namespace Resources

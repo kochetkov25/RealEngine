@@ -6,9 +6,6 @@
 #include <imgui.h>
 
 namespace Modules {
-
-/*============================================================*/
-/*инициализация модуля пользовательского интерфейса*/
 void GUIModule::onWindowCreate(GLFWwindow* pWindow) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -21,28 +18,21 @@ void GUIModule::onWindowCreate(GLFWwindow* pWindow) {
   ImGui_ImplGlfw_InitForOpenGL(pWindow, true);
 }
 
-/*============================================================*/
-/*освобождения ресурсов, занятх модулем*/
 void GUIModule::onWindowClose() {
   ImGui_ImplOpenGL3_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 }
 
-/*============================================================*/
-/*начало отрисовки*/
 void GUIModule::GUIbegin() {
   ImGui_ImplOpenGL3_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
 
   /*settings for docking*/
-  ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(),
-                               ImGuiDockNodeFlags_PassthruCentralNode);
+  ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 }
 
-/*============================================================*/
-/*конец отрисовки*/
 void GUIModule::GUIend() {
   ImGui::Render();
   ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -54,5 +44,4 @@ void GUIModule::GUIend() {
     glfwMakeContextCurrent(backupCurrentContext);
   }
 }
-
 }  // namespace Modules

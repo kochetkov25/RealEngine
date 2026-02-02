@@ -103,7 +103,7 @@ void parseTextures(const aiMaterial *material, MeshAsset &meshAsset) {
     material->GetTexture(textureType, 0, &path);
 
     const unsigned int textureIndex = extractTextureIndex(path.C_Str());
-    meshAsset.addTexture(MeshAsset::Texture(textureIndex, textureType));
+    meshAsset.addTexture(MeshAsset::TextureSlot(textureIndex, textureType));
   }
 }
 
@@ -298,7 +298,7 @@ std::shared_ptr<SkeletonAsset> parseSkeleton(const aiScene *scene) {
   skeleton->setGlobalInverseTransform(
       glm::inverse(glm::transpose(glm::make_mat4(&scene->mRootNode->mTransformation.a1))));
 
-  return skeleton;
+  return skeleton->getBones().size() > 0 ? skeleton : nullptr;
 }
 
 std::shared_ptr<AnimationAsset> parseAnimation(const aiAnimation *animation, const SkeletonAsset &skeleton) {

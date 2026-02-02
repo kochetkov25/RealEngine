@@ -6,6 +6,13 @@ layout(location = 0) in vec3 vertex_position;
 layout(location = 1) in vec2 texture_coords;
 layout(location = 2) in vec3 texture_normals;
 
+#ifdef SKINNED
+layout(location = 3) in uvec4 bone_ids;
+layout(location = 4) in vec4  bone_weights;
+
+#include "boneUniform.glsl"
+#endif
+
 out vec2 texCoords;
 out vec3 fragNormal;          // World-space normal
 out vec3 fragTangent;         // World-space tangent (for normal mapping)
@@ -17,31 +24,35 @@ uniform bool useNormalMapping = false;  // Flag to enable/disable normal mapping
 
 void main() 
 {
-   texCoords = texture_coords;
+    texCoords = texture_coords;
 
-   // Calculate TBN matrix for normal mapping (if tangents/bitangents are available)
-   // For now, we'll compute it from normals if needed
-   mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));
-   
-   // Transform normals to world space
-   fragNormal = normalize(normalMatrix * texture_normals);
-   
-   // For normal mapping, we need tangent and bitangent
-   // Since we don't have them yet, we'll derive a perpendicular vector
-   // In a full implementation, these would come from vertex attributes
-   if (useNormalMapping) {
-      // Compute tangent and bitangent from normal
-      vec3 tangent = normalize(normalMatrix * vec3(1.0, 0.0, 0.0));
-      vec3 bitangent = normalize(cross(fragNormal, tangent));
-      tangent = normalize(cross(bitangent, fragNormal));
-      
-      fragTangent = tangent;
-      fragBitangent = bitangent;
-   }
+    vec4 localPosition = vec4(vertex_position, 1.0);
+    vec3 localNormal   = texture_normals;
 
-   // Vertex position in world space
-   vertexPosWorld = (modelMatrix * vec4(vertex_position, 1.0)).xyz;
+#ifdef SKINNED
+    mat4 boneTransform = bone_weights.x * u_FinalBones[bone_ids.x] +
+                         bone_weights.y * u_FinalBones[bone_ids.y] +
+                         bone_weights.z * u_FinalBones[bone_ids.z] +
+                         bone_weights.w * u_FinalBones[bone_ids.w];
 
-   // Final position in clip space
-   gl_Position = camera_u.projMat * camera_u.viewMat * modelMatrix * vec4(vertex_position, 1.0);
+    localPosition = boneTransform * localPosition;
+    localNormal   = mat3(boneTransform) * localNormal; 
+#endif
+
+    mat3 normalMatrix = mat3(transpose(inverse(modelMatrix)));
+    
+    fragNormal = normalize(normalMatrix * localNormal);
+    
+    if (useNormalMapping) {
+       vec3 tangent = normalize(normalMatrix * vec3(1.0, 0.0, 0.0));
+       vec3 bitangent = normalize(cross(fragNormal, tangent));
+       tangent = normalize(cross(bitangent, fragNormal));
+       
+       fragTangent = tangent;
+       fragBitangent = bitangent;
+    }
+
+    vertexPosWorld = (modelMatrix * localPosition).xyz;
+
+    gl_Position = camera_u.projMat * camera_u.viewMat * modelMatrix * localPosition;
 }

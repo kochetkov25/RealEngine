@@ -159,7 +159,10 @@ void Camera::moveCamera(const float duration) {
 
 ShaderUtils::CameraBlock Camera::getCameraBlock() const { return {getViewMat(), getProjMat(), getPosition()}; }
 
-void Camera::update() { _cameraUBO.set(getCameraBlock()); }
+void Camera::update() {
+  _cameraUBO.set(getCameraBlock());
+  _cameraUBO.bind();
+}
 
 // Update orientation quaternion from yaw and pitch Euler angles
 // This conversion is only for input handling; rotation is stored as quaternion

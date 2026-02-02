@@ -1,8 +1,23 @@
 #include "ShaderProgram.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <string>
+#include <unordered_map>
 
 #include "Modules/Logger.h"
+#include "TexSlots.h"
+
+namespace {
+const std::unordered_map<std::string, GLint> kMaterialSamplers = {
+    {"material.diffuse", Render::TexSlots::Diffuse},      {"material.specular", Render::TexSlots::Specular},
+    {"material.normal", Render::TexSlots::Normal},        {"material.height", Render::TexSlots::Height},
+    {"material.ambient", Render::TexSlots::Ambient},      {"material.emissive", Render::TexSlots::Emissive},
+    {"material.metallic", Render::TexSlots::Metallic},    {"material.roughness", Render::TexSlots::Roughness},
+    {"material.texture", Render::TexSlots::Diffuse},       // Legacy
+    {"material.specularMap", Render::TexSlots::Specular},  // Legacy
+    {"material.emissionMap", Render::TexSlots::Emissive},  // Legacy
+};
+}  // namespace
 
 namespace Render {
 
@@ -33,6 +48,11 @@ ShaderProgram::ShaderProgram(const std::string &vertexShader, const std::string 
     Core::Logger::error("ShaderProgram", "Failed to link shader program. Error: ", infoLog);
   } else {
     _isCompiled = true;
+
+    // Slots for textures. TODO: glProgramUniform1i ???
+    glUseProgram(_ID);
+    bindMaterialSamplerSlots();
+    glUseProgram(0);
   }
 
   glDeleteShader(vertexShaderID);
@@ -95,5 +115,14 @@ void Render::ShaderProgram::setBoolUniform(const std::string &name, bool value) 
 
 void Render::ShaderProgram::setArrayUniform(const std::string &name, const size_t size, const float *arr) {
   glUniform1fv(glGetUniformLocation(_ID, name.c_str()), static_cast<GLsizei>(size), arr);
+}
+
+void ShaderProgram::bindMaterialSamplerSlots() {
+  for (const auto &[name, unit] : kMaterialSamplers) {
+    const GLint loc = glGetUniformLocation(_ID, name.c_str());
+    if (loc != -1) {
+      glUniform1i(loc, unit);
+    }
+  }
 }
 }  // namespace Render

@@ -7,9 +7,8 @@
 namespace Render {
 
 class ShaderProgram {
-public:
-  ShaderProgram(const std::string &vertexShader,
-                const std::string &fragmentShader);
+ public:
+  ShaderProgram(const std::string &vertexShader, const std::string &fragmentShader);
 
   ~ShaderProgram();
 
@@ -31,18 +30,18 @@ public:
 
   void setBoolUniform(const std::string &name, bool value);
 
-  void setArrayUniform(const std::string &name, const size_t size,
-                       const float *arr);
+  void setArrayUniform(const std::string &name, const size_t size, const float *arr);
 
   [[nodiscard]] GLuint getShaderProgramID() const { return _ID; }
 
-private:
-  bool createShader(const std::string &shaderSource, const GLenum shaderType,
-                    GLuint &shaderID);
+ private:
+  bool createShader(const std::string &shaderSource, const GLenum shaderType, GLuint &shaderID);
+  
+  void bindMaterialSamplerSlots();
 
   bool _isCompiled = false;
 
   GLuint _ID = 0;
 };
 
-} // namespace Render
+}  // namespace Render

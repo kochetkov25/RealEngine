@@ -23,8 +23,7 @@ void Render::Light::addLight(const LightObject& light) {
   _lightBlock._count++;
 }
 
-void Render::Light::rewriteLightData(const std::string& name,
-                                     const ShaderUtils::LightData& data) {
+void Render::Light::rewriteLightData(const std::string& name, const ShaderUtils::LightData& data) {
   if (!_name2uid.count(name)) {
     assert(false && "Light doesn't exist!");
   }
@@ -43,13 +42,13 @@ void Render::Light::moveLight(const std::string& name, const glm::vec3& pos) {
 void Render::Light::draw(std::shared_ptr<Render::ShaderProgram> shader) {
   // Should use lights before other objects. May need refactoring.
   _lightUBO.set(_lightBlock);
+  _lightUBO.bind();
 
   shader->use();
 
   for (auto [name, uid] : _name2uid) {
     auto modelMatrix = glm::mat4(1.f);
-    modelMatrix = glm::translate(modelMatrix,
-                                 _lightBlock._data[uid]._lightPosition.value);
+    modelMatrix = glm::translate(modelMatrix, _lightBlock._data[uid]._lightPosition.value);
     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f, 0.25f, 0.25f));
 
     shader->setMatrix4Uniform("modelMatrix", modelMatrix);

@@ -21,8 +21,8 @@ class MeshAsset {
     std::array<float, kMaxBonePerVertex> boneWeights;
   };
 
-  struct Texture {
-    Texture(unsigned int id, aiTextureType type) noexcept : id(id), type(type) {}
+  struct TextureSlot {
+    TextureSlot(unsigned int id, aiTextureType type) noexcept : id(id), type(type) {}
 
     unsigned int id;
 
@@ -48,7 +48,7 @@ class MeshAsset {
 
   [[nodiscard]] const std::vector<unsigned int> &getIndices() const noexcept { return indices_; }
 
-  [[nodiscard]] const std::vector<Texture> &getTextures() const noexcept { return textures_; }
+  [[nodiscard]] const std::vector<TextureSlot> &getTextureSlots() const noexcept { return textures_; }
 
   [[nodiscard]] const std::optional<std::vector<VertexBoneData>> &getBoneData() const noexcept { return boneData_; }
 
@@ -67,8 +67,8 @@ class MeshAsset {
 
   void addTexCoord(const glm::vec2 &texCoord) { texCoords_.push_back(texCoord); }
 
-  void addTexture(const Texture &texture) { textures_.push_back(texture); }
-  void addTexture(Texture &&texture) { textures_.push_back(std::move(texture)); }
+  void addTexture(const TextureSlot &texture) { textures_.push_back(texture); }
+  void addTexture(TextureSlot &&texture) { textures_.push_back(std::move(texture)); }
 
   void reserveVertices(size_t count) { vertices_.reserve(count); }
 
@@ -88,7 +88,7 @@ class MeshAsset {
   std::vector<glm::vec3> normals_;
   std::vector<glm::vec2> texCoords_;
   std::vector<unsigned int> indices_;
-  std::vector<Texture> textures_;
+  std::vector<TextureSlot> textures_;
   std::optional<std::vector<VertexBoneData>> boneData_;
 };
 }  // namespace Resources
