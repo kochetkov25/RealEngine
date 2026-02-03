@@ -103,6 +103,14 @@ uint8_t textureUnitForType(aiTextureType type) {
 }  // namespace
 
 namespace Render {
+/*DEBUG ONLY! TODO: remove*/
+glm::mat4 ModelMeta::getModelMatrix() const {
+  auto modelMatrix = glm::mat4(1.f);
+  modelMatrix = glm::translate(modelMatrix, _position);
+  modelMatrix = glm::scale(modelMatrix, glm::vec3(_scale, _scale, _scale));
+  return modelMatrix;
+}
+
 void Model::addMeshComponent(std::shared_ptr<MeshComponent> component) { _meshComponents.push_back(component); }
 
 void Model::addMeshAsset(std::shared_ptr<Resources::MeshAsset> asset) { _meshAssets.push_back(asset); }

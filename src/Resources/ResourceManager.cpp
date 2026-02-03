@@ -257,6 +257,7 @@ std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &mod
     }
 
     auto model = std::make_shared<Render::Model>();
+    model->getModelMeta()->_name = modelName;
 
     model->setTextureAssets(std::move(loadAssimpEmbeddedTextures(pScene)));
 

@@ -22,9 +22,22 @@ class MeshComponent;
 class ShaderProgram;
 class Texture2D;
 
+/*DEBUG ONLY! TODO: remove*/
+struct ModelMeta {
+  glm::vec3 _position = {0, 0, 0};
+  int _scale = 1;
+
+  float _shininess = 128.f;
+
+  std::string _name = "";
+
+  [[nodiscard]] glm::mat4 getModelMatrix() const;
+};
+
 class Model {
  public:
-  Model() = default;
+  /*DEBUG ONLY! TODO: remove*/
+  Model() : _modelMeta(std::make_shared<ModelMeta>()) {}
   ~Model() = default;
 
   void addMeshComponent(std::shared_ptr<MeshComponent> component);
@@ -44,6 +57,9 @@ class Model {
 
   [[nodiscard]] const std::vector<std::shared_ptr<Resources::AnimationAsset>>& getAnimations() const;
 
+  /*DEBUG ONLY! TODO: remove*/
+  [[nodiscard]] std::shared_ptr<ModelMeta> getModelMeta() const { return _modelMeta; }
+
  private:
   uint8_t bindTextures(const std::vector<Resources::MeshAsset::TextureSlot>& slots) const;
 
@@ -59,7 +75,6 @@ class Model {
 
   std::unique_ptr<UniformBuffer<ShaderUtils::BoneBlock>> _boneUBO;
 
-  /*REMOVE! ONLY FOR DEBUG*/
-  bool _test_anim = true;
+  std::shared_ptr<ModelMeta> _modelMeta;
 };
 }  // namespace Render
