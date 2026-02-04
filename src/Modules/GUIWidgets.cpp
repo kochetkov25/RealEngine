@@ -29,7 +29,7 @@ void createLightEditorWidget(Render::Light::LightObject& lightObject) {
 
   ImGui::SliderFloat("Radius", &lightObject.data._attenuation.value.w, 0.0f, 100.f);
 
-  ImGui::SliderFloat("Intensity", &lightObject.data._color.value.w, 0.0f, 100.f);
+  ImGui::DragFloat("Intensity", &lightObject.data._color.value.w, 0.1f, 0.0f,100.f);
 
   auto lightType = static_cast<int>(lightObject.data._position.value.w);
   ImGui::SliderInt("Light Type", &lightType, 0, 1);

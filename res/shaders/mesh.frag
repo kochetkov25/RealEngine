@@ -167,8 +167,10 @@ void main()
     }
 
     totalLighting += emissive;
+
+    vec3 mapped = totalLighting / (totalLighting + vec3(1.0));
     
-    vec3 finalColor = pow(totalLighting, vec3(1.0 / 2.2));
+    vec3 finalColor = pow(mapped, vec3(1.0 / 2.2));
     
     FragColor = vec4(finalColor, 1.0);
 }
