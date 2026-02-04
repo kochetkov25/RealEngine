@@ -7,27 +7,34 @@ constexpr int kMaxLightsCount = 100;
 
 struct alignas(16) LightData {
   LightData()
-      : _lightPosition(glm::vec3(0.0f, 0.0f, 0.0f)),
-        _lightColor(glm::vec3(1.0f, 1.0f, 1.0f)),
-        _ambientFactor(glm::vec3(0.2f, 0.2f, 0.2f)),
-        _diffuseFactor(glm::vec3(0.5f, 0.5f, 0.5f)),
-        _specularFactor(glm::vec3(1.0f, 1.0f, 1.0f)),
-        _constantFactor(1.0f),
-        _linearFactor(0.09f),
-        _quadFactor(0.032f) {}
+      : _position(glm::vec4(0.0f, 0.0f, 0.0f, 0.0f)),         // .xyz = Pos, .w = Type (0 = Point, 1 = Directional)
+        _color(glm::vec4(1.0f, 1.0f, 1.0f, 1.0f)),            // .xyz = RGB, .w = Intensity (1.0)
+        _attenuation(glm::vec4(1.0f, 0.09f, 0.032f, 20.0f)),  // .x = Const, .y = Lin, .z = Quad, .w = Radius
+        _factors(glm::vec4(0.2f, 0.5f, 1.0f, 0.0f))           // .x = Amb, .y = Diff, .z = Spec, .w = Pad
+  {}
 
-  STD140(glm::vec3, _lightPosition);
-  STD140(glm::vec3, _lightColor);
+  // .xyz = Light Position
+  // .w   = Light Type (0.0 = Point, 1.0 = Directional)
+  STD140(glm::vec4, _position);
 
-  STD140(glm::vec3, _ambientFactor);
-  STD140(glm::vec3, _diffuseFactor);
-  STD140(glm::vec3, _specularFactor);
+  // .xyz = Light Color
+  // .w   = Light Intensity (>1.0 for HDR)
+  STD140(glm::vec4, _color);
 
-  STD140(float, _constantFactor);
-  STD140(float, _linearFactor);
-  STD140(float, _quadFactor);
+  // .x = Constant Factor
+  // .y = Linear Factor
+  // .z = Quadratic Factor
+  // .w = Radius
+  STD140(glm::vec4, _attenuation);
+
+  // .x = Ambient Factor
+  // .y = Diffuse Factor
+  // .z = Specular Factor
+  // .w = Padding (unused)
+  STD140(glm::vec4, _factors);
 };
 
+static_assert(sizeof(LightData) == 64, "LightData must be exactly 64 bytes");
 static_assert(sizeof(LightData) % 16 == 0);
 
 struct alignas(16) LightBlock {

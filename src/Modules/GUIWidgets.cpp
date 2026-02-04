@@ -6,31 +6,38 @@ namespace Modules {
 void createLightEditorWidget(Render::Light::LightObject& lightObject) {
   ImGui::Begin(lightObject.name.c_str());
 
-  ImGui::SliderFloat("X", &lightObject.data._lightPosition.value.x, -100.f, 100.f);
-
-  ImGui::SliderFloat("Y", &lightObject.data._lightPosition.value.y, -100.f, 100.f);
-
-  ImGui::SliderFloat("Z", &lightObject.data._lightPosition.value.z, -100.f, 100.f);
+  ImGui::SliderFloat("X", &lightObject.data._position.value.x, -100.f, 100.f);
+  ImGui::SliderFloat("Y", &lightObject.data._position.value.y, -100.f, 100.f);
+  ImGui::SliderFloat("Z", &lightObject.data._position.value.z, -100.f, 100.f);
 
   float lightColor[3] = {
-      lightObject.data._lightColor.value.x,
-      lightObject.data._lightColor.value.y,
-      lightObject.data._lightColor.value.z,
+      lightObject.data._color.value.x,
+      lightObject.data._color.value.y,
+      lightObject.data._color.value.z,
   };
   ImGui::ColorEdit3("Light Color", lightColor);
-  lightObject.data._lightColor = {lightColor[0], lightColor[1], lightColor[2]};
+  lightObject.data._color.value =
+      glm::vec4(lightColor[0], lightColor[1], lightColor[2], lightObject.data._color.value.w);
 
-  auto ambientComponent = lightObject.data._ambientFactor.value.x;
-  auto diffuseComponent = lightObject.data._diffuseFactor.value.x;
-  auto specularComponent = lightObject.data._specularFactor.value.x;
+  auto ambientComponent = lightObject.data._factors.value.x;
+  auto diffuseComponent = lightObject.data._factors.value.y;
+  auto specularComponent = lightObject.data._factors.value.z;
 
   ImGui::SliderFloat("Ambient", &ambientComponent, 0.0f, 1.f);
   ImGui::SliderFloat("Diffuse", &diffuseComponent, 0.0f, 1.f);
   ImGui::SliderFloat("Specular", &specularComponent, 0.0f, 1.f);
 
-  lightObject.data._ambientFactor = {ambientComponent, ambientComponent, ambientComponent};
-  lightObject.data._diffuseFactor = {diffuseComponent, diffuseComponent, diffuseComponent};
-  lightObject.data._specularFactor = {specularComponent, specularComponent, specularComponent};
+  ImGui::SliderFloat("Radius", &lightObject.data._attenuation.value.w, 0.0f, 100.f);
+
+  ImGui::SliderFloat("Intensity", &lightObject.data._color.value.w, 0.0f, 100.f);
+
+  auto lightType = static_cast<int>(lightObject.data._position.value.w);
+  ImGui::SliderInt("Light Type", &lightType, 0, 1);
+  lightObject.data._position.value.w = static_cast<float>(lightType);
+
+  lightObject.data._factors.value.x = ambientComponent;
+  lightObject.data._factors.value.y = diffuseComponent;
+  lightObject.data._factors.value.z = specularComponent;
 
   ImGui::End();
 }

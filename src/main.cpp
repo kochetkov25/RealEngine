@@ -3,6 +3,7 @@
 #include <cassert>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
 
 #include "Resources/FileManager.h"
 #include "Resources/ResourceManager.h"
@@ -81,7 +82,7 @@ int main(int argc, char **argv) {
   Modules::ModelEditorWidget modelEditorWidget;
 
   /*3D MODELS*/
-  auto model_anim_1 = resourceManager.loadModel("Medic", "res/models/nono.glb");
+  auto model_anim_1 = resourceManager.loadModel("Medicccc", "res/models/nono.glb");
   model_anim_1->setAnimation(model_anim_1->getAnimations().front());
   model_anim_1->getModelMeta()->_position = {-3.f, 0.f, -2.f};
   model_anim_1->getModelMeta()->_scale = 2;
@@ -108,14 +109,14 @@ int main(int argc, char **argv) {
       {},
       ModelDebugLight,
   };
-  lightObject_1.data._lightPosition = {2.f, 7.f, 0.f};
+  lightObject_1.data._position.value = glm::vec4(2.f, 7.f, 0.f, 0.f);
 
   Render::Light::LightObject lightObject_2{
       "light_2",
       {},
       ModelDebugLight,
   };
-  lightObject_2.data._lightPosition = {-2.f, 5.f, 0.f};
+  lightObject_2.data._position.value = glm::vec4(-2.f, 5.f, 0.f, 0.f);
 
   DebugLight.addLight(lightObject_1);
   DebugLight.addLight(lightObject_2);

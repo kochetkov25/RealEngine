@@ -36,7 +36,8 @@ void Render::Light::moveLight(const std::string& name, const glm::vec3& pos) {
     assert(false && "Light doesn't exist!");
   }
 
-  _lightBlock._data[_name2uid.at(name)]._lightPosition = pos;
+  auto& p = _lightBlock._data[_name2uid.at(name)]._position;
+  p.value = glm::vec4(pos.x, pos.y, pos.z, p.value.w);
 }
 
 void Render::Light::draw(std::shared_ptr<Render::ShaderProgram> shader) {
@@ -48,11 +49,11 @@ void Render::Light::draw(std::shared_ptr<Render::ShaderProgram> shader) {
 
   for (auto [name, uid] : _name2uid) {
     auto modelMatrix = glm::mat4(1.f);
-    modelMatrix = glm::translate(modelMatrix, _lightBlock._data[uid]._lightPosition.value);
+    modelMatrix = glm::translate(modelMatrix, glm::vec3(_lightBlock._data[uid]._position.value));
     modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f, 0.25f, 0.25f));
 
     shader->setMatrix4Uniform("modelMatrix", modelMatrix);
-    shader->setVec3Uniform("lightColor", _lightBlock._data[uid]._lightColor);
+    shader->setVec3Uniform("lightColor", glm::vec3(_lightBlock._data[uid]._color.value));
 
     _lightModels.at(uid)->draw(shader);
   }
