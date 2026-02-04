@@ -306,7 +306,7 @@ std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &mod
       Core::Logger::warning("ResourceManager", "Model name collision: ", modelName);
     }
 
-    Core::Logger::info("ResourceManager", "Successfully loaded model [NEW]: ", modelName);
+    Core::Logger::info("ResourceManager", "Successfully loaded model: ", modelName);
 
     return it->second;
   } catch (const Resources::ModelFileNotFoundException &e) {
