@@ -2,3 +2,5 @@ build/*
 *.user
 compile_commands.json
 .cache/
+res/models/*
+res/textures/*
