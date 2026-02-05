@@ -45,6 +45,14 @@ file(GLOB_RECURSE SRC_SHADER_UTILS CONFIGURE_DEPENDS
     "src/Render/ShaderUtils/*.cpp"
     "src/Render/ShaderUtils/*.h"
 )
+file(GLOB_RECURSE SRC_SCENE CONFIGURE_DEPENDS
+    "src/Scene/*.cpp"
+    "src/Scene/*.h"
+)
+file(GLOB_RECURSE SRC_SYSTEMS CONFIGURE_DEPENDS
+    "src/Systems/*.cpp"
+    "src/Systems/*.h"
+)
 
 # Separate source files from headers for better dependency tracking
 # Only include .cpp files in the executable, headers are for IDE organization only
@@ -53,7 +61,7 @@ set(ENGINE_SOURCES
 )
 
 # Filter out headers from source lists (only include .cpp files)
-foreach(FILE ${SRC_RENDER} ${SRC_RESOURCES} ${SRC_MODULES} ${SRC_EVENTS} ${SRC_INPUT} ${SRC_SHADER_UTILS})
+foreach(FILE ${SRC_RENDER} ${SRC_RESOURCES} ${SRC_MODULES} ${SRC_EVENTS} ${SRC_INPUT} ${SRC_SHADER_UTILS} ${SRC_SCENE} ${SRC_SYSTEMS})
     if(FILE MATCHES "\\.cpp$")
         list(APPEND ENGINE_SOURCES ${FILE})
     endif()
@@ -112,6 +120,8 @@ source_group("Modules" FILES ${SRC_MODULES})
 source_group("Events" FILES ${SRC_EVENTS})
 source_group("Input" FILES ${SRC_INPUT})
 source_group("ShaderUtils" FILES ${SRC_SHADER_UTILS})
+source_group("Scene" FILES ${SRC_SCENE})
+source_group("Systems" FILES ${SRC_SYSTEMS})
 
 # ============================================================================
 # Dependencies
