@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   Modules::ModelEditorWidget modelEditorWidget;
 
   /*3D MODELS*/
-  auto model_anim_1 = resourceManager.loadModel("Medic2077", "res/models/nono.glb");
+  auto model_anim_1 = resourceManager.loadModel("Medic2077", "res/models/oldkn.glb");
   model_anim_1->setAnimation(model_anim_1->getAnimations().front());
   model_anim_1->getModelMeta()->_position = {-3.f, 0.f, -2.f};
   model_anim_1->getModelMeta()->_scale = 2;

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ModelData.h"
 #include "ShaderManager.h"
 
 struct aiScene;
@@ -60,6 +61,8 @@ class ResourceManager {
   [[nodiscard]] std::shared_ptr<Render::Model> loadModel(const std::string &modelName,
                                                          const std::string &modelRelativePath);
 
+  [[nodiscard]] std::shared_ptr<Resources::ModelData> loadModelData(const std::string &modelRelativePath);
+
  private:
   std::vector<std::shared_ptr<Resources::TextureAsset>> loadAssimpEmbeddedTextures(const aiScene *scene) noexcept;
 
@@ -75,4 +78,6 @@ class ResourceManager {
   std::unique_ptr<Resources::ModelLoader> _modelLoader;
 
   std::unique_ptr<Resources::ShaderManager> _shaderManager;
+
+  std::unordered_map<std::string, std::shared_ptr<Resources::ModelData>> _modelDatas;
 };

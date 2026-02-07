@@ -8,13 +8,17 @@
 #include "AnimationAsset.h"
 #include "MeshAsset.h"
 #include "Modules/Logger.h"
+#include "Modules/Random.h"
+#include "Render/Texture2D.h"
 #include "SkeletonAsset.h"
+#include "TextureAsset.h"
 #include "assimp/material.h"
 #include "assimp/mesh.h"
 #include "assimp/scene.h"
 #include "glm/ext/quaternion_common.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/matrix.hpp"
+#include "stb_image.h"
 
 namespace Resources {
 
@@ -216,6 +220,58 @@ void parseNodeHierarchy(const aiNode *node, std::optional<unsigned int> parentId
   }
 }
 
+struct PixelDeleter {
+  bool isCompressed;
+  void operator()(unsigned char *ptr) const {
+    if (ptr) {
+      if (isCompressed)
+        stbi_image_free(ptr);
+      else
+        free(ptr);
+    }
+  }
+};
+
+std::shared_ptr<Render::Texture2D> loadTexFromData(const std::string &textureName, const aiTexture *rawData) {
+  int width = 0, height = 0, channels = 4;  // aiTexture/stbi GL formats expect 4 channels
+
+  std::unique_ptr<unsigned char, PixelDeleter> pixelsArr(nullptr, {rawData->mHeight == 0});
+
+  if (rawData->mHeight == 0) {
+    int actualChannels = 0;
+    unsigned char *loadedPixels =
+        stbi_load_from_memory(reinterpret_cast<const unsigned char *>(rawData->pcData), rawData->mWidth, &width,
+                              &height, &actualChannels, STBI_rgb_alpha);
+    pixelsArr.reset(loadedPixels);
+  } else {
+    width = rawData->mWidth;
+    height = rawData->mHeight;
+
+    size_t dataSize = width * height * 4;
+    unsigned char *convertedPixels = static_cast<unsigned char *>(malloc(dataSize));
+
+    if (convertedPixels) {
+      const aiTexel *srcData = rawData->pcData;
+
+      for (size_t i = 0; i < width * height; ++i) {
+        convertedPixels[i * 4 + 0] = srcData[i].r;
+        convertedPixels[i * 4 + 1] = srcData[i].g;
+        convertedPixels[i * 4 + 2] = srcData[i].b;
+        convertedPixels[i * 4 + 3] = srcData[i].a;
+      }
+    }
+    pixelsArr.reset(convertedPixels);
+  }
+
+  if (!pixelsArr) {
+    Core::Logger::error("ParseUtils", "Failed to load embedded texture: ", textureName,
+                        " (format hint: ", rawData->achFormatHint, ")");
+    return nullptr;
+  }
+
+  return std::make_shared<Render::Texture2D>(width, height, pixelsArr.get(), channels, GL_NEAREST, GL_CLAMP_TO_EDGE);
+}
+
 }  // anonymous namespace
 
 std::shared_ptr<MeshAsset> parseMesh(const aiMesh *mesh, const aiMaterial *material) {
@@ -354,6 +410,40 @@ std::shared_ptr<AnimationAsset> parseAnimation(const aiAnimation *animation, con
   }
 
   return animAsset;
+}
+
+[[nodiscard]] std::vector<std::shared_ptr<TextureAsset>> parseEmbeddedTextures(const aiScene *scene) {
+  std::vector<std::shared_ptr<Resources::TextureAsset>> textures;
+  textures.reserve(scene->mNumTextures);
+
+  for (unsigned int i = 0; i < scene->mNumTextures; ++i) {
+    const aiTexture *aiTex = scene->mTextures[i];
+    if (!aiTex) {
+      Core::Logger::warning("ResourceManager", "Null texture at index: ", i);
+      continue;
+    }
+
+    std::string textureName = aiTex->mFilename.C_Str();
+    if (textureName.empty()) {
+      textureName += "embeded_texure_" + Core::Random::generate();
+    }
+
+    try {
+      auto texture = loadTexFromData(textureName, aiTex);
+
+      if (texture) {
+        textures.emplace_back(std::make_shared<Resources::TextureAsset>(textureName, texture));
+        Core::Logger::debug("ResourceManager", "Loaded embedded texture: ", textureName,
+                            " size: ", texture->getHeight(), " x ", texture->getWidth());
+      } else {
+        Core::Logger::warning("ResourceManager", "Failed to load embedded texture: ", textureName);
+      }
+    } catch (const std::exception &e) {
+      Core::Logger::error("ResourceManager", "Exception loading texture: ", textureName, ". Error: ", e.what());
+    }
+  }
+
+  return textures;
 }
 
 }  // namespace Resources

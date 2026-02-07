@@ -333,6 +333,84 @@ std::shared_ptr<Render::Model> ResourceManager::loadModel(const std::string &mod
   return nullptr;
 }
 
+std::shared_ptr<Resources::ModelData> ResourceManager::loadModelData(const std::string &modelRelativePath) {
+  try {
+    Core::Logger::info("ResourceManager", "Loading model: from path: ", modelRelativePath);
+
+    const auto absolutePath = Resources::FileManager::instance().getAbsolutePath(modelRelativePath);
+
+    const auto existingIt = _modelDatas.find(absolutePath);
+    if (existingIt != _modelDatas.end()) {
+      Core::Logger::warning("ResourceManager", "Model form ", modelRelativePath,
+                            "' already exists. Returning existing model.");
+      return existingIt->second;
+    }
+
+    const auto pScene = _modelLoader->loadModel(absolutePath);
+    if (!pScene) {
+      Core::Logger::error("ResourceManager", "Failed to load from ", modelRelativePath);
+      return nullptr;
+    }
+
+    auto modelData = std::make_shared<Resources::ModelData>();
+
+    modelData->textureAssets = Resources::parseEmbeddedTextures(pScene);
+
+    auto skeleton = Resources::parseSkeleton(pScene);
+    if (skeleton) {
+      modelData->skeletonAsset = skeleton;
+
+      if (pScene->mNumAnimations > 0) {
+        for (unsigned int animId = 0; animId < pScene->mNumAnimations; ++animId) {
+          modelData->animationAssets.push_back(Resources::parseAnimation(pScene->mAnimations[animId], *skeleton));
+        }
+      }
+    }
+
+    std::function<void(const aiNode *, const aiScene *)> processNode;
+    processNode = [&](const aiNode *pNode, const aiScene *pScene) {
+      for (unsigned int meshId = 0; meshId < pNode->mNumMeshes; meshId++) {
+        auto mesh = pScene->mMeshes[pNode->mMeshes[meshId]];
+        auto material = pScene->mMaterials[mesh->mMaterialIndex];
+
+        modelData->meshAssets.push_back(Resources::parseMesh(mesh, material));
+      }
+
+      for (unsigned int childId = 0; childId < pNode->mNumChildren; childId++) {
+        processNode(pNode->mChildren[childId], pScene);
+      }
+    };
+    processNode(pScene->mRootNode, pScene);
+
+    const auto [it, inserted] = _modelDatas.emplace(modelRelativePath, modelData);
+    if (!inserted) {
+      Core::Logger::warning("ResourceManager", "Model relativePath collision: ", modelRelativePath);
+    }
+
+    Core::Logger::info("ResourceManager", "Successfully loaded model from: ", modelRelativePath);
+
+    return it->second;
+  } catch (const Resources::ModelFileNotFoundException &e) {
+    Core::Logger::error("ResourceManager", "Model file not found: ", e.what());
+    return nullptr;
+  } catch (const Resources::ModelImportException &e) {
+    Core::Logger::error("ResourceManager", "Model import failed: ", e.what());
+    return nullptr;
+  } catch (const Resources::ModelCorruptedException &e) {
+    Core::Logger::error("ResourceManager", "Corrupted model: ", e.what());
+    return nullptr;
+  } catch (const Resources::TextureLoadException &e) {
+    Core::Logger::error("ResourceManager", "Texture load failed: ", e.what());
+  } catch (const std::exception &e) {
+    Core::Logger::error("ResourceManager", "Unexpected error loading model: ", e.what());
+    return nullptr;
+  } catch (...) {
+    Core::Logger::error("ResourceManager", "Unknown error loading model from: ", modelRelativePath);
+    return nullptr;
+  }
+  return nullptr;
+}
+
 std::vector<std::shared_ptr<Resources::TextureAsset>> ResourceManager::loadAssimpEmbeddedTextures(
     const aiScene *scene) noexcept {
   std::vector<std::shared_ptr<Resources::TextureAsset>> textures;
