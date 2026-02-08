@@ -38,19 +38,18 @@ void Renderer::upload() {
     assert(false && "Layout is empty! Dont know how to interpret buffer!");
   }
 
-  VertexBuffer VBO(_elementsBuff, _layout, VertexBuffer::_e_Usage::Static);
-  _VAO.addBuffer(VBO);
+  _vbo = std::make_unique<VertexBuffer>(_elementsBuff, _layout, VertexBuffer::_e_Usage::Static);
+  _VAO.addBuffer(*_vbo);
 }
 
 // Stores the given indices and creates an IndexBuffer bound to the VAO.
 // Call this before drawElements() if you plan to use indexed drawing.
 void Renderer::setIndices(const std::vector<GLuint>& indices) {
-  IndexBuffer IBO(indices);
+  _ibo = std::make_unique<IndexBuffer>(indices);
   _indicesCount = indices.size();
 
-  _VAO.setIndexBuffer(IBO);
+  _VAO.setIndexBuffer(*_ibo);
 }
-
 // This uses non-indexed rendering (glDrawArrays) and requires vertex data
 // to have been uploaded beforehand.
 void Renderer::drawArrays() {
@@ -62,11 +61,12 @@ void Renderer::drawArrays() {
 // This uses indexed rendering (glDrawElements), so make sure to call
 // setIndices() before this. Requires a valid layout and uploaded vertex data.
 void Renderer::drawElements() {
-  if (_indicesCount == 0) {
+  if (!_VAO.hasIndices()) {
     assert(false && "Cannot call drawElements(): index buffer has not been set.");
   }
+
   _VAO.bind();
-  glDrawElements(_drawMode, static_cast<GLsizei>(_indicesCount), GL_UNSIGNED_INT, nullptr);
+  glDrawElements(_drawMode, static_cast<GLsizei>(_VAO.indexCount()), GL_UNSIGNED_INT, nullptr);
   _VAO.unbind();
 }
 

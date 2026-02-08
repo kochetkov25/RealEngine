@@ -5,6 +5,7 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include "Render/Renderer.h"
 #include "Resources/FileManager.h"
 #include "Resources/ResourceManager.h"
 #include "Render/ShaderProgram.h"
@@ -25,7 +26,14 @@
 
 // clang-format on
 
-int main(int argc, char **argv) {
+void GLAPIENTRY glDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+                                const GLchar* message, const void* userParam) {
+  if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
+    std::cerr << "[OpenGL] " << message << std::endl;
+  }
+}
+
+int main(int argc, char** argv) {
   (void)argc;  // Unused parameter
 
   Resources::FileManager::instance().initialize(argv[0]);
@@ -147,7 +155,7 @@ int main(int argc, char **argv) {
 
   std::vector<std::pair<std::string, std::chrono::nanoseconds>> frameDurations;
   const auto frameDuration = std::chrono::milliseconds(50);
-  for (const auto &frameName : frameNames) {
+  for (const auto& frameName : frameNames) {
     frameDurations.emplace_back(frameName, frameDuration);
   }
   animatedSprite->setAnimationParameters(frameDurations);
@@ -161,6 +169,10 @@ int main(int argc, char **argv) {
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   /*enable MSAA*/
   glEnable(GL_MULTISAMPLE);
+
+  glEnable(GL_DEBUG_OUTPUT);
+  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  glDebugMessageCallback(glDebugCallback, nullptr);
 
   while (!MainWindow.windowShouldClose()) {
     /*TIMER*/

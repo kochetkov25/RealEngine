@@ -10,10 +10,13 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <iostream>
+#include <memory>
 #include <vector>
 
+#include "IndexBuffer.h"
 #include "VertexArray.h"
 #include "VertexBuffer.h"
+
 
 namespace Render {
 static const size_t MAX_ELEMENTS = 1024 * 2;
@@ -159,5 +162,8 @@ class Renderer {
   VertexArray _VAO;
 
   std::vector<VertexBuffer::BufferElement> _layout;
+
+  std::unique_ptr<VertexBuffer> _vbo;
+  std::unique_ptr<IndexBuffer> _ibo;
 };
 }  // namespace Render

@@ -19,8 +19,27 @@ GLenum Render::VertexBuffer::getGLenum(const _e_Usage usage) {
   }
 }
 
-// Destructor: deletes the OpenGL buffer
 Render::VertexBuffer::~VertexBuffer() { glDeleteBuffers(1, &_id); }
+
+VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+    : _id(other._id), _elements(std::move(other._elements)), _stride(other._stride), _usage(other._usage) {
+  other._id = 0;
+}
+
+VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept {
+  if (this != &other) {
+    if (_id != 0) {
+      glDeleteBuffers(1, &_id);
+    }
+
+    _id = other._id;
+    _elements = std::move(other._elements);
+    _stride = other._stride;
+    _usage = other._usage;
+    other._id = 0;
+  }
+  return *this;
+}
 
 // Bind the vertex buffer
 void Render::VertexBuffer::bind() const { glBindBuffer(GL_ARRAY_BUFFER, _id); }
@@ -72,5 +91,5 @@ unsigned int Render::VertexBuffer::getElementSize(_e_DataType type) {
 }
 
 // Get the stride (size of a single vertex)
-size_t Render::VertexBuffer::getStride() { return _stride; }
+size_t Render::VertexBuffer::getStride() const { return _stride; }
 }  // namespace Render
